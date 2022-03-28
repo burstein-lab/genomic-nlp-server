@@ -1,12 +1,13 @@
-name: Pylint
+name: CI
 
 on:
+  pull_request:
   push:
     branches:
       - main
 
 jobs:
-  build:
+  pylint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -21,3 +22,11 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Prettify code
+      uses: creyD/prettier_action@v4.2
+      with:
+        dry: True
