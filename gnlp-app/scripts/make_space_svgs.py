@@ -6,7 +6,7 @@ import argparse
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-class Space(object):
+class Space:
     def __init__(self, data_path=data_path, outdir='../src/assets/', bins=1, max_bins=30, fmt='svg', save_img=True):
         self.data_path = data_path
         self.outdir = outdir
