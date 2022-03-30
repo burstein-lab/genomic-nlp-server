@@ -53,8 +53,7 @@ class Space:
     def plot_binned_spaces(self, permutations, binned_df):
         perm_img_dir = os.path.join(self.outdir, f'binned_{self.bins}')
         if self.save_img:
-            if not os.path.exists(perm_img_dir):
-                os.makedirs(perm_img_dir)
+            os.makedirs(perm_img_dir, exist_ok=True)
 
         for perm in permutations:
             perm_df = binned_df[binned_df['2d_bin'] == perm]
