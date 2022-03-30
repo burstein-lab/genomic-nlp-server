@@ -7,6 +7,7 @@ docker run -v $PWD:/app --rm -it gnlp-server bash
 
 # Inside the container
 cd gnlp-app
+yarn dev
 ```
 
 # Initial Setup
