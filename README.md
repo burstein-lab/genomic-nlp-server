@@ -5,9 +5,9 @@
 ```bash
 docker run -v $PWD:/app --rm -it gnlp bash
 
+# Inside the container
 pipenv install
 
-# Inside the container
 cd gnlp-app
 yarn dev
 ```
