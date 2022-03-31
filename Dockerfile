@@ -8,7 +8,7 @@ ENV CHOKIDAR_USEPOLLING=true
 
 WORKDIR /app
 
-RUN apt update && apt install -y npm curl
+RUN apt update && apt install -y npm curl docker.io
 RUN pip install --upgrade pip
 RUN pip install pipenv
 RUN sh -c "$(curl -fsSL https://starship.rs/install.sh)" -- --yes
@@ -16,6 +16,9 @@ RUN npm install --global yarn
 
 RUN curl -fsSL https://deb.nodesource.com/setup_17.x | bash -
 RUN apt-get install -y nodejs
+
+#COPY . .
+#RUN pipenv install
 
 #WORKDIR /app
 #RUN yarn install

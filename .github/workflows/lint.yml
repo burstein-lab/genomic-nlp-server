@@ -1,22 +1,12 @@
-name: CI
+name: Lint
 
 on:
+  pull_request:
   push:
     branches:
       - main
 
 jobs:
-  build-env:
-    runs-on: ubuntu-latest
-    - uses: docker/login-action@v1 
-      with:
-        username: ${{ secrets.DOCKERHUB_USER }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
-    - uses: docker/build-push-action@v2
-      with:
-        push: true
-        tags: ${{ secrets.DOCKERHUB_USER }}/gnlp:latest
-  # TODO remove
   pylint:
     runs-on: ubuntu-latest
     steps:
