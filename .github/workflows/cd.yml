@@ -17,3 +17,14 @@ jobs:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
           heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
           dockerfile_directory: ./gnlp-app/
+  build-env:
+    runs-on: ubuntu-latest
+    - uses: docker/login-action@v1 
+      with:
+        username: ${{ secrets.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    - uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USER }}/gnlp:latest
+
