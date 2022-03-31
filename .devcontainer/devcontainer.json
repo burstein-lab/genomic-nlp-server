@@ -8,7 +8,7 @@
 	"dockerFile": "../Dockerfile",
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
-		"python.defaultInterpreterPath": "/workspaces/app/.venv/bin/python",
+		"python.defaultInterpreterPath": "/workspaces/genomic-nlp-server/.venv/bin/python",
 		"files.autoSave": "onFocusChange",
 		"editor.formatOnSave": true,
 		"python.formatting.provider": "autopep8",

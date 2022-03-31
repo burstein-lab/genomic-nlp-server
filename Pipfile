@@ -10,6 +10,8 @@ gensim = "*"
 plotly = "*"
 seaborn = "*"
 numpy = "*"
+autopep8 = "*"
+pylint = "*"
 
 [dev-packages]
 

@@ -1,4 +1,6 @@
 import glob
+import os
+from datetime import datetime
 import pickle
 
 import dash
@@ -11,13 +13,8 @@ import pandas as pd
 from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
 import plotly.graph_objs as go
-import os
-
-#word 2 vec
 import gensim
 from gensim.models import word2vec as w2v
-from datetime import datetime
-
 
 
 # based on: https://github.com/plotly/dash-sample-apps/blob/master/apps/dash-tsne/demo.py
