@@ -17,9 +17,10 @@ To deploy:
 ```bash
 heroku login
 heroku container:login
-heroku container:push web
-heroku container:release web
-heroku open # Or go to https://gnlp.herokuapp.com/
+heroku container:push web -a gnlp-web
+heroku container:release web -a gnlp-web
+heroku open -a gnlp-web # Or go to https://gnlp-web.herokuapp.com/
+heroku logs -a gnlp-web --tail
 ```
 
 Initial Heroku setup:
@@ -27,8 +28,15 @@ Initial Heroku setup:
 ```
 heroku login
 heroku container:login
-heroku git:remote -a gnlp # Or create a new one with `heroku create`
+heroku git:remote -a gnlp-web # Or create a new one with `heroku create`
 heroku container:push web
 heroku container:release web
 heroku open
+```
+
+## Test locally
+
+```bash
+docker build . -t gnlp-web
+docker run -it -e PORT=80 -p 8000:80 --rm gnlp-web
 ```
