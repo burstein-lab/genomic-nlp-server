@@ -17,6 +17,8 @@ RUN npm install --global yarn
 RUN curl -fsSL https://deb.nodesource.com/setup_17.x | bash -
 RUN apt-get install -y nodejs
 
+RUN curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+
 #COPY . .
 #RUN pipenv install
 
