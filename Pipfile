@@ -12,6 +12,10 @@ seaborn = "*"
 numpy = "*"
 autopep8 = "*"
 pylint = "*"
+flask = "*"
+flask-cors = "*"
+gunicorn = "*"
+werkzeug = "*"
 
 [dev-packages]
 
