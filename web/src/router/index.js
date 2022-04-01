@@ -12,9 +12,9 @@ const routes = [
     name: "Ping",
     component: Ping,
   },
-]
+];
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
-})
+});
 export default router;
