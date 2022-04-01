@@ -1,19 +1,16 @@
 import glob
 import os
-from datetime import datetime
 import pickle
 
 import dash
 import dash_table as dt
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_bootstrap_components as dbc
 import plotly.express as px
+import plotly.graph_objs as go
 import pandas as pd
 from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
-import plotly.graph_objs as go
-import gensim
 from gensim.models import word2vec as w2v
 
 
@@ -24,7 +21,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 # read and process data
-# TODO - hard coded models files (partial data)
+# TODO(#27) - hard coded models files (partial data)
 data_dict = {
     "batch52_300t": r"/Volumes/GoogleDrive/My Drive/PhD/Projects/gene2vec/global_sewage/trained_models/ALL/batch_52",
     "batch52_300u": r"/Volumes/GoogleDrive/My Drive/PhD/Projects/gene2vec/global_sewage/trained_models/ALL/batch_52",
@@ -66,15 +63,15 @@ def load_data_for_app(dataset):
 
 
 # Methods for creating components in the layout code
-def Card(children, **kwargs):
+def card(children, **_):
     return html.Section(children, className="card-style")
 
 
-def NamedSlider(name, short, min, max, step, val, marks=None):
+def named_slider(name, short, min_, max_, step, val, marks=None):
     if marks:
         step = None
     else:
-        marks = {i: i for i in range(min, max + 1, step)}
+        marks = {i: i for i in range(min_, max_ + 1, step)}
 
     return html.Div(
         style={"margin": "25px 5px 30px 0px"},
@@ -85,8 +82,8 @@ def NamedSlider(name, short, min, max, step, val, marks=None):
                 children=[
                     dcc.Slider(
                         id=f"slider-{short}",
-                        min=min,
-                        max=max,
+                        min=min_,
+                        max=max_,
                         marks=marks,
                         step=step,
                         value=val,
@@ -97,7 +94,7 @@ def NamedSlider(name, short, min, max, step, val, marks=None):
     )
 
 
-def NamedInlineRadioItems(name, short, options, val, **kwargs):
+def named_inline_radio_items(name, short, options, val, **_):
     return html.Div(
         id=f"div-{short}",
         style={"display": "inline-block"},
@@ -114,7 +111,7 @@ def NamedInlineRadioItems(name, short, options, val, **kwargs):
     )
 
 
-def create_layout(app):
+def create_layout():
     # Actual layout of the app
     return html.Div(
         className="row",
@@ -146,7 +143,7 @@ def create_layout(app):
                     html.Div(
                         className="three columns",
                         children=[
-                            Card(
+                            card(
                                 [
                                     dcc.Dropdown(
                                         id="dropdown-dataset",
@@ -181,22 +178,22 @@ def create_layout(app):
                                         placeholder="Select a dataset",
                                         value="batch52_300u",
                                     ),
-                                    NamedSlider(
+                                    named_slider(
                                         name="Opacity",
                                         short="opacity",
-                                        min=0.1,
-                                        max=1,
+                                        min_=0.1,
+                                        max_=1,
                                         step=None,
                                         val=0.2,
                                         marks={
                                             i: str(i) for i in [0.2, 0.5, 0.8, 1]
                                         },
                                     ),
-                                    NamedSlider(
+                                    named_slider(
                                         name="Size",
                                         short="size",
-                                        min=4,
-                                        max=10,
+                                        min_=4,
+                                        max_=10,
                                         step=None,
                                         val=4,
                                         marks={i: str(i)
@@ -206,7 +203,7 @@ def create_layout(app):
                                         id="div-wordemb-controls",
                                         style={"display": "none"},
                                         children=[
-                                            NamedInlineRadioItems(
+                                            named_inline_radio_items(
                                                 name="Display Mode",
                                                 short="wordemb-display-mode",
                                                 options=[
@@ -264,7 +261,7 @@ def create_layout(app):
                         className="three columns",
                         id="euclidean-distance",
                         children=[
-                            Card(
+                            card(
                                 style={"padding": "5px"},
                                 children=[
                                     html.Div(
@@ -290,13 +287,13 @@ def create_layout(app):
                     html.Div(
                         className="three columns",
                         children=[
-                            Card(
+                            card(
                                 [
                                     html.Div(
                                         id="div-table-controls",
                                         style={"display": "none"},
                                         children=[
-                                            NamedInlineRadioItems(
+                                            named_inline_radio_items(
                                                 name="Color mode",
                                                 short="table-display-mode",
                                                 options=[
@@ -362,8 +359,7 @@ def create_layout(app):
     )
 
 
-def demo_callbacks(app):
-
+def demo_callbacks(app_):
     # Scatter Plot of the t-SNE datasets
     def generate_figure_word_vec(
             embedding_df, layout, wordemb_display_mode, selected_word, mdl, size, opacity, table_display_mode,
@@ -408,18 +404,18 @@ def demo_callbacks(app):
 
         except KeyError as error:
             print(error)
-            raise PreventUpdate
+            raise PreventUpdate from error
 
-    @app.callback(
+    @app_.callback(
         Output("div-search-ko", "style"), [Input("dropdown-dataset", "value")]
     )
-    def show_wordemb_controls(dataset):
+    def search_wordemb_controls(dataset):
         if dataset in WORD_EMBEDDINGS:
             return None
         else:
             return {"display": "none"}
 
-    @app.callback(
+    @app_.callback(
         Output("div-wordemb-controls",
                "style"), [Input("dropdown-dataset", "value")]
     )
@@ -429,14 +425,14 @@ def demo_callbacks(app):
         else:
             return {"display": "none"}
 
-    @app.callback(
+    @app_.callback(
         Output("dropdown-word-selected", "disabled"),
         [Input("radio-wordemb-display-mode", "value")],
     )
     def disable_word_selection(mode):
         return not mode == "neighbors"
 
-    @app.callback(
+    @app_.callback(
         Output("div-table-controls",
                "style"), [Input("dropdown-dataset", "value")]
     )
@@ -446,12 +442,12 @@ def demo_callbacks(app):
         else:
             return {"display": "none"}
 
-    @app.callback(
+    @app_.callback(
         Output("dropdown-word-selected", "options"),
         [Input("dropdown-dataset", "value")],
     )
     def fill_dropdown_word_selection_options(dataset):
-        embedding_df, mdl = load_data_for_app(dataset)
+        embedding_df, _ = load_data_for_app(dataset)
         if dataset in WORD_EMBEDDINGS:
             return [
                 {"label": i, "value": i} for i in embedding_df["word"].tolist()
@@ -459,16 +455,16 @@ def demo_callbacks(app):
         else:
             return []
 
-    @app.callback(
+    @app_.callback(
         Output("dropdown-label-selected", "options"),
         [Input("dropdown-dataset", "value"),
          Input("radio-table-display-mode", "value")],
     )
     def fill_dropdown_label_selection_options(dataset, label):
-        embedding_df, mdl = load_data_for_app(dataset)
+        embedding_df, _ = load_data_for_app(dataset)
         return [{"label": i, "value": i} for i in embedding_df[label].unique()]
 
-    @app.callback(
+    @app_.callback(
         [Output("graph-2d-plot-tsne", "figure"), Output("info-table",
                                                         "data"), Output("info-table", "tooltip_data")],
         [
@@ -552,15 +548,15 @@ def demo_callbacks(app):
                              for column, value in row.items()} for row in table]
             return figure, table, tooltip_data
 
-    @app.callback(
+    @app_.callback(
         Output("div-plot-click-wordemb", "children"),
         [Input("graph-2d-plot-tsne", "clickData"),
          Input("dropdown-dataset", "value")],
     )
-    def display_click_word_neighbors(clickData, dataset):
+    def display_click_word_neighbors(click_data, dataset):
         embedding_df, mdl = load_data_for_app(dataset)
-        if dataset in WORD_EMBEDDINGS and clickData:
-            selected_word = clickData["points"][0]["customdata"][0]
+        if dataset in WORD_EMBEDDINGS and click_data:
+            selected_word = click_data["points"][0]["customdata"][0]
 
             try:
                 # Get the nearest neighbors indices using cosine distance
@@ -596,10 +592,10 @@ def demo_callbacks(app):
                     config={"displayModeBar": False},
                 )
             except KeyError as error:
-                raise PreventUpdate
+                raise PreventUpdate from error
         return None
 
-    @app.callback(
+    @app_.callback(
         Output("div-plot-click-message", "children"),
         [Input("graph-2d-plot-tsne", "clickData"),
          Input("dropdown-dataset", "value")],
@@ -612,13 +608,13 @@ def demo_callbacks(app):
             else:
                 return "Click a word on the plot to see its top 20 neighbors."
 
-    @app.callback(
+    @app_.callback(
         Output("output", "children"),
         [Input("dropdown-dataset", "value"),
          Input("input-ko", "value")],
     )
     def update_output(dataset, ko):
-        embedding_df, mdl = load_data_for_app(dataset)
+        embedding_df, _ = load_data_for_app(dataset)
         if ko is None or ko == '':
             return ''
         elif ko not in embedding_df["word"].unique():
@@ -629,9 +625,8 @@ def demo_callbacks(app):
 
 
 server = app.server
-app.layout = create_layout(app)
+app.layout = create_layout()
 demo_callbacks(app)
 
-# Running server
 if __name__ == "__main__":
     app.run_server(debug=True)
