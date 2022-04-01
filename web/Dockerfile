@@ -1,10 +1,7 @@
-FROM node:lts as develop-stage
+FROM node:lts as build-stage
 WORKDIR /app
-COPY package*.json ./
-RUN yarn install
 COPY . .
-
-FROM develop-stage as build-stage
+RUN yarn install
 RUN yarn build
 
 FROM nginx:1.15.7-alpine as production-stage

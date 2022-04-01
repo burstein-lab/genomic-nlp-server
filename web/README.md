@@ -19,7 +19,7 @@ heroku login
 heroku container:login
 heroku container:push web
 heroku container:release web
-heroku open # Or go to https://gnlp.herokuapp.com/
+heroku open # Or go to https://gnlp-web.herokuapp.com/
 ```
 
 Initial Heroku setup:
@@ -27,7 +27,7 @@ Initial Heroku setup:
 ```
 heroku login
 heroku container:login
-heroku git:remote -a gnlp # Or create a new one with `heroku create`
+heroku git:remote -a gnlp-web # Or create a new one with `heroku create`
 heroku container:push web
 heroku container:release web
 heroku open
