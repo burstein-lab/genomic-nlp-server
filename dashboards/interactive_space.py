@@ -1,19 +1,16 @@
 import glob
 import os
-from datetime import datetime
 import pickle
 
 import dash
 import dash_table as dt
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_bootstrap_components as dbc
 import plotly.express as px
+import plotly.graph_objs as go
 import pandas as pd
 from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
-import plotly.graph_objs as go
-import gensim
 from gensim.models import word2vec as w2v
 
 
@@ -24,7 +21,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 # read and process data
-# TODO - hard coded models files (partial data)
+# TODO(#27) - hard coded models files (partial data)
 data_dict = {
     "batch52_300t": r"/Volumes/GoogleDrive/My Drive/PhD/Projects/gene2vec/global_sewage/trained_models/ALL/batch_52",
     "batch52_300u": r"/Volumes/GoogleDrive/My Drive/PhD/Projects/gene2vec/global_sewage/trained_models/ALL/batch_52",
@@ -32,14 +29,16 @@ data_dict = {
     "batch87_512u": r"/Volumes/GoogleDrive/My Drive/PhD/Projects/gene2vec/global_sewage/trained_models/ALL/batch_87",
 }
 
-WORD_EMBEDDINGS = ("batch87_512u","batch87_512t","batch52_300u", "batch52_300t", "batch1717_300u", "batch1717_512u")
-METADATA = pd.read_csv(r"/Users/daniellemiller/Google Drive/PhD/Projects/gene2vec/ko_data/metadata.csv")
+WORD_EMBEDDINGS = ("batch87_512u", "batch87_512t", "batch52_300u",
+                   "batch52_300t", "batch1717_300u", "batch1717_512u")
+METADATA = pd.read_csv(
+    r"/Users/daniellemiller/Google Drive/PhD/Projects/gene2vec/ko_data/metadata.csv")
 TABLE_COLS = ["word", "Product", "label", "cluster"]
 
 
 def load_data_for_app(dataset):
     if dataset.endswith("u"):
-        alias="umap"
+        alias = "umap"
     else:
         alias = "tsne"
     mdl_files = glob.glob(f"{data_dict[dataset]}/*")
@@ -51,26 +50,28 @@ def load_data_for_app(dataset):
     g2v = w2v.Word2Vec.load(mdl_path)
 
     embedding_df["KO"] = embedding_df["word"]
-    embedding_df["hypothetical"] = embedding_df["word"].apply(lambda x: "YES" if "Cluster" in x else "NO")
-    embedding_df = embedding_df.merge(METADATA, on=["KO"], how="left").fillna("unknown")
-    clustering_data = pd.read_csv(os.path.join(data_dict[dataset], f"{alias}_clusters.csv"))
+    embedding_df["hypothetical"] = embedding_df["word"].apply(
+        lambda x: "YES" if "Cluster" in x else "NO")
+    embedding_df = embedding_df.merge(
+        METADATA, on=["KO"], how="left").fillna("unknown")
+    clustering_data = pd.read_csv(os.path.join(
+        data_dict[dataset], f"{alias}_clusters.csv"))
     clustering_data["cluster"] = clustering_data["cluster"].astype(str)
     embedding_df = embedding_df.merge(clustering_data, on=["word"], how="left")
 
     return embedding_df, g2v
 
 
-
 # Methods for creating components in the layout code
-def Card(children, **kwargs):
+def card(children, **_):
     return html.Section(children, className="card-style")
 
 
-def NamedSlider(name, short, min, max, step, val, marks=None):
+def named_slider(name, short, min_, max_, step, val, marks=None):
     if marks:
         step = None
     else:
-        marks = {i: i for i in range(min, max + 1, step)}
+        marks = {i: i for i in range(min_, max_ + 1, step)}
 
     return html.Div(
         style={"margin": "25px 5px 30px 0px"},
@@ -81,8 +82,8 @@ def NamedSlider(name, short, min, max, step, val, marks=None):
                 children=[
                     dcc.Slider(
                         id=f"slider-{short}",
-                        min=min,
-                        max=max,
+                        min=min_,
+                        max=max_,
                         marks=marks,
                         step=step,
                         value=val,
@@ -93,7 +94,7 @@ def NamedSlider(name, short, min, max, step, val, marks=None):
     )
 
 
-def NamedInlineRadioItems(name, short, options, val, **kwargs):
+def named_inline_radio_items(name, short, options, val, **_):
     return html.Div(
         id=f"div-{short}",
         style={"display": "inline-block"},
@@ -110,7 +111,7 @@ def NamedInlineRadioItems(name, short, options, val, **kwargs):
     )
 
 
-def create_layout(app):
+def create_layout():
     # Actual layout of the app
     return html.Div(
         className="row",
@@ -142,7 +143,7 @@ def create_layout(app):
                     html.Div(
                         className="three columns",
                         children=[
-                            Card(
+                            card(
                                 [
                                     dcc.Dropdown(
                                         id="dropdown-dataset",
@@ -177,31 +178,32 @@ def create_layout(app):
                                         placeholder="Select a dataset",
                                         value="batch52_300u",
                                     ),
-                                    NamedSlider(
+                                    named_slider(
                                         name="Opacity",
                                         short="opacity",
-                                        min=0.1,
-                                        max=1,
+                                        min_=0.1,
+                                        max_=1,
                                         step=None,
                                         val=0.2,
                                         marks={
                                             i: str(i) for i in [0.2, 0.5, 0.8, 1]
                                         },
                                     ),
-                                    NamedSlider(
+                                    named_slider(
                                         name="Size",
                                         short="size",
-                                        min=4,
-                                        max=10,
+                                        min_=4,
+                                        max_=10,
                                         step=None,
                                         val=4,
-                                        marks={i: str(i) for i in [4, 6, 8, 10]},
+                                        marks={i: str(i)
+                                               for i in [4, 6, 8, 10]},
                                     ),
                                     html.Div(
                                         id="div-wordemb-controls",
                                         style={"display": "none"},
                                         children=[
-                                            NamedInlineRadioItems(
+                                            named_inline_radio_items(
                                                 name="Display Mode",
                                                 short="wordemb-display-mode",
                                                 options=[
@@ -219,13 +221,15 @@ def create_layout(app):
                                             dcc.Dropdown(
                                                 id="dropdown-word-selected",
                                                 placeholder="Select word to display its neighbors",
-                                                style={"background-color": "#F7ECEC"},
+                                                style={
+                                                    "background-color": "#F7ECEC"},
                                             ),
                                         ],
                                     ),
                                     html.Div(
                                         id="div-search-ko",
-                                        style={"display": "none", "margin": "25px 5px 30px 0px"},
+                                        style={"display": "none",
+                                               "margin": "25px 5px 30px 0px"},
                                         children=[
                                             html.Br(),
                                             html.Br(),
@@ -249,14 +253,15 @@ def create_layout(app):
                     html.Div(
                         className="six columns",
                         children=[
-                            dcc.Graph(id="graph-2d-plot-tsne", style={"height": "98vh"})
+                            dcc.Graph(id="graph-2d-plot-tsne",
+                                      style={"height": "98vh"})
                         ],
                     ),
                     html.Div(
                         className="three columns",
                         id="euclidean-distance",
                         children=[
-                            Card(
+                            card(
                                 style={"padding": "5px"},
                                 children=[
                                     html.Div(
@@ -282,13 +287,13 @@ def create_layout(app):
                     html.Div(
                         className="three columns",
                         children=[
-                            Card(
+                            card(
                                 [
                                     html.Div(
                                         id="div-table-controls",
                                         style={"display": "none"},
                                         children=[
-                                            NamedInlineRadioItems(
+                                            named_inline_radio_items(
                                                 name="Color mode",
                                                 short="table-display-mode",
                                                 options=[
@@ -311,7 +316,8 @@ def create_layout(app):
                                                 id="dropdown-label-selected",
                                                 placeholder="Select groups to display on main graph",
                                                 multi=True,
-                                                style={"background-color": "#F7ECEC"},
+                                                style={
+                                                    "background-color": "#F7ECEC"},
                                             ),
                                         ],
                                     ),
@@ -324,7 +330,8 @@ def create_layout(app):
                         children=[
                             dt.DataTable(
                                 id='info-table',
-                                columns=[{"name": i, "id": i} for i in TABLE_COLS],
+                                columns=[{"name": i, "id": i}
+                                         for i in TABLE_COLS],
                                 style_table={
                                     'display': 'inline-block',
                                 },
@@ -352,8 +359,7 @@ def create_layout(app):
     )
 
 
-def demo_callbacks(app):
-
+def demo_callbacks(app_):
     # Scatter Plot of the t-SNE datasets
     def generate_figure_word_vec(
             embedding_df, layout, wordemb_display_mode, selected_word, mdl, size, opacity, table_display_mode,
@@ -372,11 +378,13 @@ def demo_callbacks(app):
                 plot_mode = "text"
 
                 # Get the nearest neighbors indices using Cosine distance
-                neighbors = [c[0] for c in mdl.wv.most_similar(selected_word, topn=50)] + [selected_word]
+                neighbors = [c[0] for c in mdl.wv.most_similar(
+                    selected_word, topn=50)] + [selected_word]
 
                 # Select those neighbors from the embedding_df
-                embedding_df = embedding_df[embedding_df["word"].isin(neighbors)]
-            legend=False
+                embedding_df = embedding_df[embedding_df["word"].isin(
+                    neighbors)]
+            legend = False
             if table_display_mode == "hypothetical":
                 legend = True
             figure = px.scatter(embedding_df.sort_values(by=["word"]), x="x", y="y", color=table_display_mode, opacity=opacity,
@@ -396,67 +404,65 @@ def demo_callbacks(app):
 
         except KeyError as error:
             print(error)
-            raise PreventUpdate
+            raise PreventUpdate from error
 
-
-    @app.callback(
+    @app_.callback(
         Output("div-search-ko", "style"), [Input("dropdown-dataset", "value")]
     )
-    def show_wordemb_controls(dataset):
+    def search_wordemb_controls(dataset):
         if dataset in WORD_EMBEDDINGS:
             return None
-        else:
-            return {"display": "none"}
+        return {"display": "none"}
 
-    @app.callback(
-        Output("div-wordemb-controls", "style"), [Input("dropdown-dataset", "value")]
+    @app_.callback(
+        Output("div-wordemb-controls",
+               "style"), [Input("dropdown-dataset", "value")]
     )
     def show_wordemb_controls(dataset):
         if dataset in WORD_EMBEDDINGS:
             return None
-        else:
-            return {"display": "none"}
+        return {"display": "none"}
 
-    @app.callback(
+    @app_.callback(
         Output("dropdown-word-selected", "disabled"),
         [Input("radio-wordemb-display-mode", "value")],
     )
     def disable_word_selection(mode):
         return not mode == "neighbors"
 
-    @app.callback(
-        Output("div-table-controls", "style"), [Input("dropdown-dataset", "value")]
+    @app_.callback(
+        Output("div-table-controls",
+               "style"), [Input("dropdown-dataset", "value")]
     )
     def show_table_controls(dataset):
         if dataset in WORD_EMBEDDINGS:
             return None
-        else:
-            return {"display": "none"}
+        return {"display": "none"}
 
-    @app.callback(
+    @app_.callback(
         Output("dropdown-word-selected", "options"),
         [Input("dropdown-dataset", "value")],
     )
     def fill_dropdown_word_selection_options(dataset):
-        embedding_df, mdl = load_data_for_app(dataset)
+        embedding_df, _ = load_data_for_app(dataset)
         if dataset in WORD_EMBEDDINGS:
             return [
                 {"label": i, "value": i} for i in embedding_df["word"].tolist()
             ]
-        else:
-            return []
+        return []
 
-    @app.callback(
+    @app_.callback(
         Output("dropdown-label-selected", "options"),
         [Input("dropdown-dataset", "value"),
          Input("radio-table-display-mode", "value")],
     )
     def fill_dropdown_label_selection_options(dataset, label):
-        embedding_df, mdl = load_data_for_app(dataset)
+        embedding_df, _ = load_data_for_app(dataset)
         return [{"label": i, "value": i} for i in embedding_df[label].unique()]
 
-    @app.callback(
-        [Output("graph-2d-plot-tsne", "figure"),Output("info-table", "data"), Output("info-table", "tooltip_data")],
+    @app_.callback(
+        [Output("graph-2d-plot-tsne", "figure"), Output("info-table",
+                                                        "data"), Output("info-table", "tooltip_data")],
         [
             Input("dropdown-dataset", "value"),
             Input("slider-opacity", "value"),
@@ -476,88 +482,93 @@ def demo_callbacks(app):
             table_display_mode,
             selected_label,
     ):
-        if dataset:
-            try:
-                embedding_df, mdl = load_data_for_app(dataset)
+        if not dataset:
+            return None
+        try:
+            embedding_df, mdl = load_data_for_app(dataset)
 
-            except FileNotFoundError as error:
-                print(
-                    error,
-                    "\nThe dataset was not found. Please generate it using generate_demo_embeddings.py",
-                )
-                return go.Figure()
-
-            # Plot layout
-            axes = dict(title="", showgrid=True, zeroline=False, showticklabels=False)
-
-            layout = go.Layout(
-                margin=dict(l=0, r=0, b=0, t=0),
-                scene=dict(xaxis=axes, yaxis=axes, zaxis=axes),
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
+        except FileNotFoundError as error:
+            print(
+                error,
+                "\nThe dataset was not found. Please generate it using generate_demo_embeddings.py",
             )
+            return go.Figure()
 
-            # Everything else is word embeddings
-            if dataset in WORD_EMBEDDINGS:
-                if selected_label is None or selected_label == []:
-                    figure = generate_figure_word_vec(
-                        embedding_df=embedding_df,
-                        layout=layout,
-                        wordemb_display_mode=wordemb_display_mode,
-                        selected_word=selected_word,
-                        mdl=mdl,
-                        size=size,
-                        opacity=opacity,
-                        table_display_mode=table_display_mode,
-                    )
-                    table = embedding_df[TABLE_COLS].to_dict('records')
+        # Plot layout
+        axes = dict(title="", showgrid=True,
+                    zeroline=False, showticklabels=False)
 
-                else:
-                    dff = embedding_df.copy()
-                    dff[table_display_mode] = dff[table_display_mode].apply(lambda x: x if x in selected_label else "no")
-                    figure = generate_figure_word_vec(
-                        embedding_df=dff,
-                        layout=layout,
-                        wordemb_display_mode=wordemb_display_mode,
-                        selected_word=selected_word,
-                        mdl=mdl,
-                        size=size,
-                        opacity=opacity,
-                        table_display_mode=table_display_mode,
-                    )
-                    table = embedding_df[embedding_df[table_display_mode].isin(selected_label)][TABLE_COLS].to_dict('records')
+        layout = go.Layout(
+            margin=dict(l=0, r=0, b=0, t=0),
+            scene=dict(xaxis=axes, yaxis=axes, zaxis=axes),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+        )
 
-            else:
-                figure = go.Figure(layout=layout)
+        # Everything else is word embeddings
+        if dataset in WORD_EMBEDDINGS:
+            if selected_label is None or selected_label == []:
+                figure = generate_figure_word_vec(
+                    embedding_df=embedding_df,
+                    layout=layout,
+                    wordemb_display_mode=wordemb_display_mode,
+                    selected_word=selected_word,
+                    mdl=mdl,
+                    size=size,
+                    opacity=opacity,
+                    table_display_mode=table_display_mode,
+                )
                 table = embedding_df[TABLE_COLS].to_dict('records')
 
-            tooltip_data = [{column: {'value': str(value), 'type': 'markdown'}
-                             for column, value in row.items()} for row in table]
-            return figure, table, tooltip_data
+            else:
+                dff = embedding_df.copy()
+                dff[table_display_mode] = dff[table_display_mode].apply(
+                    lambda x: x if x in selected_label else "no")
+                figure = generate_figure_word_vec(
+                    embedding_df=dff,
+                    layout=layout,
+                    wordemb_display_mode=wordemb_display_mode,
+                    selected_word=selected_word,
+                    mdl=mdl,
+                    size=size,
+                    opacity=opacity,
+                    table_display_mode=table_display_mode,
+                )
+                table = embedding_df[embedding_df[table_display_mode].isin(
+                    selected_label)][TABLE_COLS].to_dict('records')
 
+        else:
+            figure = go.Figure(layout=layout)
+            table = embedding_df[TABLE_COLS].to_dict('records')
 
+        tooltip_data = [{column: {'value': str(value), 'type': 'markdown'}
+                            for column, value in row.items()} for row in table]
+        return figure, table, tooltip_data
 
-    @app.callback(
+    @app_.callback(
         Output("div-plot-click-wordemb", "children"),
-        [Input("graph-2d-plot-tsne", "clickData"), Input("dropdown-dataset", "value")],
+        [Input("graph-2d-plot-tsne", "clickData"),
+         Input("dropdown-dataset", "value")],
     )
-    def display_click_word_neighbors(clickData, dataset):
+    def display_click_word_neighbors(click_data, dataset):
         embedding_df, mdl = load_data_for_app(dataset)
-        if dataset in WORD_EMBEDDINGS and clickData:
-            selected_word = clickData["points"][0]["customdata"][0]
+        if dataset in WORD_EMBEDDINGS and click_data:
+            selected_word = click_data["points"][0]["customdata"][0]
 
             try:
                 # Get the nearest neighbors indices using cosine distance
-                nearest_neighbors = [c for c in mdl.wv.most_similar(selected_word, topn=20)]
+                nearest_neighbors = list(mdl.wv.most_similar(selected_word, topn=20))
                 trace = go.Bar(
                     x=[c[1] for c in nearest_neighbors],
-                    y=[" ".join(c[0].split("_")[-2:]) for c in nearest_neighbors],
+                    y=[" ".join(c[0].split("_")[-2:])
+                       for c in nearest_neighbors],
                     width=0.8,
                     orientation="h",
                     marker=dict(color="rgb(232, 192, 237)"),
-                    text = [embedding_df[embedding_df["word"] == w]["Product"].values[0] for w, _ in nearest_neighbors],
+                    text=[embedding_df[embedding_df["word"] == w]
+                          ["Product"].values[0] for w, _ in nearest_neighbors],
                     hovertemplate="Score: %{x:.2f}<br>Word: %{text}",
-                    hoverlabel = dict(namelength = -1),
+                    hoverlabel=dict(namelength=-1),
                 )
 
                 layout = go.Layout(
@@ -577,42 +588,40 @@ def demo_callbacks(app):
                     config={"displayModeBar": False},
                 )
             except KeyError as error:
-                raise PreventUpdate
+                raise PreventUpdate from error
         return None
 
-
-    @app.callback(
+    @app_.callback(
         Output("div-plot-click-message", "children"),
-        [Input("graph-2d-plot-tsne", "clickData"), Input("dropdown-dataset", "value")],
+        [Input("graph-2d-plot-tsne", "clickData"),
+         Input("dropdown-dataset", "value")],
     )
-    def display_click_message(clickData, dataset):
+    def display_click_message(click_data, dataset):
         # Displays message shown when a point in the graph is clicked,
-        if dataset in WORD_EMBEDDINGS:
-            if clickData:
-                return None
-            else:
-                return "Click a word on the plot to see its top 20 neighbors."
+        if dataset not in WORD_EMBEDDINGS:
+            return None
+        if click_data:
+            return None
+        return "Click a word on the plot to see its top 20 neighbors."
 
-    @app.callback(
+    @app_.callback(
         Output("output", "children"),
         [Input("dropdown-dataset", "value"),
          Input("input-ko", "value")],
     )
-    def update_output(dataset, ko):
-        embedding_df, mdl = load_data_for_app(dataset)
-        if ko is None or ko == '':
+    def update_output(dataset, input_ko):
+        embedding_df, _ = load_data_for_app(dataset)
+        if input_ko is None or input_ko == '':
             return ''
-        elif ko not in embedding_df["word"].unique():
+        if input_ko not in embedding_df["word"].unique():
             return "No KO found"
-        else:
-            return f"{embedding_df[embedding_df['word']==ko]['label'].values[0]}\n" \
-                   f"{embedding_df[embedding_df['word']==ko]['Product'].values[0]}"
+        return f"{embedding_df[embedding_df['word']==input_ko]['label'].values[0]}\n" \
+                f"{embedding_df[embedding_df['word']==input_ko]['Product'].values[0]}"
 
 
 server = app.server
-app.layout = create_layout(app)
+app.layout = create_layout()
 demo_callbacks(app)
 
-# Running server
 if __name__ == "__main__":
     app.run_server(debug=True)
