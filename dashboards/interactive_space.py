@@ -412,8 +412,7 @@ def demo_callbacks(app_):
     def search_wordemb_controls(dataset):
         if dataset in WORD_EMBEDDINGS:
             return None
-        else:
-            return {"display": "none"}
+        return {"display": "none"}
 
     @app_.callback(
         Output("div-wordemb-controls",
@@ -422,8 +421,7 @@ def demo_callbacks(app_):
     def show_wordemb_controls(dataset):
         if dataset in WORD_EMBEDDINGS:
             return None
-        else:
-            return {"display": "none"}
+        return {"display": "none"}
 
     @app_.callback(
         Output("dropdown-word-selected", "disabled"),
@@ -439,8 +437,7 @@ def demo_callbacks(app_):
     def show_table_controls(dataset):
         if dataset in WORD_EMBEDDINGS:
             return None
-        else:
-            return {"display": "none"}
+        return {"display": "none"}
 
     @app_.callback(
         Output("dropdown-word-selected", "options"),
@@ -452,8 +449,7 @@ def demo_callbacks(app_):
             return [
                 {"label": i, "value": i} for i in embedding_df["word"].tolist()
             ]
-        else:
-            return []
+        return []
 
     @app_.callback(
         Output("dropdown-label-selected", "options"),
@@ -486,67 +482,68 @@ def demo_callbacks(app_):
             table_display_mode,
             selected_label,
     ):
-        if dataset:
-            try:
-                embedding_df, mdl = load_data_for_app(dataset)
+        if not dataset:
+            return None
+        try:
+            embedding_df, mdl = load_data_for_app(dataset)
 
-            except FileNotFoundError as error:
-                print(
-                    error,
-                    "\nThe dataset was not found. Please generate it using generate_demo_embeddings.py",
-                )
-                return go.Figure()
-
-            # Plot layout
-            axes = dict(title="", showgrid=True,
-                        zeroline=False, showticklabels=False)
-
-            layout = go.Layout(
-                margin=dict(l=0, r=0, b=0, t=0),
-                scene=dict(xaxis=axes, yaxis=axes, zaxis=axes),
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
+        except FileNotFoundError as error:
+            print(
+                error,
+                "\nThe dataset was not found. Please generate it using generate_demo_embeddings.py",
             )
+            return go.Figure()
 
-            # Everything else is word embeddings
-            if dataset in WORD_EMBEDDINGS:
-                if selected_label is None or selected_label == []:
-                    figure = generate_figure_word_vec(
-                        embedding_df=embedding_df,
-                        layout=layout,
-                        wordemb_display_mode=wordemb_display_mode,
-                        selected_word=selected_word,
-                        mdl=mdl,
-                        size=size,
-                        opacity=opacity,
-                        table_display_mode=table_display_mode,
-                    )
-                    table = embedding_df[TABLE_COLS].to_dict('records')
+        # Plot layout
+        axes = dict(title="", showgrid=True,
+                    zeroline=False, showticklabels=False)
 
-                else:
-                    dff = embedding_df.copy()
-                    dff[table_display_mode] = dff[table_display_mode].apply(
-                        lambda x: x if x in selected_label else "no")
-                    figure = generate_figure_word_vec(
-                        embedding_df=dff,
-                        layout=layout,
-                        wordemb_display_mode=wordemb_display_mode,
-                        selected_word=selected_word,
-                        mdl=mdl,
-                        size=size,
-                        opacity=opacity,
-                        table_display_mode=table_display_mode,
-                    )
-                    table = embedding_df[embedding_df[table_display_mode].isin(
-                        selected_label)][TABLE_COLS].to_dict('records')
+        layout = go.Layout(
+            margin=dict(l=0, r=0, b=0, t=0),
+            scene=dict(xaxis=axes, yaxis=axes, zaxis=axes),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+        )
 
-            else:
-                figure = go.Figure(layout=layout)
+        # Everything else is word embeddings
+        if dataset in WORD_EMBEDDINGS:
+            if selected_label is None or selected_label == []:
+                figure = generate_figure_word_vec(
+                    embedding_df=embedding_df,
+                    layout=layout,
+                    wordemb_display_mode=wordemb_display_mode,
+                    selected_word=selected_word,
+                    mdl=mdl,
+                    size=size,
+                    opacity=opacity,
+                    table_display_mode=table_display_mode,
+                )
                 table = embedding_df[TABLE_COLS].to_dict('records')
 
-            tooltip_data = [{column: {'value': str(value), 'type': 'markdown'}
-                             for column, value in row.items()} for row in table]
-            return figure, table, tooltip_data
+            else:
+                dff = embedding_df.copy()
+                dff[table_display_mode] = dff[table_display_mode].apply(
+                    lambda x: x if x in selected_label else "no")
+                figure = generate_figure_word_vec(
+                    embedding_df=dff,
+                    layout=layout,
+                    wordemb_display_mode=wordemb_display_mode,
+                    selected_word=selected_word,
+                    mdl=mdl,
+                    size=size,
+                    opacity=opacity,
+                    table_display_mode=table_display_mode,
+                )
+                table = embedding_df[embedding_df[table_display_mode].isin(
+                    selected_label)][TABLE_COLS].to_dict('records')
+
+        else:
+            figure = go.Figure(layout=layout)
+            table = embedding_df[TABLE_COLS].to_dict('records')
+
+        tooltip_data = [{column: {'value': str(value), 'type': 'markdown'}
+                            for column, value in row.items()} for row in table]
+        return figure, table, tooltip_data
 
     @app_.callback(
         Output("div-plot-click-wordemb", "children"),
@@ -560,8 +557,7 @@ def demo_callbacks(app_):
 
             try:
                 # Get the nearest neighbors indices using cosine distance
-                nearest_neighbors = [
-                    c for c in mdl.wv.most_similar(selected_word, topn=20)]
+                nearest_neighbors = list(mdl.wv.most_similar(selected_word, topn=20))
                 trace = go.Bar(
                     x=[c[1] for c in nearest_neighbors],
                     y=[" ".join(c[0].split("_")[-2:])
@@ -600,28 +596,27 @@ def demo_callbacks(app_):
         [Input("graph-2d-plot-tsne", "clickData"),
          Input("dropdown-dataset", "value")],
     )
-    def display_click_message(clickData, dataset):
+    def display_click_message(click_data, dataset):
         # Displays message shown when a point in the graph is clicked,
-        if dataset in WORD_EMBEDDINGS:
-            if clickData:
-                return None
-            else:
-                return "Click a word on the plot to see its top 20 neighbors."
+        if dataset not in WORD_EMBEDDINGS:
+            return None
+        if click_data:
+            return None
+        return "Click a word on the plot to see its top 20 neighbors."
 
     @app_.callback(
         Output("output", "children"),
         [Input("dropdown-dataset", "value"),
          Input("input-ko", "value")],
     )
-    def update_output(dataset, ko):
+    def update_output(dataset, input_ko):
         embedding_df, _ = load_data_for_app(dataset)
-        if ko is None or ko == '':
+        if input_ko is None or input_ko == '':
             return ''
-        elif ko not in embedding_df["word"].unique():
+        if input_ko not in embedding_df["word"].unique():
             return "No KO found"
-        else:
-            return f"{embedding_df[embedding_df['word']==ko]['label'].values[0]}\n" \
-                   f"{embedding_df[embedding_df['word']==ko]['Product'].values[0]}"
+        return f"{embedding_df[embedding_df['word']==input_ko]['label'].values[0]}\n" \
+                f"{embedding_df[embedding_df['word']==input_ko]['Product'].values[0]}"
 
 
 server = app.server

@@ -2,4 +2,4 @@
 max-line-length=240
 
 [MESSAGES CONTROL]
-disable=missing-function-docstring,missing-module-docstring,too-many-arguments
+disable=missing-function-docstring,missing-module-docstring,too-many-arguments,too-many-locals
