@@ -8,7 +8,7 @@ docker run -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/app --rm -it gn
 # Inside the container
 pipenv install
 
-cd gnlp-app
+cd web
 yarn dev
 ```
 
@@ -18,7 +18,7 @@ yarn dev
 docker build . -t gnlp
 
 pipenv install
-yarn create vite gnlp-app --template vue
+yarn create vite web --template vue
 ```
 
 ```
