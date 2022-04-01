@@ -1,4 +1,8 @@
 FROM python:3.10
+
+# Enforces .venv to be in project.
+ENV PIPENV_VENV_IN_PROJECT=true
+
 ADD . /opt/webapp/
 WORKDIR /opt/webapp
 
