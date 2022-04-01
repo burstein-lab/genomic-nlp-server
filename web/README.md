@@ -7,19 +7,23 @@ This template should help get you started developing with Vue 3 in Vite. The tem
 - [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)
 
 # Deployment
+
 Followed these guides https://jonhnes.medium.com/vue-with-docker-since-creation-until-deployment-on-heroku-5b31c8f041a7
 and https://cli.vuejs.org/guide/deployment.html#docker-nginx
 in order to deploy vuejs+docker on heroku.
 
 To deploy:
+
 ```bash
 heroku login
 heroku container:login
 heroku container:push web
 heroku container:release web
+heroku open # Or go to https://gnlp.herokuapp.com/
 ```
 
 Initial Heroku setup:
+
 ```
 heroku login
 heroku container:login
