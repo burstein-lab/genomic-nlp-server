@@ -1,11 +1,11 @@
 import { createRouter, createWebHashHistory } from "vue-router";
-import HelloWorld from "../components/HelloWorld.vue";
+import Static from "../components/Static.vue";
 import Ping from "../components/Ping.vue";
 const routes = [
   {
     path: "/",
     name: "Home",
-    component: HelloWorld,
+    component: Static,
   },
   {
     path: "/ping",
