@@ -1,5 +1,8 @@
+import json
 from flask import Flask, jsonify
 from flask_cors import CORS
+
+from coords import Point
 
 
 # configuration
@@ -22,6 +25,15 @@ def hello():
 @app.route("/ping", methods=["GET"])
 def ping_pong():
     return jsonify("pong!")
+
+
+@app.route('/points')
+def points():
+    result = []
+    for i in range(1000):
+        result.append(Point(i / 100, i / 100, str(i)).todict())
+
+    return json.dumps(result)
 
 
 if __name__ == "__main__":
