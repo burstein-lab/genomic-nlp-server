@@ -1,20 +1,29 @@
 <template>
-  <div style="height: 75vh; width: 50vw">
+  <div style="height: 98vh; width: 98vw">
     <l-map
+      id="mapRef"
       ref="mapRef"
       v-model="zoom"
       v-model:zoom="zoom"
       crs="Simple"
       @ready="onMapReady()"
     >
-      <l-image-overlay
+      <l-tile-layer
+        url="/src/assets/map/{z}/space_by_label_{x}_{y}.png"
+        layer-type="base"
+        name="OpenStreetMap"
+        :max-zoom="4"
+        :min-zoom="0"
+        :tileSize="1024"
+      />
+      <!-- <l-image-overlay
         url="/src/assets/space_by_label.png"
         :bounds="[
           [-200, -200],
           [200, 200],
         ]"
       >
-      </l-image-overlay>
+      </l-image-overlay> -->
       <l-geo-json
         ref="geoJsonRef"
         :geojson="features"
@@ -35,7 +44,6 @@
       </l-control>
     </l-map>
   </div>
-  <button @click="calcFeatures">Add 1</button>
 </template>
 
 <script>
@@ -73,7 +81,7 @@ export default {
   },
   data() {
     return {
-      zoom: 3,
+      zoom: 0,
       controlHeader: "Information",
       apiUrl: import.meta.env.VITE_SERVER_URL,
       geojsonOptions: {
@@ -175,6 +183,14 @@ export default {
       this.map.fitBounds(e.target.getBounds());
     },
   },
+  watch: {
+    zoom(value) {
+      // this.$emit("onchange", value);
+      // or generate/simulate a native events (not sure how, but its outside Vue's realm I think
+      // this.calcFeatures();
+      console.log(value);
+    },
+  },
 };
 </script>
 
@@ -190,5 +206,9 @@ export default {
 .info h4 {
   margin: 0 0 5px;
   color: #777;
+}
+
+#mapRef {
+  background: white;
 }
 </style>
