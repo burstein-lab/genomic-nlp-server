@@ -1,8 +1,3 @@
 {
-  "recommendations": [
-    "johnsoncodehk.volar",
-    "esbenp.prettier-vscode",
-    "octref.vetur",
-    "ms-python.pylint"
-  ]
+  "recommendations": ["vue.volar", "esbenp.prettier-vscode", "ms-python.pylint"]
 }

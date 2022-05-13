@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 98vh; width: 98vw">
+  <div style="height: 97vh; width: 98vw">
     <l-map
       id="mapRef"
       ref="mapRef"
@@ -9,21 +9,15 @@
       @ready="onMapReady()"
     >
       <l-tile-layer
+        ref="tileLayerRef"
         url="/src/assets/map/{z}/space_by_label_{x}_{y}.png"
         layer-type="base"
         name="OpenStreetMap"
         :max-zoom="4"
         :min-zoom="0"
         :tileSize="1024"
+        @ready="onTileLayerReady()"
       />
-      <!-- <l-image-overlay
-        url="/src/assets/space_by_label.png"
-        :bounds="[
-          [-200, -200],
-          [200, 200],
-        ]"
-      >
-      </l-image-overlay> -->
       <l-geo-json
         ref="geoJsonRef"
         :geojson="features"
@@ -108,12 +102,19 @@ export default {
         fillOpacity: 0.8,
       });
   },
-  mounted() {
-    this.$nextTick(() => {
-      // this.$refs.mapRef.leafletObject.fitBounds([[0, 0], [1000, 1000]]);
-    });
-  },
   methods: {
+    onTileLayerReady() {
+      this.tileLayer = this.$refs.tileLayerRef.leafletObject;
+      // https://leafletjs.com/reference.html#tilelayer
+      this.tileLayer.on("tileunload", function (event) {
+        console.log("tileunload");
+        console.log(event.coords);
+      });
+      this.tileLayer.on("tileloadstart", function (event) {
+        console.log("tileloadstart");
+        console.log(event.coords);
+      });
+    },
     onGeoJsonReady() {
       this.geoJson = this.$refs.geoJsonRef.leafletObject;
     },
@@ -185,9 +186,7 @@ export default {
   },
   watch: {
     zoom(value) {
-      // this.$emit("onchange", value);
-      // or generate/simulate a native events (not sure how, but its outside Vue's realm I think
-      // this.calcFeatures();
+      this.calcFeatures();
       console.log(value);
     },
   },
