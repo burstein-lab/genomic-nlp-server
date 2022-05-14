@@ -8,8 +8,8 @@ class Point:
         self.value = value
 
     @classmethod
-    def fromdict(cls, x, y, value):
-        return cls(x, y, value)
+    def fromdict(cls, x_coord, y_coord, value):
+        return cls(x_coord, y_coord, value)
 
     def todict(self) -> dict:
         return {

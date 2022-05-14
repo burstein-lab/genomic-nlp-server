@@ -13,9 +13,9 @@ class Space:
     """Plots a pickled dataframe
     """
 
-    def __init__(self, data_path, outdir, bins=1, max_bins=30, fmt='svg', save_img=True):
+    def __init__(self, data_path, dest, bins=1, max_bins=30, fmt='svg', save_img=True):
         self.data_path = data_path
-        self.outdir = outdir
+        self.dest = dest
         self.bins = bins
         self.max_bins = max_bins
         self.fmt = fmt
@@ -41,43 +41,43 @@ class Space:
             space_data = space_data[space_data["y"] <=
                                     y_range_max][space_data["y"] >= y_range_min]
             self.space_data = space_data
-        except:
+        except Exception as exc:
             raise TypeError(f'Input data file should be a pickled data frame, provided'
-                            f' {os.path.splitext(self.data_path)[1]} extension')
+                            f' {os.path.splitext(self.data_path)[1]} extension') from exc
 
-    def normalize(self, value, value_min, value_max):
+    @staticmethod
+    def normalize(value, value_min, value_max):
         return value * (value_max - value_min) + value_min
 
     def bin_space_for_image(self):
         if self.bins < 1 | self.bins > self.max_bins:
             raise ValueError(f"Bin number should be in the range of [1,{self.max_bins}], but {self.bins} were provided"
                              f"please choose a valid bin number")
-        if self.space_data is None:
-            self.load_data()
-        df = self.space_data
-
-        counts, xedges, yedges = np.histogram2d(
-            df['x'], df['y'], bins=self.bins)
-        df['x_bin'] = df['x'].apply(lambda x: np.searchsorted(xedges, x))
-        df['y_bin'] = df['x'].apply(lambda y: np.searchsorted(yedges, y))
+        bin_df = self.space_data
+        _, xedges, yedges = np.histogram2d(
+            bin_df['x'], bin_df['y'], bins=self.bins)
+        bin_df['x_bin'] = bin_df['x'].apply(
+            lambda x: np.searchsorted(xedges, x))
+        bin_df['y_bin'] = bin_df['x'].apply(
+            lambda y: np.searchsorted(yedges, y))
 
         # indices are calculated through right assignment, 0 indicated the minimal x/y value
-        df['x_bin'] = df['x_bin'].apply(lambda x: 1 if x == 0 else x)
-        df['y_bin'] = df['y_bin'].apply(lambda y: 1 if y == 0 else y)
+        bin_df['x_bin'] = bin_df['x_bin'].apply(lambda x: 1 if x == 0 else x)
+        bin_df['y_bin'] = bin_df['y_bin'].apply(lambda y: 1 if y == 0 else y)
 
-        df["2d_bin"] = df.apply(lambda row: (
+        bin_df["2d_bin"] = bin_df.apply(lambda row: (
             row['x_bin'], row['y_bin']), axis=1)
 
-        return df
+        return bin_df
 
     def extract_permutations(self):
         bins = np.arange(1, self.bins + 1)
         return list(itertools.permutations(bins)) + [(bin, bin) for bin in bins]
 
-    def plot_binned_spaces(self, permutations, binned_df):
+    def plot_binned_spaces(self, permutations, bin_df):
         # perm_img_dir = os.path.join(self.outdir, f'binned_{self.bins}')
         for perm in permutations:
-            perm_df = binned_df[binned_df['2d_bin'] == perm]
+            perm_df = bin_df[bin_df['2d_bin'] == perm]
 
             fig = plt.figure(figsize=(15, 15), frameon=False)
             # fig.set_size_inches(15,15)
@@ -85,8 +85,8 @@ class Space:
             # ax.set_axis_off()
             # fig.add_axes(ax)
 
-            plot_ax = sns.scatterplot(x='x', y='y', data=perm_df, hue='label', legend=False, alpha=0.4,
-                                      s=10, palette='gist_rainbow')
+            _ = sns.scatterplot(x='x', y='y', data=perm_df, hue='label', legend=False, alpha=0.4,
+                                s=10, palette='gist_rainbow')
             # plt.xticks([])
             # plt.yticks([])
             # plt.xlabel('')
@@ -102,7 +102,7 @@ class Space:
                 # ax.set_axis_off()
                 # fig.add_axes(ax)
                 plt.axis('off')
-                plt.savefig(self.outdir, bbox_inches='tight',
+                plt.savefig(self.dest, bbox_inches='tight',
                             transparent=False, pad_inches=-0.5)
             else:
                 plt.show()
@@ -120,13 +120,13 @@ def zoom_splitter(zoom):
 def zoom_union(parts):
     result = []
     for i in range(len(parts) - 1):
-        r = []
+        tile_edges = []
         for j in range(len(parts) - 1):
-            r.append([
+            tile_edges.append([
                 [parts[i], parts[i+1]],
                 [parts[j], parts[j+1]],
             ])
-        result.append(r)
+        result.append(tile_edges)
 
     return result
 
@@ -150,6 +150,36 @@ def calc_zoom_levels(zoom):
     return zoom_union(zoom_splitter(zoom))
 
 
+def plot_everything(params):
+    for zoom in range(params.max_zoom + 1):
+        outdir = os.path.join(params.outdir, str(zoom))
+        os.makedirs(outdir, exist_ok=True)
+        zoom_levels = calc_zoom_levels(zoom)
+        for i, x_lines in enumerate(zoom_levels):
+            for j, zoom_ranges in enumerate(x_lines):
+                try:
+                    gene_space = Space(
+                        data_path=params.data,
+                        dest=os.path.join(
+                            outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.{params.fmt}'),
+                        bins=params.bins,
+                        max_bins=params.max_bins,
+                        fmt=params.fmt,
+                        save_img=params.save_img,
+                    )
+                    gene_space.load_data(*zoom_ranges)
+                    if len(gene_space.space_data) < params.min_img_points:
+                        pd.to_pickle(gene_space.space_data, os.path.join(
+                            outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.pkl'))
+                        continue
+
+                    perms = gene_space.extract_permutations()
+                    binned_df = gene_space.bin_space_for_image()
+                    gene_space.plot_binned_spaces(perms, binned_df)
+                except Exception as exc:
+                    print(exc)
+
+
 if __name__ == "__main__":
     argparse = argparse.ArgumentParser()
     argparse.add_argument('--data', required=True, type=str,
@@ -168,31 +198,3 @@ if __name__ == "__main__":
     argparse.add_argument('--save_img', default=1, type=int, help='whether to save figures or display them, 1 is True,'
                                                                   ' else 0 [default: 1]')
     params = argparse.parse_args()
-
-    for zoom in range(params.max_zoom + 1):
-        outdir = os.path.join(params.outdir, str(zoom))
-        os.makedirs(outdir, exist_ok=True)
-        zoom_levels = calc_zoom_levels(zoom)
-        for i, x_lines in enumerate(zoom_levels):
-            for j, zoom_ranges in enumerate(x_lines):
-                try:
-                    gene_space = Space(
-                        data_path=params.data,
-                        outdir=os.path.join(
-                            outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.{params.fmt}'),
-                        bins=params.bins,
-                        max_bins=params.max_bins,
-                        fmt=params.fmt,
-                        save_img=params.save_img,
-                    )
-                    gene_space.load_data(*zoom_ranges)
-                    if len(gene_space.space_data) < params.min_img_points:
-                        pd.to_pickle(gene_space.space_data, os.path.join(
-                            outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.pkl'))
-                        continue
-
-                    perms = gene_space.extract_permutations()
-                    binned_df = gene_space.bin_space_for_image()
-                    gene_space.plot_binned_spaces(perms, binned_df)
-                except Exception as exc:
-                    print(exc)

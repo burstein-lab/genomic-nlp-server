@@ -1,3 +1,4 @@
+# pylint: disable=R0801
 import glob
 import os
 import pickle
@@ -542,7 +543,7 @@ def demo_callbacks(app_):
             table = embedding_df[TABLE_COLS].to_dict('records')
 
         tooltip_data = [{column: {'value': str(value), 'type': 'markdown'}
-                            for column, value in row.items()} for row in table]
+                         for column, value in row.items()} for row in table]
         return figure, table, tooltip_data
 
     @app_.callback(
@@ -557,7 +558,8 @@ def demo_callbacks(app_):
 
             try:
                 # Get the nearest neighbors indices using cosine distance
-                nearest_neighbors = list(mdl.wv.most_similar(selected_word, topn=20))
+                nearest_neighbors = list(
+                    mdl.wv.most_similar(selected_word, topn=20))
                 trace = go.Bar(
                     x=[c[1] for c in nearest_neighbors],
                     y=[" ".join(c[0].split("_")[-2:])
@@ -616,7 +618,7 @@ def demo_callbacks(app_):
         if input_ko not in embedding_df["word"].unique():
             return "No KO found"
         return f"{embedding_df[embedding_df['word']==input_ko]['label'].values[0]}\n" \
-                f"{embedding_df[embedding_df['word']==input_ko]['Product'].values[0]}"
+            f"{embedding_df[embedding_df['word']==input_ko]['Product'].values[0]}"
 
 
 server = app.server
