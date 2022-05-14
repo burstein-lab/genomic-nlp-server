@@ -9,12 +9,11 @@ import pandas as pd
 import seaborn as sns
 
 
-class NotEnoughPoints(Exception):
-    pass
-
-
 class Space:
-    def __init__(self, data_path, outdir='../src/assets/', bins=1, max_bins=30, fmt='svg', save_img=True):
+    """Plots a pickled dataframe
+    """
+
+    def __init__(self, data_path, outdir, bins=1, max_bins=30, fmt='svg', save_img=True):
         self.data_path = data_path
         self.outdir = outdir
         self.bins = bins
@@ -27,26 +26,27 @@ class Space:
         if not os.path.exists(self.data_path):
             raise FileNotFoundError
         try:
-            df = pd.read_pickle(self.data_path)
-            x_min = df.x.min()
-            y_min = df.y.min()
-            x_max = df.x.max()
-            y_max = df.y.max()
+            space_data = pd.read_pickle(self.data_path)
+            x_min = space_data.x.min()
+            y_min = space_data.y.min()
+            x_max = space_data.x.max()
+            y_max = space_data.y.max()
 
             x_range_min = self.normalize(x_range[0], x_min, x_max)
             x_range_max = self.normalize(x_range[1], x_min, x_max)
             y_range_min = self.normalize(y_range[0], y_min, y_max)
             y_range_max = self.normalize(y_range[1], y_min, y_max)
-            df = df[df["x"] <= x_range_max][df["x"] >= x_range_min]
-            df = df[df["y"] <= y_range_max][df["y"] >= y_range_min]
-            self.space_data = df
+            space_data = space_data[space_data["x"] <=
+                                    x_range_max][space_data["x"] >= x_range_min]
+            space_data = space_data[space_data["y"] <=
+                                    y_range_max][space_data["y"] >= y_range_min]
+            self.space_data = space_data
         except:
             raise TypeError(f'Input data file should be a pickled data frame, provided'
                             f' {os.path.splitext(self.data_path)[1]} extension')
 
-    def normalize(self, a, a_min, a_max):
-        # return (a - a_min) / (a_max - a_min)
-        return a * (a_max - a_min) + a_min
+    def normalize(self, value, value_min, value_max):
+        return value * (value_max - value_min) + value_min
 
     def bin_space_for_image(self):
         if self.bins < 1 | self.bins > self.max_bins:
@@ -72,7 +72,7 @@ class Space:
 
     def extract_permutations(self):
         bins = np.arange(1, self.bins + 1)
-        return list(itertools.permutations(bins)) + [(b, b) for b in bins]
+        return list(itertools.permutations(bins)) + [(bin, bin) for bin in bins]
 
     def plot_binned_spaces(self, permutations, binned_df):
         # perm_img_dir = os.path.join(self.outdir, f'binned_{self.bins}')
@@ -85,8 +85,8 @@ class Space:
             # ax.set_axis_off()
             # fig.add_axes(ax)
 
-            ax = sns.scatterplot(x='x', y='y', data=perm_df, hue='label', legend=False, alpha=0.4,
-                                 s=10, palette='gist_rainbow')
+            plot_ax = sns.scatterplot(x='x', y='y', data=perm_df, hue='label', legend=False, alpha=0.4,
+                                      s=10, palette='gist_rainbow')
             # plt.xticks([])
             # plt.yticks([])
             # plt.xlabel('')
@@ -194,7 +194,5 @@ if __name__ == "__main__":
                     perms = gene_space.extract_permutations()
                     binned_df = gene_space.bin_space_for_image()
                     gene_space.plot_binned_spaces(perms, binned_df)
-                except NotEnoughPoints:
-                    pass
                 except Exception as exc:
                     print(exc)

@@ -19,9 +19,9 @@ def normalize(value, value_min, value_max):
     return (value - value_min) / (value_max - value_min)
 
 
-def df_coord_to_map(x, y):
+def df_coord_to_map(x_value, y_value):
     tile_size = 1024
-    return normalize(x, X_MIN, X_MAX) * tile_size, normalize(y, Y_MAX, Y_MIN) * -tile_size
+    return normalize(x_value, X_MIN, X_MAX) * tile_size, normalize(y_value, Y_MAX, Y_MIN) * -tile_size
 
 
 # instantiate the app
@@ -60,9 +60,9 @@ def points():
 
     path = f"web/src/assets/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"
     if os.path.isfile(path):
-        df = pd.read_pickle(path)
-        for r in df.iterrows():
-            x_coord, y_coord = df_coord_to_map(r["x"], r["y"])
+        tile_df = pd.read_pickle(path)
+        for row in tile_df.iterrows():
+            x_coord, y_coord = df_coord_to_map(row["x"], row["y"])
             features.append(
                 Point(x_coord, y_coord, f"{zoom},{tile_x},{tile_y}<br />{x_coord},{y_coord}").todict())
 
