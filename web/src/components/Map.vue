@@ -14,7 +14,7 @@
     >
       <l-tile-layer
         ref="tileLayerRef"
-        url="/src/assets/map/{z}/space_by_label_{x}_{y}.png"
+        :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
         layer-type="base"
         name="OpenStreetMap"
         :max-zoom="4"
@@ -62,7 +62,6 @@ import {
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
-import { stringifyQuery } from "vue-router";
 
 export default {
   components: {
@@ -83,6 +82,9 @@ export default {
     return {
       zoom: 0,
       controlHeader: "Information",
+      publicAssetsUrl: import.meta.env.PROD
+        ? "https://storage.googleapis.com/gnlp-public-assets/"
+        : "/src/assets/",
       apiUrl: import.meta.env.VITE_SERVER_URL,
       geojsonOptions: {
         onEachFeature: this.onEachFeature,
