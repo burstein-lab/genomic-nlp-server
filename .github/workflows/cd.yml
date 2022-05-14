@@ -46,6 +46,7 @@ jobs:
         with:
           credentials_json: "${{ secrets.GCP_CREDENTIALS }}"
       - uses: "google-github-actions/setup-gcloud@v0"
+      - run: gsutil cp gs://gnlp-public-assets/data/model_data.pkl model_data.pkl
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
         with:
