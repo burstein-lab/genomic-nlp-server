@@ -6,7 +6,11 @@
       v-model="zoom"
       v-model:zoom="zoom"
       crs="Simple"
-      @ready="onMapReady()"
+      :maxBounds="[
+        [0, 0],
+        [-tileSize, tileSize],
+      ]"
+      @ready="onMapReady(this)"
     >
       <l-tile-layer
         ref="tileLayerRef"
@@ -15,14 +19,15 @@
         name="OpenStreetMap"
         :max-zoom="4"
         :min-zoom="0"
-        :tileSize="1024"
-        @ready="onTileLayerReady()"
+        :tileSize="tileSize"
+        @ready="onTileLayerReady(this)"
       />
+
       <l-geo-json
-        ref="geoJsonRef"
-        :geojson="features"
+        v-for="[k, v] in collections"
+        :ref="'geoJson' + k + 'Ref'"
+        :geojson="v"
         :options="geojsonOptions"
-        @ready="onGeoJsonReady()"
       />
       <l-control ref="controlRef">
         <div class="info">
@@ -57,6 +62,7 @@ import {
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
+import { stringifyQuery } from "vue-router";
 
 export default {
   components: {
@@ -82,10 +88,8 @@ export default {
         onEachFeature: this.onEachFeature,
       },
       controlData: null,
-      features: {
-        type: "FeatureCollection",
-        features: [],
-      },
+      collections: new Map(),
+      tileSize: 1024,
     };
   },
   computed: {},
@@ -94,7 +98,7 @@ export default {
     // And now the Leaflet circleMarker function can be used by the options:
     this.geojsonOptions.pointToLayer = (feature, latLng) =>
       circleMarker(latLng, {
-        radius: this.zoom * 2,
+        radius: feature.properties.zoom * 2,
         fillColor: "#ff7800",
         color: "#000",
         weight: 1,
@@ -103,35 +107,43 @@ export default {
       });
   },
   methods: {
-    onTileLayerReady() {
-      this.tileLayer = this.$refs.tileLayerRef.leafletObject;
+    onTileLayerReady(self) {
+      // this != component instance on ready event from some reason...
+      self.tileLayer = this.$refs.tileLayerRef.leafletObject;
       // https://leafletjs.com/reference.html#tilelayer
-      this.tileLayer.on("tileunload", function (event) {
-        console.log("tileunload");
-        console.log(event.coords);
+      self.tileLayer.on("tileunload", function (event) {
+        self.collections.delete(
+          self.coordsToString(event.coords.z, event.coords.x, event.coords.y)
+        );
       });
-      this.tileLayer.on("tileloadstart", function (event) {
-        console.log("tileloadstart");
-        console.log(event.coords);
+      self.tileLayer.on("tileloadstart", function (event) {
+        self.getFeatures(event.coords);
       });
     },
-    onGeoJsonReady() {
-      this.geoJson = this.$refs.geoJsonRef.leafletObject;
+    geoJsonObj(k) {
+      // When using v-for, ref is a list.
+      return this.$refs[`geoJson${k}Ref`][0].leafletObject;
     },
-    onMapReady() {
-      this.map = this.$refs.mapRef.leafletObject;
+    onMapReady(self) {
+      self.map = this.$refs.mapRef.leafletObject;
     },
-    calcFeatures() {
+    getFeatures(coords) {
+      const z = coords.z;
+      const y = coords.y;
+      const x = coords.x;
       axios
-        .get(this.apiUrl + "/points")
+        .get(`${this.apiUrl}/points?z=${z}&x=${x}&y=${y}`)
         .then((res) => {
           const features = [];
-          console.log(res.data.length);
-          for (var i = 0; i < res.data.length; i++) {
-            const d = res.data[i];
+          const resFeatures = res.data["features"];
+          for (var i = 0; i < resFeatures.length; i++) {
+            const d = resFeatures[i];
             features.push({
               type: "Feature",
               properties: {
+                zoom: z,
+                tileX: x,
+                tileY: y,
                 name: d["name"],
               },
               geometry: {
@@ -140,11 +152,7 @@ export default {
               },
             });
           }
-          // this.features["features"] = features;
-          this.features = {
-            type: "FeatureCollection",
-            features: features,
-          };
+          this.setFeatures(coords, features);
         })
         .catch((error) => {
           // eslint-disable-next-line
@@ -176,17 +184,33 @@ export default {
       this.controlData = layer.feature.properties;
     },
     resetHighlight(e) {
-      this.geoJson.resetStyle(e.target);
+      this.geoJsonObj(
+        this.coordsToString(
+          e.target.feature.properties.zoom,
+          e.target.feature.properties.tileX,
+          e.target.feature.properties.tileY
+        )
+      ).resetStyle(e.target);
       this.controlData = null;
     },
     zoomToFeature(e) {
       // TODO fix or remove
       this.map.fitBounds(e.target.getBounds());
     },
+    setFeatures(coords, features) {
+      this.collections.set(this.coordsToString(coords.z, coords.x, coords.y), {
+        type: "FeatureCollection",
+        features: features,
+      });
+    },
+    coordsToString(z, x, y) {
+      return `${z}-${x}-${y}`;
+    },
   },
   watch: {
     zoom(value) {
-      this.calcFeatures();
+      // this.getFeatures();
+      // this.setFeatures([]);
       console.log(value);
     },
   },

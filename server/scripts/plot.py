@@ -8,6 +8,11 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+
+class NotEnoughPoints(Exception):
+    pass
+
+
 class Space:
     def __init__(self, data_path, outdir='../src/assets/', bins=1, max_bins=30, fmt='svg', save_img=True):
         self.data_path = data_path
@@ -51,7 +56,8 @@ class Space:
             self.load_data()
         df = self.space_data
 
-        counts, xedges, yedges = np.histogram2d(df['x'], df['y'], bins=self.bins)
+        counts, xedges, yedges = np.histogram2d(
+            df['x'], df['y'], bins=self.bins)
         df['x_bin'] = df['x'].apply(lambda x: np.searchsorted(xedges, x))
         df['y_bin'] = df['x'].apply(lambda y: np.searchsorted(yedges, y))
 
@@ -59,20 +65,21 @@ class Space:
         df['x_bin'] = df['x_bin'].apply(lambda x: 1 if x == 0 else x)
         df['y_bin'] = df['y_bin'].apply(lambda y: 1 if y == 0 else y)
 
-        df["2d_bin"] = df.apply(lambda row: (row['x_bin'], row['y_bin']), axis=1)
+        df["2d_bin"] = df.apply(lambda row: (
+            row['x_bin'], row['y_bin']), axis=1)
 
         return df
 
     def extract_permutations(self):
         bins = np.arange(1, self.bins + 1)
-        return list(itertools.permutations(bins)) + [(b,b) for b in bins]
+        return list(itertools.permutations(bins)) + [(b, b) for b in bins]
 
     def plot_binned_spaces(self, permutations, binned_df):
         # perm_img_dir = os.path.join(self.outdir, f'binned_{self.bins}')
         for perm in permutations:
             perm_df = binned_df[binned_df['2d_bin'] == perm]
 
-            fig = plt.figure(figsize=(15,15), frameon=False)
+            fig = plt.figure(figsize=(15, 15), frameon=False)
             # fig.set_size_inches(15,15)
             # ax = plt.Axes(fig, [0., 0., 1., 1.])
             # ax.set_axis_off()
@@ -95,7 +102,8 @@ class Space:
                 # ax.set_axis_off()
                 # fig.add_axes(ax)
                 plt.axis('off')
-                plt.savefig(self.outdir, bbox_inches='tight', transparent=False, pad_inches=-0.5)
+                plt.savefig(self.outdir, bbox_inches='tight',
+                            transparent=False, pad_inches=-0.5)
             else:
                 plt.show()
 
@@ -105,7 +113,7 @@ def zoom_splitter(zoom):
     part = 1 / (2 ** zoom)
     while result[-1] < 1:
         result.append(result[-1] + part)
-        
+
     return result
 
 
@@ -142,15 +150,21 @@ def calc_zoom_levels(zoom):
     return zoom_union(zoom_splitter(zoom))
 
 
-
 if __name__ == "__main__":
     argparse = argparse.ArgumentParser()
-    argparse.add_argument('--data', required=True, type=str, help='path to the gene space dataset')
-    argparse.add_argument('--outdir', default='../src/assets/', type=str, help='output dir for img to be saved [default[/src/assest]')
+    argparse.add_argument('--data', required=True, type=str,
+                          help='path to the gene space dataset')
+    argparse.add_argument('--outdir', default='../src/assets/', type=str,
+                          help='output dir for img to be saved [default[/src/assest]')
     argparse.add_argument('--max-zoom', default=0, type=int)
-    argparse.add_argument('--bins', default=1, type=int, help='number of bins to split the space [default:1]')
-    argparse.add_argument('--max_bins', default=30, type=int, help='max number of bins [default:30]')
-    argparse.add_argument('--fmt', default='svg', type=str, help='image format [default: svg]')
+    argparse.add_argument('--bins', default=1, type=int,
+                          help='number of bins to split the space [default:1]')
+    argparse.add_argument('--max_bins', default=30, type=int,
+                          help='max number of bins [default:30]')
+    argparse.add_argument('--fmt', default='svg', type=str,
+                          help='image format [default: svg]')
+    argparse.add_argument('--min-img-points', default=1000, type=int,
+                          help='Number of points for image. If less a pickle will be created [default: 1000]')
     argparse.add_argument('--save_img', default=1, type=int, help='whether to save figures or display them, 1 is True,'
                                                                   ' else 0 [default: 1]')
     params = argparse.parse_args()
@@ -164,15 +178,23 @@ if __name__ == "__main__":
                 try:
                     gene_space = Space(
                         data_path=params.data,
-                        outdir=os.path.join(outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.{params.fmt}'),
+                        outdir=os.path.join(
+                            outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.{params.fmt}'),
                         bins=params.bins,
                         max_bins=params.max_bins,
                         fmt=params.fmt,
                         save_img=params.save_img,
                     )
                     gene_space.load_data(*zoom_ranges)
+                    if len(gene_space.space_data) < params.min_img_points:
+                        pd.to_pickle(gene_space.space_data, os.path.join(
+                            outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.pkl'))
+                        continue
+
                     perms = gene_space.extract_permutations()
                     binned_df = gene_space.bin_space_for_image()
                     gene_space.plot_binned_spaces(perms, binned_df)
-                except:
+                except NotEnoughPoints:
                     pass
+                except Exception as exc:
+                    print(exc)
