@@ -51,9 +51,6 @@ def points():
     zoom = int(request.args.get("z"))
     tile_x = request.args.get("x")
     tile_y = request.args.get("y")
-    # print(z, x, y, os.path.isfile(f"../web/src/assets/map/{z}/space_by_label_{x}_{y}.pkl"))
-    # for i in range(1000):
-    #     features.append(Point(i / 10, i / 10, str(i)).todict())
 
     result["exists"] = {
         "z": zoom,
