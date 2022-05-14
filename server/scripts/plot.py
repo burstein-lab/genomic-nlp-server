@@ -198,3 +198,4 @@ if __name__ == "__main__":
     argparse.add_argument('--save_img', default=1, type=int, help='whether to save figures or display them, 1 is True,'
                                                                   ' else 0 [default: 1]')
     params = argparse.parse_args()
+    plot_everything(params)
