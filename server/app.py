@@ -21,8 +21,8 @@ def normalize(value, value_min, value_max):
 
 
 def df_coord_to_map(x, y):
-    zoom_factor = 1024  # zoom split factor times pixels per tile.
-    return normalize(x, X_MIN, X_MAX) * zoom_factor, normalize(y, Y_MAX, Y_MIN) * -zoom_factor
+    tile_size = 1024
+    return normalize(x, X_MIN, X_MAX) * tile_size, normalize(y, Y_MAX, Y_MIN) * -tile_size
 
 
 # instantiate the app
