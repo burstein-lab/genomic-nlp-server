@@ -58,7 +58,7 @@ jobs:
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: pipenv install --deploy
       - run: gsutil cp gs://gnlp-public-assets/data/model_data.pkl model_data.pkl
-      - run: pipenv run python server/scripts/plot.py --data model_data.pkl --outdir=web/src/assets/map --fmt png --max-zoom 4
+      - run: pipenv run python server/scripts/plot.py --data model_data.pkl --outdir=web/src/assets/map --fmt png --max-zoom 0
       - run: gsutil -d cp -r web/src/assets/map gs://gnlp-public-assets/map
       # - uses: google-github-actions/upload-cloud-storage@v0
       #   with:
