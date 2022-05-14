@@ -15,3 +15,9 @@ heroku logs -a gnlp-server --tail
 docker build . -t gnlp-server
 docker run -it -e PORT=80 -p 8000:80 --rm gnlp-server
 ```
+
+# Plot and pickle
+
+```bash
+pipenv run python server/scripts/plot.py --data model_data.pkl --outdir=web/src/assets/map --fmt png --max-zoom 4
+```

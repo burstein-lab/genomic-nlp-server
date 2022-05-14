@@ -12,8 +12,10 @@
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "python.defaultInterpreterPath": "/workspaces/genomic-nlp-server/.venv/bin/python",
-    "python.formatting.provider": "autopep8",
-    "python.formatting.autopep8Args": ["--in-place", "--max-line-length", "120"]
+    "[python]": {
+      "editor.defaultFormatter": "ms-python.python"
+    },
+    "python.formatting.provider": "autopep8"
   },
   // Add the IDs of extensions you want installed when the container is created.
   "extensions": [
