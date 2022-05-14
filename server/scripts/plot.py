@@ -79,7 +79,7 @@ class Space:
         for perm in permutations:
             perm_df = bin_df[bin_df['2d_bin'] == perm]
 
-            fig = plt.figure(figsize=(15, 15), frameon=False)
+            _ = plt.figure(figsize=(15, 15), frameon=False)
             # fig.set_size_inches(15,15)
             # ax = plt.Axes(fig, [0., 0., 1., 1.])
             # ax.set_axis_off()
@@ -150,34 +150,31 @@ def calc_zoom_levels(zoom):
     return zoom_union(zoom_splitter(zoom))
 
 
-def plot_everything(params):
-    for zoom in range(params.max_zoom + 1):
-        outdir = os.path.join(params.outdir, str(zoom))
+def plot_everything(args):
+    for zoom in range(args.max_zoom + 1):
+        outdir = os.path.join(args.outdir, str(zoom))
         os.makedirs(outdir, exist_ok=True)
         zoom_levels = calc_zoom_levels(zoom)
         for i, x_lines in enumerate(zoom_levels):
             for j, zoom_ranges in enumerate(x_lines):
-                try:
-                    gene_space = Space(
-                        data_path=params.data,
-                        dest=os.path.join(
-                            outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.{params.fmt}'),
-                        bins=params.bins,
-                        max_bins=params.max_bins,
-                        fmt=params.fmt,
-                        save_img=params.save_img,
-                    )
-                    gene_space.load_data(*zoom_ranges)
-                    if len(gene_space.space_data) < params.min_img_points:
-                        pd.to_pickle(gene_space.space_data, os.path.join(
-                            outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.pkl'))
-                        continue
+                gene_space = Space(
+                    data_path=args.data,
+                    dest=os.path.join(
+                        outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.{args.fmt}'),
+                    bins=args.bins,
+                    max_bins=args.max_bins,
+                    fmt=args.fmt,
+                    save_img=args.save_img,
+                )
+                gene_space.load_data(*zoom_ranges)
+                if len(gene_space.space_data) < args.min_img_points:
+                    pd.to_pickle(gene_space.space_data, os.path.join(
+                        outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.pkl'))
+                    continue
 
-                    perms = gene_space.extract_permutations()
-                    binned_df = gene_space.bin_space_for_image()
-                    gene_space.plot_binned_spaces(perms, binned_df)
-                except Exception as exc:
-                    print(exc)
+                perms = gene_space.extract_permutations()
+                binned_df = gene_space.bin_space_for_image()
+                gene_space.plot_binned_spaces(perms, binned_df)
 
 
 if __name__ == "__main__":
@@ -197,5 +194,4 @@ if __name__ == "__main__":
                           help='Number of points for image. If less a pickle will be created [default: 1000]')
     argparse.add_argument('--save_img', default=1, type=int, help='whether to save figures or display them, 1 is True,'
                                                                   ' else 0 [default: 1]')
-    params = argparse.parse_args()
-    plot_everything(params)
+    plot_everything(argparse.parse_args())
