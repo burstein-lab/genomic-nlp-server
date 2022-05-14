@@ -17,7 +17,6 @@ X_MAX, Y_MAX, X_MIN, Y_MIN = 14.375574111938477, 20.35647964477539, - \
 
 def normalize(value, value_min, value_max):
     return (value - value_min) / (value_max - value_min)
-    # return a * (a_max - a_min) + a_min
 
 
 def df_coord_to_map(x, y):
