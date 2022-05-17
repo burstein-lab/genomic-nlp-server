@@ -61,8 +61,8 @@ def points():
     path = f"web/src/assets/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"
     if os.path.isfile(path):
         tile_df = pd.read_pickle(path)
-        for row in tile_df.iterrows():
-            x_coord, y_coord = df_coord_to_map(row["x"], row["y"])
+        for row in tile_df.itertuples():
+            x_coord, y_coord = df_coord_to_map(row.x, row.y)
             features.append(
                 Point(x_coord, y_coord, f"{zoom},{tile_x},{tile_y}<br />{x_coord},{y_coord}").todict())
 
