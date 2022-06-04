@@ -75,12 +75,26 @@ def points():
 
 @app.route("/space/get/<name>")
 def space_get(name):
-    return jsonify(list(set(add_space("KO", name))) + list(add_space("word", name)))
+    spaces = []
+    if name.lower().startswith("ko") and "." not in name:
+        spaces = DF[DF["KO"].str.match(name)]
+
+    else:
+        spaces = DF[DF["word"].str.match(name)]
+
+    return spaces.to_json()
 
 
-def add_space(column, name):
+@app.route("/space/search")
+def space_search():
+    filter_ = request.args.get("filter")
+    print(filter_)
+    return jsonify(sorted(list(set(add_space("KO", filter_))) + list(add_space("word", filter_))))
+
+
+def add_space(column, filter_):
     notna_column = DF[column].dropna()
-    return notna_column[notna_column.str.contains(name, flags=re.IGNORECASE, na=False)].head(50)
+    return notna_column[notna_column.str.contains(filter_, flags=re.IGNORECASE, na=False)].head(50)
 
 
 if __name__ == "__main__":
