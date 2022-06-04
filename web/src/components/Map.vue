@@ -1,53 +1,61 @@
 <template>
-  <div style="height: 97vh; width: 98vw">
-    <l-map
-      id="mapRef"
-      ref="mapRef"
-      v-model="zoom"
-      v-model:zoom="zoom"
-      crs="Simple"
-      :center="[-512, 512]"
-      :maxBounds="[
-        [tileSize * 0.5, -tileSize * 0.5],
-        [-tileSize * 1.5, tileSize * 1.5],
-      ]"
-      :boundsViscosity="0.5"
-      @ready="onMapReady(this)"
-    >
-      <l-tile-layer
-        ref="tileLayerRef"
-        :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
-        layer-type="base"
-        name="OpenStreetMap"
-        :max-zoom="4"
-        :min-zoom="0"
-        :tileSize="tileSize"
-        @ready="onTileLayerReady(this)"
-      />
+  <div>
+    <div>
+      <div style="padding-top: 1vh; padding-left: 5vw">
+        <search></search>
+      </div>
+    </div>
+    <div style="height: 97vh; width: 98vw">
+      <l-map
+        id="mapRef"
+        ref="mapRef"
+        v-model="zoom"
+        v-model:zoom="zoom"
+        crs="Simple"
+        :center="[-512, 512]"
+        :maxBounds="[
+          [tileSize * 0.5, -tileSize * 0.5],
+          [-tileSize * 1.5, tileSize * 1.5],
+        ]"
+        :boundsViscosity="0.5"
+        @ready="onMapReady(this)"
+      >
+        <l-tile-layer
+          ref="tileLayerRef"
+          :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
+          layer-type="base"
+          name="OpenStreetMap"
+          :max-zoom="4"
+          :min-zoom="0"
+          :tileSize="tileSize"
+          @ready="onTileLayerReady(this)"
+        />
 
-      <l-geo-json
-        v-for="[k, v] in collections"
-        :ref="'geoJson' + k + 'Ref'"
-        :geojson="v"
-        :options="geojsonOptions"
-      />
-      <l-control ref="controlRef">
-        <div class="info">
-          <h4 v-html="controlHeader"></h4>
-          <div
-            v-html="
-              controlData !== null
-                ? 'point id <b>' + controlData.name + '</b>'
-                : 'Hover over a point'
-            "
-          ></div>
-        </div>
-      </l-control>
-    </l-map>
+        <l-geo-json
+          v-for="[k, v] in collections"
+          :ref="'geoJson' + k + 'Ref'"
+          :geojson="v"
+          :options="geojsonOptions"
+        />
+        <l-control ref="controlRef">
+          <div class="info">
+            <h4 v-html="controlHeader"></h4>
+            <div
+              v-html="
+                controlData !== null
+                  ? 'point id <b>' + controlData.name + '</b>'
+                  : 'Hover over a point'
+              "
+            ></div>
+          </div>
+        </l-control>
+      </l-map>
+    </div>
   </div>
 </template>
 
 <script>
+import Search from "../components/Search.vue";
 import {
   LMap,
   LIcon,
@@ -79,6 +87,7 @@ export default {
     LGeoJson,
     LPolygon,
     LRectangle,
+    Search,
   },
   data() {
     return {
