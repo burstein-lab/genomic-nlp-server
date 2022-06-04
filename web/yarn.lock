@@ -375,6 +375,11 @@ vue-router@^4.0.14:
   dependencies:
     "@vue/devtools-api" "^6.0.0"
 
+vue3-simple-typeahead@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/vue3-simple-typeahead/-/vue3-simple-typeahead-1.0.5.tgz#a9ae8b3bf3e6019ef9cb3245c77b1b3da7772ee8"
+  integrity sha512-WCLhDUenFJaivPXRecSs4z/LSySlprs9yJRXssS3YLCvJhPIxRqoeLInYVUl7R2epDdJ9UFVw0RbbBadFIJJdg==
+
 vue@^3.2.25:
   version "3.2.31"
   resolved "https://registry.yarnpkg.com/vue/-/vue-3.2.31.tgz#e0c49924335e9f188352816788a4cca10f817ce6"

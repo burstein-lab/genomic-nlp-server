@@ -1,5 +1,5 @@
-import json
 import os
+import re
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
@@ -13,6 +13,9 @@ DEBUG = True
 # TODO(#38)
 X_MAX, Y_MAX, X_MIN, Y_MIN = 14.375574111938477, 20.35647964477539, - \
     12.750589370727539, -5.537705898284912
+
+
+DF = pd.read_pickle("model_data.pkl")
 
 
 def normalize(value, value_min, value_max):
@@ -43,7 +46,7 @@ def ping_pong():
     return jsonify("pong!")
 
 
-@app.route('/points')
+@app.route("/points")
 def points():
     result = {}
     features = []
@@ -67,7 +70,17 @@ def points():
                 Point(x_coord, y_coord, f"{zoom},{tile_x},{tile_y}<br />{x_coord},{y_coord}").todict())
 
     result["features"] = features
-    return json.dumps(result)
+    return jsonify(result)
+
+
+@app.route("/space/get/<name>")
+def space_get(name):
+    return jsonify(list(set(add_space("KO", name))) + list(add_space("word", name)))
+
+
+def add_space(column, name):
+    notna_column = DF[column].dropna()
+    return notna_column[notna_column.str.contains(name, flags=re.IGNORECASE, na=False)].head(50)
 
 
 if __name__ == "__main__":
