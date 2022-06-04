@@ -42,11 +42,11 @@ jobs:
   create-public-assets:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - uses: google-github-actions/auth@v0
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
       - uses: google-github-actions/setup-gcloud@v0
-      - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
         with:
           python-version: "3.10"
