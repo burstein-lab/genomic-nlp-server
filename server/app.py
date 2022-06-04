@@ -1,4 +1,3 @@
-import json
 import os
 import re
 from flask import Flask, jsonify, request
@@ -74,14 +73,14 @@ def points():
     return jsonify(result)
 
 
-@app.route("/ko/get/<name>")
-def ko(name):
-    return jsonify(list(set(add_ko("KO", name))) + list(add_ko("word", name)))
+@app.route("/space/get/<name>")
+def space_get(name):
+    return jsonify(list(set(add_space("KO", name))) + list(add_space("word", name)))
 
 
-def add_ko(column, name):
-    df = DF[column].dropna()
-    return df[df.str.contains(name, flags=re.IGNORECASE, na=False)].head(50)
+def add_space(column, name):
+    notna_column = DF[column].dropna()
+    return notna_column[notna_column.str.contains(name, flags=re.IGNORECASE, na=False)].head(50)
 
 
 if __name__ == "__main__":
