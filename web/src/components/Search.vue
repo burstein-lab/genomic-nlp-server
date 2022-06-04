@@ -4,8 +4,9 @@
       id="typeahead_id"
       placeholder="space"
       :items="items"
-      :minInputLength="1"
+      :minInputLength="0"
       @onInput="onInputEventHandler"
+      @selectItem="selectItemEventHandler"
     >
     </simple-typeahead>
   </div>
@@ -22,14 +23,13 @@ export default {
   data() {
     return {
       items: [],
+      path: import.meta.env.VITE_SERVER_URL,
     };
   },
   methods: {
     onInputEventHandler(e) {
-      console.log(e);
-      const path = import.meta.env.VITE_SERVER_URL;
       axios
-        .get(path + "/space/get/" + e.input)
+        .get(this.path + "/space/search?filter=" + e.input)
         .then((res) => {
           this.items = res.data;
         })
@@ -38,7 +38,20 @@ export default {
           console.error(error);
         });
     },
+    selectItemEventHandler(e) {
+      axios
+        .get(this.path + "/space/get/" + e)
+        .then((res) => {
+          console.log(res.data);
+        })
+        .catch((error) => {
+          // eslint-disable-next-line
+          console.error(error);
+        });
+    },
   },
-  created() {},
+  created() {
+    this.onInputEventHandler({ input: "" });
+  },
 };
 </script>
