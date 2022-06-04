@@ -6,10 +6,12 @@
       v-model="zoom"
       v-model:zoom="zoom"
       crs="Simple"
+      :center="[-512, 512]"
       :maxBounds="[
-        [0, 0],
-        [-tileSize, tileSize],
+        [tileSize * 0.5, -tileSize * 0.5],
+        [-tileSize * 1.5, tileSize * 1.5],
       ]"
+      :boundsViscosity="0.5"
       @ready="onMapReady(this)"
     >
       <l-tile-layer

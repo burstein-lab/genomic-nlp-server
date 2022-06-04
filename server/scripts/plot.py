@@ -103,7 +103,7 @@ class Space:
                 # fig.add_axes(ax)
                 plt.axis('off')
                 plt.savefig(self.dest, bbox_inches='tight',
-                            transparent=False, pad_inches=-0.5)
+                            transparent=False, pad_inches=0)
             else:
                 plt.show()
 
