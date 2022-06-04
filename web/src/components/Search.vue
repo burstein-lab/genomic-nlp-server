@@ -31,7 +31,6 @@ export default {
       axios
         .get(path + "/space/get/" + e.input)
         .then((res) => {
-          console.log(res.data);
           this.items = res.data;
         })
         .catch((error) => {
