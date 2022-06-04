@@ -2,7 +2,7 @@
   <div>
     <simple-typeahead
       id="typeahead_id"
-      placeholder="K0"
+      placeholder="space"
       :items="items"
       :minInputLength="1"
       @onInput="onInputEventHandler"
@@ -29,8 +29,7 @@ export default {
       console.log(e);
       const path = import.meta.env.VITE_SERVER_URL;
       axios
-        .get(path + "/ko/get/" + e.input)
-        // .get(path + "/ko/get")
+        .get(path + "/space/get/" + e.input)
         .then((res) => {
           console.log(res.data);
           this.items = res.data;
