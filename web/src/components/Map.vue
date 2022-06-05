@@ -2,7 +2,22 @@
   <div>
     <div>
       <div style="padding-top: 1vh; padding-left: 5vw">
-        <search></search>
+        <search
+          @select="
+            ({ spaces, latlng, zoom }) => {
+              searchCollection = spacesToCollection(
+                spaces,
+                {
+                  z: zoom,
+                  x: latlng.lng,
+                  y: latlng.lat,
+                },
+                true
+              );
+              zoomToFeature(latlng, zoom);
+            }
+          "
+        />
       </div>
     </div>
     <div style="height: 97vh; width: 98vw">
@@ -25,17 +40,22 @@
           :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
           layer-type="base"
           name="OpenStreetMap"
-          :max-zoom="4"
+          :max-zoom="5"
           :min-zoom="0"
           :tileSize="tileSize"
           @ready="onTileLayerReady(this)"
         />
 
         <l-geo-json
+          :geojson="searchCollection"
+          :ref="'geoJsonSearchRef'"
+          :options="getJsonOptions"
+        />
+        <l-geo-json
           v-for="[k, v] in collections"
           :ref="'geoJson' + k + 'Ref'"
           :geojson="v"
-          :options="geojsonOptions"
+          :options="getJsonOptions"
         />
         <l-control ref="controlRef">
           <div class="info">
@@ -97,11 +117,12 @@ export default {
         ? "https://storage.googleapis.com/gnlp-public-assets/"
         : "/src/assets/",
       apiUrl: import.meta.env.VITE_SERVER_URL,
-      geojsonOptions: {
+      getJsonOptions: {
         onEachFeature: this.onEachFeature,
       },
       controlData: null,
       collections: new Map(),
+      searchCollection: this.spacesToCollection([]),
       tileSize: 1024,
     };
   },
@@ -109,9 +130,9 @@ export default {
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
     // And now the Leaflet circleMarker function can be used by the options:
-    this.geojsonOptions.pointToLayer = (feature, latLng) =>
+    this.getJsonOptions.pointToLayer = (feature, latLng) =>
       circleMarker(latLng, {
-        radius: feature.properties.zoom * 2,
+        radius: 10 + this.zoom * 2,
         fillColor: "#ff7800",
         color: "#000",
         weight: 1,
@@ -141,36 +162,34 @@ export default {
       self.map = this.$refs.mapRef.leafletObject;
     },
     getFeatures(coords) {
-      const z = coords.z;
-      const y = coords.y;
-      const x = coords.x;
       axios
-        .get(`${this.apiUrl}/points?z=${z}&x=${x}&y=${y}`)
+        .get(`${this.apiUrl}/points?z=${coords.z}&x=${coords.x}&y=${coords.y}`)
         .then((res) => {
-          const features = [];
-          const resFeatures = res.data["features"];
-          for (var i = 0; i < resFeatures.length; i++) {
-            const d = resFeatures[i];
-            features.push({
-              type: "Feature",
-              properties: {
-                zoom: z,
-                tileX: x,
-                tileY: y,
-                name: d["name"],
-              },
-              geometry: {
-                type: "Point",
-                coordinates: [d["x"], d["y"]],
-              },
-            });
-          }
-          this.setFeatures(coords, features);
+          this.setFeatures(
+            coords,
+            this.spacesToCollection(res.data["features"], coords, false)
+          );
         })
         .catch((error) => {
           // eslint-disable-next-line
           console.error(error);
         });
+    },
+    spaceToFeature(space, coords, isSearch) {
+      return {
+        type: "Feature",
+        properties: {
+          zoom: coords.z,
+          tileX: coords.x,
+          tileY: coords.y,
+          isSearch: isSearch,
+          name: space["name"],
+        },
+        geometry: {
+          type: "Point",
+          coordinates: [space["x"], space["y"]],
+        },
+      };
     },
     changeIcon() {
       this.iconWidth += 2;
@@ -182,7 +201,7 @@ export default {
       layer.on({
         mouseover: this.highlightFeature,
         mouseout: this.resetHighlight,
-        click: this.zoomToFeature,
+        click: (e) => this.zoomToFeature(e.latlng, this.zoom),
       });
     },
     highlightFeature(e) {
@@ -197,24 +216,39 @@ export default {
       this.controlData = layer.feature.properties;
     },
     resetHighlight(e) {
-      this.geoJsonObj(
-        this.coordsToString(
-          e.target.feature.properties.zoom,
-          e.target.feature.properties.tileX,
-          e.target.feature.properties.tileY
-        )
-      ).resetStyle(e.target);
+      let obj;
+      if (e.target.feature.properties.isSearch) {
+        obj = this.$refs[`geoJsonSearchRef`].leafletObject;
+      } else {
+        obj = this.geoJsonObj(
+          this.coordsToString(
+            e.target.feature.properties.zoom,
+            e.target.feature.properties.tileX,
+            e.target.feature.properties.tileY
+          )
+        );
+      }
+      obj.resetStyle(e.target);
       this.controlData = null;
     },
-    zoomToFeature(e) {
-      // TODO fix or remove
-      this.map.fitBounds(e.target.getBounds());
+    zoomToFeature(latlng, zoom) {
+      this.map.setView(latlng, zoom);
     },
     setFeatures(coords, features) {
-      this.collections.set(this.coordsToString(coords.z, coords.x, coords.y), {
+      this.collections.set(
+        this.coordsToString(coords.z, coords.x, coords.y),
+        features
+      );
+    },
+    spacesToCollection(spaces, coords, isSearch) {
+      const features = [];
+      for (var i = 0; i < spaces.length; i++) {
+        features.push(this.spaceToFeature(spaces[i], coords, isSearch));
+      }
+      return {
         type: "FeatureCollection",
         features: features,
-      });
+      };
     },
     coordsToString(z, x, y) {
       return `${z}-${x}-${y}`;
