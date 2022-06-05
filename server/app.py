@@ -1,7 +1,6 @@
 import os
 import math
 import re
-from xml.sax.handler import feature_external_ges
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
