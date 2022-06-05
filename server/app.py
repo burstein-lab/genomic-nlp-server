@@ -12,16 +12,12 @@ from coords import Point
 # configuration
 DEBUG = True
 
-# TODO(#38)
-X_MAX, Y_MAX, X_MIN, Y_MIN = 14.375574111938477, 20.35647964477539, - \
-    12.750589370727539, -5.537705898284912
-
 MAX_TILE_SIZE = 1024
 MAX_ZOOM = 5
 ZOOM_TILE_SPLIT_FACTOR = 4
 
-
 DF = pd.read_pickle("model_data.pkl")
+X_MAX, Y_MAX, X_MIN, Y_MIN = DF.x.max(), DF.y.max(), DF.x.min(), DF.y.min()
 
 
 def normalize(value, value_min, value_max):
