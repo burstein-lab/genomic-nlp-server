@@ -20,6 +20,7 @@ import axios from "axios";
 export default {
   name: "Search",
   components: { SimpleTypeahead },
+  emits: ["select"],
   data() {
     return {
       items: [],
@@ -43,6 +44,7 @@ export default {
         .get(this.path + "/space/get/" + e)
         .then((res) => {
           console.log(res.data);
+          this.$emit("select", res.data);
         })
         .catch((error) => {
           // eslint-disable-next-line
