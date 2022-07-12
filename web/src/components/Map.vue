@@ -2,7 +2,7 @@
   <div>
     <div>
       <div style="padding-top: 1vh; padding-left: 5vw">
-        <search
+        <searches
           @select="
             ({ spaces, latlng, zoom }) => {
               searchCollection = spacesToCollection(
@@ -75,7 +75,7 @@
 </template>
 
 <script>
-import Search from "../components/Search.vue";
+import Searches from "../components/Searches.vue";
 import {
   LMap,
   LIcon,
@@ -107,7 +107,7 @@ export default {
     LGeoJson,
     LPolygon,
     LRectangle,
-    Search,
+    Searches,
   },
   data() {
     return {
@@ -276,6 +276,10 @@ export default {
 .info h4 {
   margin: 0 0 5px;
   color: #777;
+}
+
+.leaflet-pane {
+  z-index: 1;
 }
 
 #mapRef {
