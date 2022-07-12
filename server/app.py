@@ -50,7 +50,6 @@ def ping_pong():
 @app.route("/points")
 def points():
     result = {}
-    features = []
     zoom = int(request.args.get("z"))
     tile_x = request.args.get("x")
     tile_y = request.args.get("y")
@@ -62,16 +61,26 @@ def points():
         "exists": os.path.isfile(f"web/src/assets/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"),
     }
 
+    df = None
     path = f"web/src/assets/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"
     if os.path.isfile(path):
-        features = df_to_features(pd.read_pickle(path))
+        df = pd.read_pickle(path)
 
-    result["features"] = features
+    return jsonify_features(df)
+
+
+def jsonify_features(df):
+    result = {
+        "features": df_to_features(df),
+    }
     return jsonify(result)
 
 
 def df_to_features(df):
     features = []
+    if df is None:
+        return features
+
     for row in df.itertuples():
         y_coord, x_coord = df_coord_to_latlng(row.y, row.x)
         features.append(
@@ -89,6 +98,10 @@ def space_get(name):
     else:
         spaces = DF[DF["word"].str.match(name)]
 
+    return spaces_df_to_features(spaces)
+
+
+def spaces_df_to_features(spaces):
     return jsonify(
         {
             "spaces": df_to_features(spaces),
@@ -121,14 +134,27 @@ def calc_zoom(spaces):
 
 
 @app.route("/space/search")
-def space_search():
+def filter_by_space():
     filter_ = request.args.get("filter")
-    return jsonify(sorted(list(set(add_space("KO", filter_))) + list(add_space("word", filter_))))
+    return jsonify(search_df("KO", filter_) + search_df("word", filter_))
 
 
-def add_space(column, filter_):
+@app.route("/label/search")
+def get_labels():
+    filter_ = request.args.get("filter")
+    return jsonify(search_df("label", filter_))
+
+
+@app.route("/label/get/<label>")
+def filter_by_label(label):
+    return spaces_df_to_features(DF[DF["label"] == label])
+
+
+def search_df(column, filter_):
     notna_column = DF[column].dropna()
-    return notna_column[notna_column.str.contains(filter_, flags=re.IGNORECASE, na=False)].head(50)
+    result = notna_column[notna_column.str.contains(
+        filter_, flags=re.IGNORECASE, na=False)].head(50)
+    return sorted(list(set(result)))
 
 
 if __name__ == "__main__":
