@@ -1,15 +1,12 @@
 <template>
-  <div>
-    <simple-typeahead
-      id="typeahead_id"
-      placeholder="space"
-      :items="items"
-      :minInputLength="0"
-      @onInput="onInputEventHandler"
-      @selectItem="selectItemEventHandler"
-    >
-    </simple-typeahead>
-  </div>
+  <simple-typeahead
+    :placeholder="type"
+    :items="items"
+    :minInputLength="0"
+    @onInput="onInputEventHandler"
+    @selectItem="selectItemEventHandler"
+  >
+  </simple-typeahead>
 </template>
 
 <script>
@@ -21,6 +18,12 @@ export default {
   name: "Search",
   components: { SimpleTypeahead },
   emits: ["select"],
+  props: {
+    type: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
     return {
       items: [],
@@ -30,7 +33,7 @@ export default {
   methods: {
     onInputEventHandler(e) {
       axios
-        .get(this.path + "/space/search?filter=" + e.input)
+        .get(this.path + `/${this.type}/search?filter=` + e.input)
         .then((res) => {
           this.items = res.data;
         })
@@ -41,7 +44,7 @@ export default {
     },
     selectItemEventHandler(e) {
       axios
-        .get(this.path + "/space/get/" + e)
+        .get(this.path + `/${this.type}/get/` + e)
         .then((res) => {
           console.log(res.data);
           this.$emit("select", res.data);
