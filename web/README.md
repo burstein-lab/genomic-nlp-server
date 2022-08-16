@@ -1,42 +1,42 @@
-# Vue 3 + Vite
+# Nuxt 3 Minimal Starter
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Look at the [nuxt 3 documentation](https://v3.nuxtjs.org) to learn more.
 
-## Recommended IDE Setup
+## Setup
 
-- [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)
-
-# Deployment
-
-Followed these guides https://jonhnes.medium.com/vue-with-docker-since-creation-until-deployment-on-heroku-5b31c8f041a7
-and https://cli.vuejs.org/guide/deployment.html#docker-nginx
-in order to deploy vuejs+docker on heroku.
-
-To deploy:
+Make sure to install the dependencies:
 
 ```bash
-heroku login
-heroku container:login
-heroku container:push web -a gnlp-web
-heroku container:release web -a gnlp-web
-heroku open -a gnlp-web # Or go to https://gnlp-web.herokuapp.com/
-heroku logs -a gnlp-web --tail
+# yarn
+yarn install
+
+# npm
+npm install
+
+# pnpm
+pnpm install --shamefully-hoist
 ```
 
-Initial Heroku setup:
+## Development Server
 
-```
-heroku login
-heroku container:login
-heroku git:remote -a gnlp-web # Or create a new one with `heroku create`
-heroku container:push web
-heroku container:release web
-heroku open
-```
-
-## Test locally
+Start the development server on http://localhost:3000
 
 ```bash
-docker build . -t gnlp-web
-docker run -it -e PORT=80 -p 8000:80 --rm gnlp-web
+npm run dev
 ```
+
+## Production
+
+Build the application for production:
+
+```bash
+npm run build
+```
+
+Locally preview production build:
+
+```bash
+npm run preview
+```
+
+Checkout the [deployment documentation](https://v3.nuxtjs.org/guide/deploy/presets) for more information.

@@ -36,7 +36,7 @@ app.config.from_object(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
-@app.route('/')
+@app.route('/hello')
 def hello():
     return 'Hello world!'
 
@@ -58,11 +58,11 @@ def points():
         "z": zoom,
         "x": tile_x,
         "y": tile_y,
-        "exists": os.path.isfile(f"web/src/assets/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"),
+        "exists": os.path.isfile(f"web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"),
     }
 
     df = None
-    path = f"web/src/assets/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"
+    path = f"web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"
     if os.path.isfile(path):
         df = pd.read_pickle(path)
 
