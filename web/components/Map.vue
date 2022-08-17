@@ -212,7 +212,6 @@ export default {
       console.log(value);
     },
     searchCollection(value) {
-      console.log("searchCollection", value, this.zoom);
       this.zoomToFeature(this.latlng, this.zoom);
       return value;
     },

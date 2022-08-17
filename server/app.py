@@ -89,18 +89,6 @@ def df_to_features(df):
     return features
 
 
-@app.route("/space/get/<name>")
-def space_get(name):
-    spaces = []
-    if name.lower().startswith("ko") and "." not in name:
-        spaces = DF[DF["KO"].str.match(name)]
-
-    else:
-        spaces = DF[DF["word"].str.match(name)]
-
-    return spaces_df_to_features(spaces)
-
-
 def spaces_df_to_features(spaces):
     return jsonify(
         {
@@ -133,16 +121,26 @@ def calc_zoom(spaces):
     return min(math.floor(math.log2(MAX_TILE_SIZE) - math.log2(gap)), MAX_ZOOM)
 
 
-@app.route("/space/search")
-def filter_by_space():
+@app.route("/<type_>/search")
+def filter_by_space(type_):
     filter_ = request.args.get("filter")
-    return jsonify(search_df("KO", filter_) + search_df("word", filter_))
+    match type_:
+        case "space":
+            return jsonify(search_df("KO", filter_) + search_df("word", filter_))
+        case _:
+            return jsonify(search_df(type_, filter_))
 
 
-@app.route("/label/search")
-def get_labels():
-    filter_ = request.args.get("filter")
-    return jsonify(search_df("label", filter_))
+@app.route("/space/get/<name>")
+def space_get(name):
+    spaces = []
+    if name.lower().startswith("ko") and "." not in name:
+        spaces = DF[DF["KO"].str.match(name)]
+
+    else:
+        spaces = DF[DF["word"].str.match(name)]
+
+    return spaces_df_to_features(spaces)
 
 
 @app.route("/label/get/<label>")
@@ -150,10 +148,20 @@ def filter_by_label(label):
     return spaces_df_to_features(DF[DF["label"] == label])
 
 
-def search_df(column, filter_):
+@app.route("/ko/get/<label>")
+def filter_by_ko(label):
+    notna_df = DF.dropna(subset=["KO"])
+    return spaces_df_to_features(notna_df[notna_df["KO"].str.match(label.replace(",", "|"))])
+
+
+def search_df(column, filter_: str):
+    if column == "ko":
+        column = "KO"
+
     notna_column = DF[column].dropna()
     result = notna_column[notna_column.str.contains(
-        filter_, flags=re.IGNORECASE, na=False)].head(50)
+        filter_.replace(",", "|"), flags=re.IGNORECASE, na=False)].head(50)
+
     return sorted(list(set(result)))
 
 

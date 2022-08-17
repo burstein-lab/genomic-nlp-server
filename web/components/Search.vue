@@ -8,9 +8,9 @@
     :loading="isLoading"
     hide-no-data
     hide-selected
+    hide-details
     :label="type"
     placeholder="Start typing to search"
-    return-object
   />
 </template>
 
@@ -53,7 +53,11 @@ export default {
       this.isLoading = true;
 
       // Lazily load input items
-      fetch(`${this.apiUrl}/${this.type}/search?filter=${val}`)
+      fetch(
+        `${
+          this.apiUrl
+        }/${this.type.toLowerCase()}/search?filter=${val.toLowerCase()}`
+      )
         .then((res) => res.json())
         .then((res) => {
           this.items = res;
