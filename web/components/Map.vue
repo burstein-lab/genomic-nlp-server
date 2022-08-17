@@ -1,25 +1,5 @@
 <template>
   <div>
-    <div>
-      <div style="padding-top: 1vh; padding-left: 5vw">
-        <!-- <searches
-          @select="
-            ({ spaces, latlng, zoom }) => {
-              searchCollection = spacesToCollection(
-                spaces,
-                {
-                  z: zoom,
-                  x: latlng.lng,
-                  y: latlng.lat,
-                },
-                true
-              );
-              zoomToFeature(latlng, zoom);
-            }
-          "
-        /> -->
-      </div>
-    </div>
     <div style="height: 90vh; width: 98vw">
       <l-map
         id="mapRef"
@@ -75,7 +55,6 @@
 </template>
 
 <script lang="ts">
-// import Searches from "../components/Searches.vue";
 import {
   LMap,
   LIcon,
@@ -106,11 +85,9 @@ export default {
     LGeoJson,
     LPolygon,
     LRectangle,
-    // Searches,
   },
   data() {
     return {
-      zoom: 0,
       controlHeader: "Information",
       publicAssetsUrl: "/",
       apiUrl: "http://127.0.0.1:5000/",
@@ -119,11 +96,33 @@ export default {
       },
       controlData: null,
       collections: new Map(),
-      searchCollection: this.spacesToCollection([]),
       tileSize: 1024,
     };
   },
-  computed: {},
+  props: {
+    latlng: {
+      type: Object,
+      required: true,
+    },
+    zoom: {
+      type: Number,
+      required: true,
+    },
+    searchCollection: {
+      type: Object,
+      required: false,
+    },
+  },
+  computed: {
+    displayedSpaceCollection() {
+      if (this.map === undefined) {
+        console.log("map is undefined");
+        return { type: "FeatureCollection", features: [] };
+      }
+      // this.zoomToFeature(this.latlng, this.zoom);
+      return this.searchCollection;
+    },
+  },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
     // And now the Leaflet circleMarker function can be used by the options:
@@ -137,6 +136,7 @@ export default {
         fillOpacity: 0.8,
       });
   },
+  created() {},
   methods: {
     onTileLayerReady(self) {
       // this != component instance on ready event from some reason...
@@ -147,8 +147,8 @@ export default {
           self.coordsToString(event.coords.z, event.coords.x, event.coords.y)
         );
       });
-      self.tileLayer.on("tileloadstart", async function (event) {
-        await self.getFeatures(event.coords);
+      self.tileLayer.on("tileloadstart", function (event) {
+        self.getFeatures(event.coords);
       });
     },
     geoJsonObj(k) {
@@ -158,46 +158,18 @@ export default {
     onMapReady(self) {
       self.map = this.$refs.mapRef.leafletObject;
     },
-    async getFeatures(coords) {
-      useFetch(
-        `${this.apiUrl}/points?z=${coords.z}&x=${coords.x}&y=${coords.y}`,
-        {
-          initialCache: false,
-        }
-      ).then(
-        (res) => {
-          const data = res.data.value;
-          const error = res.error.value;
-          if (error) {
-            console.error(error);
-          } else {
-            console.log(data, data["features"], data["features"].value);
-            this.setFeatures(
-              coords,
-              this.spacesToCollection(data["features"], coords, false)
-            );
-          }
-        },
-        (error) => {
-          console.error(error);
-        }
-      );
-    },
-    spaceToFeature(space, coords, isSearch) {
-      return {
-        type: "Feature",
-        properties: {
-          zoom: coords.z,
-          tileX: coords.x,
-          tileY: coords.y,
-          isSearch: isSearch,
-          name: space["name"],
-        },
-        geometry: {
-          type: "Point",
-          coordinates: [space["x"], space["y"]],
-        },
-      };
+    getFeatures(coords) {
+      fetch(`${this.apiUrl}/points?z=${coords.z}&x=${coords.x}&y=${coords.y}`)
+        .then((res) => res.json())
+        .then((res) => {
+          this.collections.set(
+            this.coordsToString(coords.z, coords.x, coords.y),
+            spacesToCollection(res["features"], coords, false)
+          );
+        })
+        .catch((err) => {
+          console.error(err);
+        });
     },
     changeIcon() {
       this.iconWidth += 2;
@@ -239,32 +211,21 @@ export default {
       obj.resetStyle(e.target);
       this.controlData = null;
     },
-    zoomToFeature(latlng, zoom) {
+    zoomToFeature(latlng, zoom: number) {
       this.map.setView(latlng, zoom);
     },
-    setFeatures(coords, features) {
-      this.collections.set(
-        this.coordsToString(coords.z, coords.x, coords.y),
-        features
-      );
-    },
-    spacesToCollection(spaces, coords, isSearch) {
-      const features = [];
-      for (var i = 0; i < spaces.length; i++) {
-        features.push(this.spaceToFeature(spaces[i], coords, isSearch));
-      }
-      return {
-        type: "FeatureCollection",
-        features: features,
-      };
-    },
-    coordsToString(z, x, y) {
+    coordsToString(z: number, x: number, y: number) {
       return `${z}-${x}-${y}`;
     },
   },
   watch: {
     zoom(value) {
       console.log(value);
+    },
+    searchCollection(value) {
+      console.log("searchCollection", value, this.zoom);
+      this.zoomToFeature(this.latlng, this.zoom);
+      return value;
     },
   },
 };
