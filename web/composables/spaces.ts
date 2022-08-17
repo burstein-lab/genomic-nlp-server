@@ -46,10 +46,10 @@ interface Coords {
   z: number;
 }
 
-export const FeatureCollection: {
+export interface FeatureCollection {
   type: "FeatureCollection";
   features: Feature[];
-} = null;
+}
 
 export interface Feature {
   type: "Feature";
