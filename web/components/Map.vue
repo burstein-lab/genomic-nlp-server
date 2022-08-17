@@ -113,16 +113,6 @@ export default {
       required: false,
     },
   },
-  computed: {
-    displayedSpaceCollection() {
-      if (this.map === undefined) {
-        console.log("map is undefined");
-        return { type: "FeatureCollection", features: [] };
-      }
-      // this.zoomToFeature(this.latlng, this.zoom);
-      return this.searchCollection;
-    },
-  },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
     // And now the Leaflet circleMarker function can be used by the options:
@@ -136,7 +126,6 @@ export default {
         fillOpacity: 0.8,
       });
   },
-  created() {},
   methods: {
     onTileLayerReady(self) {
       // this != component instance on ready event from some reason...

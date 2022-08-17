@@ -1,7 +1,5 @@
 <template>
   <div>
-    <!-- <v-btn @click="getGifts">clickme</v-btn>
-    <div>{{ a }}</div> -->
     <Search @select="(e: string) => onSelect('space', e)" type="space" />
     <Search @select="(e: string) => onSelect('label', e)" type="label" />
     <Map
