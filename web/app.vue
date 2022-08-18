@@ -1,7 +1,5 @@
 <template>
   <div>
-    <div>{{ counter }}</div>
-    <test></test>
     <v-container fluid>
       <v-row>
         <v-col>
@@ -25,8 +23,6 @@ const latlng = useLatLng();
 const zoom = useZoom();
 const shouldShowMap = useShouldShowMap();
 const searchCollection = ref(null);
-
-const counter = useState("counter", () => Math.round(Math.random() * 1000));
 
 const runtimeConfig = useRuntimeConfig();
 
