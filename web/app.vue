@@ -1,34 +1,17 @@
 <template>
   <div>
+    <div>{{ counter }}</div>
+    <test></test>
     <v-container fluid>
       <v-row>
         <v-col>
-          <v-card width="500">
-            <v-card-title> Search Spaces </v-card-title>
-            <v-card-text>
-              <Search
-                @select="(e: string[]) => onSelect('space', e)"
-                type="Space"
-              />
-              <Search
-                @select="(e: string[]) => onSelect('label', e)"
-                type="Label"
-              />
-              <v-divider />
-              <Search
-                @select="(e: string[]) => onSelect('ko', e)"
-                type="KO"
-                multiple
-              />
-            </v-card-text>
-          </v-card>
+          <search-card @select="onSelect" />
         </v-col>
       </v-row>
       <v-row>
         <v-col>
-          <Map
-            :zoom="zoom === '' ? 0 : +zoom"
-            :latlng="latlng"
+          <space-map
+            :shouldShowMap="shouldShowMap"
             :searchCollection="searchCollection"
           />
         </v-col>
@@ -38,9 +21,12 @@
 </template>
 
 <script setup lang="ts">
-const latlng = ref({ lat: 0, lng: 0 });
-const zoom = ref("0");
+const latlng = useLatLng();
+const zoom = useZoom();
+const shouldShowMap = useShouldShowMap();
 const searchCollection = ref(null);
+
+const counter = useState("counter", () => Math.round(Math.random() * 1000));
 
 const runtimeConfig = useRuntimeConfig();
 
@@ -63,5 +49,9 @@ function onSelect(type: string, e: string[]) {
     .catch((error) => {
       console.error(error);
     });
+}
+
+function onShowMap(value: boolean) {
+  shouldShowMap.value = value;
 }
 </script>

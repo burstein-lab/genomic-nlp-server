@@ -16,6 +16,7 @@
         @ready="onMapReady(this)"
       >
         <l-tile-layer
+          v-if="shouldShowMap"
           ref="tileLayerRef"
           :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
           layer-type="base"
@@ -88,6 +89,8 @@ export default {
   },
   data() {
     return {
+      latlng: useLatLng(),
+      zoom: useZoom(),
       controlHeader: "Information",
       publicAssetsUrl: "/",
       apiUrl: "http://127.0.0.1:5000/",
@@ -100,12 +103,8 @@ export default {
     };
   },
   props: {
-    latlng: {
-      type: Object,
-      required: true,
-    },
-    zoom: {
-      type: Number,
+    shouldShowMap: {
+      type: Boolean,
       required: true,
     },
     searchCollection: {
@@ -116,8 +115,8 @@ export default {
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
     // And now the Leaflet circleMarker function can be used by the options:
-    this.getJsonOptions.pointToLayer = (feature, latLng) =>
-      circleMarker(latLng, {
+    this.getJsonOptions.pointToLayer = (feature, latlng) =>
+      circleMarker(latlng, {
         radius: 10,
         fillColor: feature.properties.isSearch ? "#007800" : "#ff7800",
         color: "#000",
