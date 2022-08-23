@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div style="height: 90vh; width: 98vw">
+    <div style="height: 98vh; width: 98vw">
       <l-map
         id="mapRef"
         ref="mapRef"
@@ -13,8 +13,10 @@
           [-tileSize * 1.5, tileSize * 1.5],
         ]"
         :boundsViscosity="0.5"
+        :options="{ zoomControl: false }"
         @ready="onMapReady(this)"
       >
+        <l-control-zoom position="bottomright"></l-control-zoom>
         <l-tile-layer
           v-if="shouldShowMap"
           ref="tileLayerRef"
@@ -38,17 +40,15 @@
           :geojson="v"
           :options="getJsonOptions"
         />
-        <l-control ref="controlRef">
-          <div class="info">
-            <h4 v-html="controlHeader"></h4>
-            <div
-              v-html="
-                controlData !== null
-                  ? 'point id <b>' + controlData.name + '</b>'
-                  : 'Hover over a point'
-              "
-            ></div>
-          </div>
+        <l-control ref="controlRef" position="topleft">
+          <control-card
+            :info="
+              controlData !== null
+                ? 'Point id <b>' + controlData.name + '</b>'
+                : 'Hover over a point'
+            "
+            @select="onSelect"
+          />
         </l-control>
       </l-map>
     </div>
@@ -61,6 +61,7 @@ import {
   LIcon,
   LTileLayer,
   LMarker,
+  LControlZoom,
   LTooltip,
   LPopup,
   LImageOverlay,
@@ -77,6 +78,7 @@ export default {
     LMap,
     LIcon,
     LTileLayer,
+    LControlZoom,
     LMarker,
     LImageOverlay,
     LTooltip,
@@ -91,26 +93,17 @@ export default {
     return {
       latlng: useLatLng(),
       zoom: useZoom(),
-      controlHeader: "Information",
       publicAssetsUrl: "/",
       apiUrl: "http://127.0.0.1:5000/",
       getJsonOptions: {
         onEachFeature: this.onEachFeature,
       },
       controlData: null,
+      shouldShowMap: useShouldShowMap(),
       collections: new Map(),
       tileSize: 1024,
+      searchCollection: null,
     };
-  },
-  props: {
-    shouldShowMap: {
-      type: Boolean,
-      required: true,
-    },
-    searchCollection: {
-      type: Object,
-      required: false,
-    },
   },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
@@ -205,9 +198,30 @@ export default {
     coordsToString(z: number, x: number, y: number) {
       return `${z}-${x}-${y}`;
     },
+    onSelect(type: string, e: string[]) {
+      const runtimeConfig = useRuntimeConfig();
+      fetch(`${runtimeConfig.public.apiBase}/${type}/get/${e.toString()}`)
+        .then((res) => res.json())
+        .then((res) => {
+          this.latlng = res.latlng;
+          this.zoom = res.zoom;
+          this.searchCollection = spacesToCollection(
+            res.spaces,
+            {
+              z: res.zoom,
+              x: res.latlng.lng,
+              y: res.latlng.lat,
+            },
+            true
+          );
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    },
   },
   watch: {
-    zoom(value) {
+    zoom(value: number) {
       console.log(value);
     },
     searchCollection(value) {
