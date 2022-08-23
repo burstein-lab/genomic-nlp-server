@@ -1,7 +1,6 @@
 <template>
   <div>
-    <v-card width="500">
-      <v-card-title> Search Spaces </v-card-title>
+    <v-card width="500" color="rgba(255, 255, 255, 0.8)">
       <v-card-text>
         <v-switch
           v-model="shouldShowMap"
@@ -17,12 +16,20 @@
           multiple
         />
       </v-card-text>
+      <v-divider v-if="info" class="mx-4" />
+      <v-card-text v-if="info" v-html="info" />
     </v-card>
   </div>
 </template>
 
 <script lang="ts">
 export default {
+  props: {
+    info: {
+      type: String,
+      default: "",
+    },
+  },
   data: () => ({
     shouldShowMap: useShouldShowMap(),
   }),
