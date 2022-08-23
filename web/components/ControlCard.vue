@@ -19,10 +19,15 @@
           type="label"
         />
         <search
-          @select="(e: string[]) => onSelect('ko', e)"
+          @select="(e: string[]) => onSelect('word', e)"
           label="KO / Hypo"
           type="word"
           multiple
+        />
+        <search
+          @select="(e: string[]) => onSelect('neighbors', e)"
+          label="Neighbors"
+          type="word"
         />
       </v-card-text>
       <v-divider v-if="info" class="mx-4" />

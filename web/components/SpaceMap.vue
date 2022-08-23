@@ -18,7 +18,7 @@
       >
         <l-control-zoom position="bottomright"></l-control-zoom>
         <l-tile-layer
-          v-if="shouldShowMap"
+          v-if="isMapVisible"
           ref="tileLayerRef"
           :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
           layer-type="base"
@@ -99,7 +99,7 @@ export default {
         onEachFeature: this.onEachFeature,
       },
       controlData: null,
-      shouldShowMap: useShouldShowMap(),
+      isMapVisible: useShouldShowMap(),
       collections: new Map(),
       tileSize: 1024,
       searchCollection: null,
