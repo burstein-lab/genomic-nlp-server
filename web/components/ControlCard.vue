@@ -41,8 +41,15 @@
           <v-text-field v-model="kNeighbors" label="K" type="number" />
         </div>
       </v-card-text>
-      <v-divider v-if="info" class="mx-4" />
-      <v-card-text v-if="info" v-html="info" />
+      <v-divider class="mx-4" />
+      <v-card-text>
+        <div v-if="loading">
+          Getting data...
+          <v-progress-linear indeterminate color="primary" rounded />
+        </div>
+        <div v-else-if="info" v-html="info" />
+        <div v-else>Search to explore the model</div>
+      </v-card-text>
     </v-card>
   </div>
 </template>
@@ -53,6 +60,10 @@ export default {
     info: {
       type: String,
       default: "",
+    },
+    loading: {
+      type: Boolean,
+      default: false,
     },
   },
   data: () => ({

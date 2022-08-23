@@ -43,10 +43,13 @@
         <l-control ref="controlRef" position="topleft">
           <control-card
             :info="
-              controlData !== null
-                ? 'Point id <b>' + controlData.name + '</b>'
-                : 'Hover over a point'
+              searchCollection
+                ? info
+                  ? info
+                  : 'Hover over a point for more info'
+                : info
             "
+            :loading="loading"
             @select="onSelect"
           />
         </l-control>
@@ -98,11 +101,12 @@ export default {
       getJsonOptions: {
         onEachFeature: this.onEachFeature,
       },
-      controlData: null,
+      info: null,
       isMapVisible: useShouldShowMap(),
       collections: new Map(),
       tileSize: 1024,
       searchCollection: null,
+      loading: false,
     };
   },
   async beforeMount() {
@@ -174,7 +178,7 @@ export default {
         fillOpacity: 0.7,
       });
       layer.bringToFront();
-      this.controlData = layer.feature.properties;
+      this.info = `Point id <b>${layer.feature.properties.name}</b>`;
     },
     resetHighlight(e) {
       let obj;
@@ -190,7 +194,7 @@ export default {
         );
       }
       obj.resetStyle(e.target);
-      this.controlData = null;
+      this.info = null;
     },
     zoomToFeature(latlng, zoom: number) {
       this.map.setView(latlng, zoom);
@@ -199,6 +203,7 @@ export default {
       return `${z}-${x}-${y}`;
     },
     onSelect(type: string, e: string[], k: number) {
+      this.loading = true;
       const runtimeConfig = useRuntimeConfig();
       const url = new URL(
         `${runtimeConfig.public.apiBase}/${type}/get/${e.toString()}`
@@ -223,6 +228,9 @@ export default {
         })
         .catch((error) => {
           console.error(error);
+        })
+        .finally(() => {
+          this.loading = false;
         });
     },
   },
