@@ -8,11 +8,20 @@
           label="Show Map"
           hide-details
         ></v-switch>
-        <search @select="(e: string[]) => onSelect('space', e)" type="Space" />
-        <search @select="(e: string[]) => onSelect('label', e)" type="Label" />
+        <search
+          @select="(e: string[]) => onSelect('space', e)"
+          label="Space"
+          type="space"
+        />
+        <search
+          @select="(e: string[]) => onSelect('label', e)"
+          label="Label"
+          type="label"
+        />
         <search
           @select="(e: string[]) => onSelect('ko', e)"
-          type="KO"
+          label="KO / Hypo"
+          type="word"
           multiple
         />
       </v-card-text>
