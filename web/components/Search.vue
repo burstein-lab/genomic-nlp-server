@@ -9,7 +9,7 @@
     hide-no-data
     hide-selected
     hide-details
-    :label="type"
+    :label="label"
     placeholder="Start typing to search"
   />
 </template>
@@ -22,6 +22,10 @@ export default {
     multiple: {
       type: Boolean,
       default: false,
+    },
+    label: {
+      type: String,
+      required: true,
     },
     type: {
       type: String,
@@ -47,8 +51,6 @@ export default {
     search(val: string) {
       // Items have already been requested
       if (this.isLoading) return;
-
-      // if (val === "") this.model = null;
 
       this.isLoading = true;
 

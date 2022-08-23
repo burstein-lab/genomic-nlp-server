@@ -11,6 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+.nuxt
+.nitro
+.cache
+.output
+.env
 
 # Editor directories and files
 .vscode/*
@@ -26,3 +31,5 @@ dist-ssr
 web/public/
 *.pkl
 *.pyc
+*.npy
+*.w2v
