@@ -1,9 +1,12 @@
 import os
+import json
 import math
 import re
 
 from flask import Flask, jsonify, request
+import numpy as np
 from flask_cors import CORS
+from gensim.models import word2vec as w2v
 import pandas as pd
 
 from coords import Point
@@ -17,6 +20,9 @@ MAX_ZOOM = 5
 ZOOM_TILE_SPLIT_FACTOR = 4
 
 DF = pd.read_pickle("model_data.pkl")
+MDL = w2v.Word2Vec.load(
+    "data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v")
+
 X_MAX, Y_MAX, X_MIN, Y_MIN = DF.x.max(), DF.y.max(), DF.x.min(), DF.y.min()
 
 
@@ -36,18 +42,18 @@ app.config.from_object(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
-@app.route('/hello')
+@ app.route('/hello')
 def hello():
     return 'Hello world!'
 
 
 # sanity check route
-@app.route("/ping", methods=["GET"])
+@ app.route("/ping", methods=["GET"])
 def ping_pong():
     return jsonify("pong!")
 
 
-@app.route("/points")
+@ app.route("/points")
 def points():
     result = {}
     zoom = int(request.args.get("z"))
@@ -148,10 +154,18 @@ def filter_by_label(label):
     return spaces_df_to_features(DF[DF["label"] == label])
 
 
-@app.route("/ko/get/<label>")
-def filter_by_ko(label):
-    notna_df = DF.dropna(subset=["KO"])
-    return spaces_df_to_features(notna_df[notna_df["KO"].str.match(label.replace(",", "|"))])
+@app.route("/neighbors/get/<label>")
+def filter_by_neighbors(label):
+    k = 20
+    top_k = [similar for similar, _ in MDL.wv.most_similar(label, topn=k)]
+    df = DF[DF["word"].isin(top_k)]
+    return spaces_df_to_features(df)
+
+
+@app.route("/word/get/<label>")
+def filter_by_word(label):
+    notna_df = DF.dropna(subset=["word"])
+    return spaces_df_to_features(notna_df[notna_df["word"].str.match(label.replace(",", "|"))])
 
 
 def search_df(column, filter_: str):
