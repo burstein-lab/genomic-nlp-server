@@ -156,7 +156,7 @@ def filter_by_label(label):
 
 @app.route("/neighbors/get/<label>")
 def filter_by_neighbors(label):
-    k = 20
+    k = json.loads(request.args.get("k"))
     top_k = [similar for similar, _ in MDL.wv.most_similar(label, topn=k)]
     df = DF[DF["word"].isin(top_k)]
     return spaces_df_to_features(df)

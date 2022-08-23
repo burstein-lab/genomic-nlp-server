@@ -198,9 +198,15 @@ export default {
     coordsToString(z: number, x: number, y: number) {
       return `${z}-${x}-${y}`;
     },
-    onSelect(type: string, e: string[]) {
+    onSelect(type: string, e: string[], k: number) {
       const runtimeConfig = useRuntimeConfig();
-      fetch(`${runtimeConfig.public.apiBase}/${type}/get/${e.toString()}`)
+      const url = new URL(
+        `${runtimeConfig.public.apiBase}/${type}/get/${e.toString()}`
+      );
+      if (type === "neighbors") {
+        url.searchParams.append("k", k.toString());
+      }
+      fetch(url.href)
         .then((res) => res.json())
         .then((res) => {
           this.latlng = res.latlng;
