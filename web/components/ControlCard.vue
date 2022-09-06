@@ -40,6 +40,12 @@
           />
           <v-text-field v-model="kNeighbors" label="K" type="number" />
         </div>
+        <search
+          v-if="searchMode === 'Gene'"
+          @select="(e: string[]) => onSelect('gene', e)"
+          label="Gene"
+          type="gene"
+        />
       </v-card-text>
       <v-divider class="mx-4" />
       <v-card-text>
@@ -70,7 +76,7 @@ export default {
     searchMode: null,
     neighbors: null,
     kNeighbors: 20,
-    searchModes: ["Space", "Label", "KO / Hypo", "Neighbors"],
+    searchModes: ["Space", "Label", "KO / Hypo", "Neighbors", "Gene"],
     shouldShowMap: useShouldShowMap(),
   }),
   methods: {
