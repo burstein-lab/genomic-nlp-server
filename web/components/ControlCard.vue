@@ -34,7 +34,7 @@
         />
         <div v-if="searchMode === 'Neighbors'">
           <search
-            @select="(e: string[]) => onSelect('neighbors', e)"
+            @select="(e: string[]) => {neighbors=e; onSelect('neighbors', e)}"
             label="Word"
             type="word"
           />
@@ -68,6 +68,7 @@ export default {
   },
   data: () => ({
     searchMode: null,
+    neighbors: null,
     kNeighbors: 20,
     searchModes: ["Space", "Label", "KO / Hypo", "Neighbors"],
     shouldShowMap: useShouldShowMap(),
@@ -81,8 +82,14 @@ export default {
     kNeighbors(val: number) {
       if (val < 1) {
         this.kNeighbors = 1;
+        return;
       } else if (val > 100) {
         this.kNeighbors = 100;
+        return;
+      }
+      // TODO(#85): doesn't change when mode changes but the input is reset.
+      if (this.neighbors !== null) {
+        this.onSelect("neighbors", this.neighbors);
       }
     },
   },

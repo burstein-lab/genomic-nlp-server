@@ -240,7 +240,6 @@ export default {
     },
     searchCollection(value) {
       this.zoomToFeature(this.latlng, this.zoom);
-      return value;
     },
   },
 };
