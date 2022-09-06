@@ -1,4 +1,5 @@
 import os
+import pickle
 import json
 import math
 import re
@@ -23,6 +24,9 @@ DF = pd.read_pickle("model_data.pkl")
 MDL = w2v.Word2Vec.load(
     "data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v")
 
+with open("data_gene_names_to_ko.pkl", "rb") as o:
+    G2KO = pd.DataFrame(pickle.load(o).items(), columns=["name", "ko"])
+
 X_MAX, Y_MAX, X_MIN, Y_MIN = DF.x.max(), DF.y.max(), DF.x.min(), DF.y.min()
 
 
@@ -42,9 +46,9 @@ app.config.from_object(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
-@ app.route('/hello')
+@ app.route("/hello")
 def hello():
-    return 'Hello world!'
+    return "Hello world!"
 
 
 # sanity check route
@@ -131,10 +135,12 @@ def calc_zoom(spaces):
 def filter_by_space(type_):
     filter_ = request.args.get("filter")
     match type_:
+        case "gene":
+            return jsonify(search_g2ko(filter_))
         case "space":
-            return jsonify(search_df("KO", filter_) + search_df("word", filter_))
+            return jsonify(search("KO", filter_) + search("word", filter_))
         case _:
-            return jsonify(search_df(type_, filter_))
+            return jsonify(search(type_, filter_))
 
 
 @app.route("/space/get/<name>")
@@ -162,13 +168,29 @@ def filter_by_neighbors(label):
     return spaces_df_to_features(df)
 
 
+@app.route("/gene/get/<name>")
+def filter_by_gene(name):
+    df = G2KO.dropna()
+    g2ko_spaces = df[df["name"].str.match(name)]
+    spaces = DF[DF["KO"].isin(g2ko_spaces["ko"])]
+    return spaces_df_to_features(spaces)
+
+
 @app.route("/word/get/<label>")
 def filter_by_word(label):
     notna_df = DF.dropna(subset=["word"])
     return spaces_df_to_features(notna_df[notna_df["word"].str.match(label.replace(",", "|"))])
 
 
-def search_df(column, filter_: str):
+def search_g2ko(filter_: str):
+    notna_column = G2KO["name"].dropna()
+    result = notna_column[notna_column.str.contains(
+        filter_.replace(",", "|"), flags=re.IGNORECASE, na=False)].head(50)
+
+    return sorted(list(set(result)))
+
+
+def search(column, filter_: str):
     if column == "ko":
         column = "KO"
 
