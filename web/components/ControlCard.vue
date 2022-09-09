@@ -53,8 +53,23 @@
           Getting data...
           <v-progress-linear indeterminate color="primary" rounded />
         </div>
-        <div v-else-if="info" v-html="info" />
-        <div v-else>Search to explore the model</div>
+        <div v-else-if="hoverPoint">
+          {{ hoverPoint }}
+          Click point for more options
+        </div>
+        <div v-else-if="clickPoint">
+          {{ clickPoint }}
+          <v-btn color="primary">Bar Plot</v-btn>
+          <v-btn class="ma-1" color="grey" icon dark @click="hoverPoint = null">
+            <v-icon>mdi-x</v-icon>
+          </v-btn>
+          <v-btn class="ma-1" color="grey" icon dark @click="hoverPoint = null">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </div>
+        <div v-else>
+          Search to explore the model and hover a point to view extra options
+        </div>
       </v-card-text>
     </v-card>
   </div>
@@ -63,10 +78,6 @@
 <script lang="ts">
 export default {
   props: {
-    info: {
-      type: String,
-      default: "",
-    },
     loading: {
       type: Boolean,
       default: false,
@@ -75,6 +86,7 @@ export default {
   data: () => ({
     searchMode: null,
     neighbors: null,
+    hoverPoint: useHoverPoint(),
     kNeighbors: 20,
     searchModes: ["Space", "Label", "KO / Hypo", "Neighbors", "Gene"],
     shouldShowMap: useShouldShowMap(),

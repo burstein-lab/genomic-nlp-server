@@ -1,10 +1,11 @@
 import os
+import io
 import pickle
 import json
 import math
 import re
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 import numpy as np
 from flask_cors import CORS
 from gensim.models import word2vec as w2v
@@ -180,6 +181,22 @@ def filter_by_gene(name):
 def filter_by_word(label):
     notna_df = DF.dropna(subset=["word"])
     return spaces_df_to_features(notna_df[notna_df["word"].str.match(label.replace(",", "|"))])
+
+
+@app.route("/plot/bar/<word>")
+def filter_by_word2(word):
+    top_k_df = pd.DataFrame(MDL.wv.most_similar(
+        word, topn=10), columns=["word", "distance"])
+    ax = top_k_df.plot.bar(x='lab', y='val', rot=0)
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+    return send_file(
+        buf,
+        mimetype="image/png",
+        as_attachment=True,
+        download_name="abc.png",
+    )
 
 
 def search_g2ko(filter_: str):
