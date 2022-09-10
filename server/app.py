@@ -194,17 +194,6 @@ def filter_by_word2(word):
             "y": top_k_df["distance"].tolist(),
         }
     )
-    # ax = top_k_df.plot.bar(x='lab', y='val', rot=0)
-    # fig = ax.get_figure()
-    # buf = io.BytesIO()
-    # fig.savefig(buf, format="png")
-    # buf.seek(0)
-    # return send_file(
-    #     buf,
-    #     mimetype="image/png",
-    #     as_attachment=True,
-    #     download_name="abc.png",
-    # )
 
 
 def search_g2ko(filter_: str):
