@@ -18,3 +18,4 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get install -y nodejs
 
 RUN curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+RUN echo 'eval "$(starship init bash)"' >> /root/.bashrc

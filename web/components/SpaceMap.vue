@@ -174,6 +174,12 @@ export default {
       });
     },
     highlightFeature(e) {
+      if (
+        this.clickPoint &&
+        this.clickPoint.id === e.target.feature.properties.id
+      ) {
+        return;
+      }
       const layer = e.target;
       layer.setStyle({
         weight: 5,

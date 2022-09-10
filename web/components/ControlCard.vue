@@ -59,13 +59,13 @@
         </div>
         <div v-else-if="clickPoint">
           {{ clickPoint }}
-          <v-btn color="primary">Bar Plot</v-btn>
-          <v-btn class="ma-1" color="grey" icon dark @click="hoverPoint = null">
-            <v-icon>mdi-x</v-icon>
-          </v-btn>
-          <v-btn class="ma-1" color="grey" icon dark @click="hoverPoint = null">
+          <v-btn color="primary" @click="barPlot">Bar Plot</v-btn>
+          <v-btn class="ma-1" color="grey" icon dark @click="clickPoint = null">
             <v-icon>mdi-close</v-icon>
           </v-btn>
+          <div v-if="clickPoint && barData">
+            <BarChart :chartData="barData" />
+          </div>
         </div>
         <div v-else>
           Search to explore the model and hover a point to view extra options
@@ -76,7 +76,9 @@
 </template>
 
 <script lang="ts">
+import { BarChart } from "vue-chart-3";
 export default {
+  components: { BarChart },
   props: {
     loading: {
       type: Boolean,
@@ -86,14 +88,34 @@ export default {
   data: () => ({
     searchMode: null,
     neighbors: null,
+    barData: null,
     hoverPoint: useHoverPoint(),
+    clickPoint: useClickPoint(),
     kNeighbors: 20,
     searchModes: ["Space", "Label", "KO / Hypo", "Neighbors", "Gene"],
     shouldShowMap: useShouldShowMap(),
+    apiUrl: "http://127.0.0.1:5000/",
   }),
   methods: {
     onSelect(type: string, e: string[]) {
       this.$emit("select", type, e, this.kNeighbors);
+    },
+    barPlot() {
+      fetch(`${this.apiUrl}/plot/bar/${this.clickPoint.value.word}`)
+        .then((res) => res.json())
+        .then((res) => {
+          this.barData = {
+            labels: res.x,
+            datasets: [
+              {
+                data: res.y,
+              },
+            ],
+          };
+        })
+        .catch((err) => {
+          console.error(err);
+        });
     },
   },
   watch: {
@@ -109,6 +131,9 @@ export default {
       if (this.neighbors !== null) {
         this.onSelect("neighbors", this.neighbors);
       }
+    },
+    clickPoint(val: Point) {
+      this.barData = null;
     },
   },
 };

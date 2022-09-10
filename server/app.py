@@ -95,7 +95,7 @@ def df_to_features(df):
     for row in df.itertuples():
         y_coord, x_coord = df_coord_to_latlng(row.y, row.x)
         features.append(
-            Point(x_coord, y_coord, f"{x_coord},{y_coord}").todict())
+            Point(row.Index, x_coord, y_coord, {"name": f"{x_coord},{y_coord}", "word": row.word}).todict())
 
     return features
 
@@ -187,16 +187,24 @@ def filter_by_word(label):
 def filter_by_word2(word):
     top_k_df = pd.DataFrame(MDL.wv.most_similar(
         word, topn=10), columns=["word", "distance"])
-    ax = top_k_df.plot.bar(x='lab', y='val', rot=0)
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png")
-    buf.seek(0)
-    return send_file(
-        buf,
-        mimetype="image/png",
-        as_attachment=True,
-        download_name="abc.png",
+
+    return jsonify(
+        {
+            "x": top_k_df["word"].tolist(),
+            "y": top_k_df["distance"].tolist(),
+        }
     )
+    # ax = top_k_df.plot.bar(x='lab', y='val', rot=0)
+    # fig = ax.get_figure()
+    # buf = io.BytesIO()
+    # fig.savefig(buf, format="png")
+    # buf.seek(0)
+    # return send_file(
+    #     buf,
+    #     mimetype="image/png",
+    #     as_attachment=True,
+    #     download_name="abc.png",
+    # )
 
 
 def search_g2ko(filter_: str):

@@ -21,11 +21,12 @@ function spaceToFeature(
   return {
     type: "Feature",
     properties: {
+      id: space.id,
       zoom: coords.z,
       tileX: coords.x,
       tileY: coords.y,
       isSearch: isSearch,
-      name: space["name"],
+      value: space.value,
     },
     geometry: {
       type: "Point",
@@ -35,9 +36,10 @@ function spaceToFeature(
 }
 
 interface Space {
-  name: string;
+  id: string;
   x: number;
   y: number;
+  value: string;
 }
 
 interface Coords {
@@ -54,11 +56,12 @@ export interface FeatureCollection {
 export interface Feature {
   type: "Feature";
   properties: {
+    id: number;
     zoom: number;
     tileX: number;
     tileY: number;
     isSearch: boolean;
-    name: string;
+    value: Object;
   };
   geometry: {
     type: string;
