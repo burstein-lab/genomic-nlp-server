@@ -1,11 +1,10 @@
 import os
-import io
 import pickle
 import json
 import math
 import re
 
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, jsonify, request
 import numpy as np
 from flask_cors import CORS
 from gensim.models import word2vec as w2v
