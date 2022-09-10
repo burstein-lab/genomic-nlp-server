@@ -9,13 +9,15 @@
   "devDependencies": {
     "@mdi/font": "^7.0.96",
     "css-loader": "^6.7.1",
-    "nuxt": "3.0.0-rc.8"
+    "nuxt": "3.0.0-rc.9"
   },
   "dependencies": {
     "@vue-leaflet/vue-leaflet": "^0.6.1",
+    "chart.js": "^3.9.1",
     "leaflet": "^1.8.0",
     "mdi": "^2.2.43",
     "sass": "^1.54.4",
+    "vue-chart-3": "^3.1.8",
     "vuetify": "3.0.0-beta.7"
   }
 }

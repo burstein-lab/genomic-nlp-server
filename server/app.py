@@ -94,7 +94,7 @@ def df_to_features(df):
     for row in df.itertuples():
         y_coord, x_coord = df_coord_to_latlng(row.y, row.x)
         features.append(
-            Point(x_coord, y_coord, f"{x_coord},{y_coord}").todict())
+            Point(row.Index, x_coord, y_coord, {"name": f"{x_coord},{y_coord}", "word": row.word}).todict())
 
     return features
 
@@ -180,6 +180,19 @@ def filter_by_gene(name):
 def filter_by_word(label):
     notna_df = DF.dropna(subset=["word"])
     return spaces_df_to_features(notna_df[notna_df["word"].str.match(label.replace(",", "|"))])
+
+
+@app.route("/plot/bar/<word>")
+def filter_by_word2(word):
+    top_k_df = pd.DataFrame(MDL.wv.most_similar(
+        word, topn=10), columns=["word", "distance"])
+
+    return jsonify(
+        {
+            "x": top_k_df["word"].tolist(),
+            "y": top_k_df["distance"].tolist(),
+        }
+    )
 
 
 def search_g2ko(filter_: str):

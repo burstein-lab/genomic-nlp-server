@@ -101,7 +101,8 @@ export default {
       getJsonOptions: {
         onEachFeature: this.onEachFeature,
       },
-      info: null,
+      hoverPoint: useHoverPoint(),
+      clickPoint: useClickPoint(),
       isMapVisible: useShouldShowMap(),
       collections: new Map(),
       tileSize: 1024,
@@ -166,10 +167,19 @@ export default {
       layer.on({
         mouseover: this.highlightFeature,
         mouseout: this.resetHighlight,
-        click: (e) => this.zoomToFeature(e.latlng, this.zoom),
+        click: (e) => {
+          this.clickPoint = e.target.feature.properties;
+          this.zoomToFeature(e.latlng, this.zoom);
+        },
       });
     },
     highlightFeature(e) {
+      if (
+        this.clickPoint &&
+        this.clickPoint.id === e.target.feature.properties.id
+      ) {
+        return;
+      }
       const layer = e.target;
       layer.setStyle({
         weight: 5,
@@ -178,7 +188,7 @@ export default {
         fillOpacity: 0.7,
       });
       layer.bringToFront();
-      this.info = `Point id <b>${layer.feature.properties.name}</b>`;
+      this.hoverPoint = e.target.feature.properties;
     },
     resetHighlight(e) {
       let obj;
@@ -194,7 +204,7 @@ export default {
         );
       }
       obj.resetStyle(e.target);
-      this.info = null;
+      this.hoverPoint = null;
     },
     zoomToFeature(latlng, zoom: number) {
       this.map.setView(latlng, zoom);
