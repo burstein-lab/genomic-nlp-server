@@ -60,11 +60,15 @@
         <div v-else-if="clickPoint">
           {{ clickPoint }}
           <v-btn color="primary" @click="barPlot">Bar Plot</v-btn>
+          <v-btn color="primary" @click="scatterPlot">Scatter Plot</v-btn>
           <v-btn class="ma-1" color="grey" icon dark @click="clickPoint = null">
             <v-icon>mdi-close</v-icon>
           </v-btn>
           <div v-if="clickPoint && barData">
             <BarChart :chartData="barData" />
+          </div>
+          <div v-if="clickPoint && scatterData">
+            <ScatterChart :chartData="scatterData" />
           </div>
         </div>
         <div v-else>
@@ -76,9 +80,9 @@
 </template>
 
 <script lang="ts">
-import { BarChart } from "vue-chart-3";
+import { BarChart, ScatterChart } from "vue-chart-3";
 export default {
-  components: { BarChart },
+  components: { BarChart, ScatterChart },
   props: {
     loading: {
       type: Boolean,
@@ -89,6 +93,7 @@ export default {
     searchMode: null,
     neighbors: null,
     barData: null,
+    scatterData: null,
     hoverPoint: useHoverPoint(),
     clickPoint: useClickPoint(),
     kNeighbors: 20,
@@ -117,6 +122,20 @@ export default {
           console.error(err);
         });
     },
+    scatterPlot() {
+      fetch(`${this.apiUrl}/plot/scatter/${this.clickPoint.value.word}`)
+        .then((res) => res.json())
+        .then((res) => {
+          this.scatterData = {
+            // plt.yscale('log')
+            //plt.ylabel('Prediction Score')
+            datasets: [res],
+          };
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    },
   },
   watch: {
     kNeighbors(val: number) {
@@ -134,6 +153,7 @@ export default {
     },
     clickPoint(val: Point) {
       this.barData = null;
+      this.scatterData = null;
     },
   },
 };
