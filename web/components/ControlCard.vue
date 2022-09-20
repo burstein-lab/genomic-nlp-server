@@ -93,6 +93,7 @@ export default {
     searchMode: null,
     neighbors: null,
     barData: null,
+    scatterData: null,
     hoverPoint: useHoverPoint(),
     clickPoint: useClickPoint(),
     kNeighbors: 20,
@@ -125,13 +126,10 @@ export default {
       fetch(`${this.apiUrl}/plot/scatter/${this.clickPoint.value.word}`)
         .then((res) => res.json())
         .then((res) => {
-          this.barData = {
-            labels: res.x,
-            datasets: [
-              {
-                data: res.y,
-              },
-            ],
+          this.scatterData = {
+            // plt.yscale('log')
+            //plt.ylabel('Prediction Score')
+            datasets: [res],
           };
         })
         .catch((err) => {
@@ -155,6 +153,7 @@ export default {
     },
     clickPoint(val: Point) {
       this.barData = null;
+      this.scatterData = null;
     },
   },
 };
