@@ -16,11 +16,13 @@ from coords import Point
 # configuration
 DEBUG = True
 
+HEAD_LIMIT = 50
 MAX_TILE_SIZE = 1024
 MAX_ZOOM = 5
 ZOOM_TILE_SPLIT_FACTOR = 4
 
 DF = pd.read_pickle("model_data.pkl")
+LABEL_TO_WORD = pd.read_pickle("label_to_word.pkl")
 MDL = w2v.Word2Vec.load(
     "data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v")
 
@@ -137,6 +139,11 @@ def filter_by_space(type_):
     match type_:
         case "gene":
             return jsonify(search_g2ko(filter_))
+        case "label":
+            if filter_ == "":
+                return jsonify(list(LABEL_TO_WORD.keys())[:HEAD_LIMIT])
+
+            return jsonify(sorted(LABEL_TO_WORD[filter_]))
         case "space":
             return jsonify(search("KO", filter_) + search("word", filter_))
         case _:
@@ -232,7 +239,7 @@ def plot_scatter(word):
 def search_g2ko(filter_: str):
     notna_column = G2KO["name"].dropna()
     result = notna_column[notna_column.str.contains(
-        filter_.replace(",", "|"), flags=re.IGNORECASE, na=False)].head(50)
+        filter_.replace(",", "|"), flags=re.IGNORECASE, na=False)].head(HEAD_LIMIT)
 
     return sorted(list(set(result)))
 
@@ -243,7 +250,7 @@ def search(column, filter_: str):
 
     notna_column = DF[column].dropna()
     result = notna_column[notna_column.str.contains(
-        filter_.replace(",", "|"), flags=re.IGNORECASE, na=False)].head(50)
+        filter_.replace(",", "|"), flags=re.IGNORECASE, na=False)].head(HEAD_LIMIT)
 
     return sorted(list(set(result)))
 
