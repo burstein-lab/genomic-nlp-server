@@ -249,6 +249,7 @@ def search(column, filter_: str):
         column = "KO"
 
     notna_column = DF[column].dropna()
+    notna_column.sort_values(inplace=True)
     result = notna_column[notna_column.str.contains(
         filter_.replace(",", "|"), flags=re.IGNORECASE, na=False)].head(HEAD_LIMIT)
 
