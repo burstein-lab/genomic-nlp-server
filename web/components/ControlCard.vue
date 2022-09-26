@@ -138,15 +138,15 @@ export default {
     },
   },
   watch: {
+    searchMode(val: string) {
+      this.kNeighbors = 20;
+    },
     kNeighbors(val: number) {
       if (val < 1) {
         this.kNeighbors = 1;
-        return;
       } else if (val > 100) {
         this.kNeighbors = 100;
-        return;
       }
-      // TODO(#85): doesn't change when mode changes but the input is reset.
       if (this.neighbors !== null) {
         this.onSelect("neighbors", this.neighbors);
       }
