@@ -83,33 +83,40 @@ class Plot:
         for perm in permutations:
             perm_df = bin_df[bin_df['2d_bin'] == perm]
 
-            _ = plt.figure(figsize=(15, 15), frameon=False)
-            # fig.set_size_inches(15,15)
+            fig = plt.figure(frameon=False)
+            ax = fig.add_axes([0, 0, 1, 1])
+            ax.axis('off')
+
+            ax.plot(perm_df['x'], perm_df['y'], 'o', markersize=1)
+
+            plt.savefig(self.dest)
+            # with open(self.dest, 'w') as outfile:
+            #     fig.canvas.print_png(outfile)
+
+            # fig = plt.figure(frameon=False)
+            # fig.set_size_inches(1, 1)
             # ax = plt.Axes(fig, [0., 0., 1., 1.])
             # ax.set_axis_off()
             # fig.add_axes(ax)
+            # # ax.imshow(your_image, aspect='auto')
 
-            _ = sns.scatterplot(x='x', y='y', data=perm_df, hue='label', legend=False, alpha=0.4,
-                                s=10, palette='gist_rainbow')
-            # plt.xticks([])
-            # plt.yticks([])
-            # plt.xlabel('')
-            # plt.ylabel('')
+            # # _ = sns.scatterplot(x='x', y='y', data=perm_df, hue='label', legend=False, alpha=0.4,
+            # #                     s=10, palette='gist_rainbow')
+            # # plt.xticks([])
+            # # plt.yticks([])
+            # # plt.xlabel('')
+            # # plt.ylabel('')
 
-            # hide axes
-            # for axis in ['top', 'bottom', 'left', 'right']:
-            #     ax.spines[axis].set_linewidth(2)  # change width
-            #     ax.spines[axis].set_color('#EDE8EB')    # change color
+            # # hide axes
+            # # for axis in ['top', 'bottom', 'left', 'right']:
+            # #     ax.spines[axis].set_linewidth(2)  # change width
+            # #     ax.spines[axis].set_color('#EDE8EB')    # change color
 
-            if self.save_img:
-                # ax = plt.Axes(fig, [0., 0., 1., 1.])
-                # ax.set_axis_off()
-                # fig.add_axes(ax)
-                plt.axis('off')
-                plt.savefig(self.dest, bbox_inches='tight',
-                            transparent=False, pad_inches=0)
-            else:
-                plt.show()
+            # if self.save_img:
+            #     ax.imshow(perm_df, aspect='auto')
+            #     plt.savefig(self.dest, dpi=24)
+            # else:
+            #     plt.show()
 
 
 def zoom_splitter(zoom):
