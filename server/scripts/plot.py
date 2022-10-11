@@ -1,18 +1,41 @@
 import argparse
+import io
 import itertools
 import os
 
-
 import matplotlib.pyplot as plt
+from PIL import Image
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
+
+def bbox_gen():
+    """
+    In order to get an estimated border, run im.getbbox() on one of the images. This calculates the size of an image without zero-values pixels meaning dead-zones are not included in the size.
+    BBOX = im.getbbox()
+    """
+
+    while True:
+        yield None
+
+    # Images within the map overlap each other. Therefore, cropped points are being compensated for.
+    yield (211, 196, 1262, 1335)  # (left, top, right, bottom)
+    while True:
+        yield (211, 196, 1262, 1335)
+
+
+BBOX_GEN = bbox_gen()
 
 
 class Space:
     def __init__(self, data_path):
         self.data_path = data_path
         self.space_data = pd.read_pickle(data_path)
+        self.max_x = self.space_data.x.max()
+        self.mix_x = self.space_data.x.min()
+        self.max_y = self.space_data.y.max()
+        self.min_y = self.space_data.y.min()
 
     def focus(self, x_range, y_range):
         try:
@@ -26,12 +49,11 @@ class Space:
             x_range_max = self.normalize(x_range[1], x_min, x_max)
             y_range_min = self.normalize(y_range[0], y_min, y_max)
             y_range_max = self.normalize(y_range[1], y_min, y_max)
-            result = result[result["x"] <=
-                            x_range_max][result["x"] >= x_range_min]
-            result = result[result["y"] <=
-                            y_range_max][result["y"] >= y_range_min]
-
-            return result
+            result = result[result["x"] <= x_range_max]
+            result = result[result["x"] >= x_range_min]
+            result = result[result["y"] <= y_range_max]
+            result = result[result["y"] >= y_range_min]
+            return result, (x_range_min, x_range_max), (y_range_min, y_range_max)
         except Exception as exc:
             raise TypeError(f'Input data file should be a pickled data frame, provided'
                             f' {os.path.splitext(self.data_path)[1]} extension') from exc
@@ -78,45 +100,40 @@ class Plot:
         bins = np.arange(1, self.bins + 1)
         return list(itertools.permutations(bins)) + [(bin, bin) for bin in bins]
 
-    def plot_binned_spaces(self, permutations, bin_df):
-        # perm_img_dir = os.path.join(self.outdir, f'binned_{self.bins}')
+    def plot_binned_spaces(self, permutations, bin_df: pd.DataFrame, x_limits, y_limits):
         for perm in permutations:
             perm_df = bin_df[bin_df['2d_bin'] == perm]
+            if perm_df.empty:
+                continue
 
-            fig = plt.figure(frameon=False)
-            ax = fig.add_axes([0, 0, 1, 1])
-            ax.axis('off')
+            _ = plt.figure(figsize=(15, 15), frameon=False)
+            ax = sns.scatterplot(
+                x='x',
+                y='y',
+                data=perm_df,
+                hue='label',
+                legend=False,
+                alpha=0.4,
+                s=10,
+                palette='gist_rainbow',
+            )
+            ax.set(
+                xlim=x_limits,
+                ylim=y_limits,
+            )
+            plt.axis('off')
+            buf = io.BytesIO()
+            plt.savefig(buf, transparent=True,
+                        bbox_inches='tight', pad_inches=0)
+            # plt.savefig(buf, bbox_inches='tight',
+            #             transparent=False, pad_inches=0)
+            buf.seek(0)
+            with Image.open(buf) as im:
+                bbox = next(BBOX_GEN)
+                print(im.getbbox(), bbox)
+                im.crop(bbox).save(self.dest, self.fmt)
 
-            ax.plot(perm_df['x'], perm_df['y'], 'o', markersize=1)
-
-            plt.savefig(self.dest)
-            # with open(self.dest, 'w') as outfile:
-            #     fig.canvas.print_png(outfile)
-
-            # fig = plt.figure(frameon=False)
-            # fig.set_size_inches(1, 1)
-            # ax = plt.Axes(fig, [0., 0., 1., 1.])
-            # ax.set_axis_off()
-            # fig.add_axes(ax)
-            # # ax.imshow(your_image, aspect='auto')
-
-            # # _ = sns.scatterplot(x='x', y='y', data=perm_df, hue='label', legend=False, alpha=0.4,
-            # #                     s=10, palette='gist_rainbow')
-            # # plt.xticks([])
-            # # plt.yticks([])
-            # # plt.xlabel('')
-            # # plt.ylabel('')
-
-            # # hide axes
-            # # for axis in ['top', 'bottom', 'left', 'right']:
-            # #     ax.spines[axis].set_linewidth(2)  # change width
-            # #     ax.spines[axis].set_color('#EDE8EB')    # change color
-
-            # if self.save_img:
-            #     ax.imshow(perm_df, aspect='auto')
-            #     plt.savefig(self.dest, dpi=24)
-            # else:
-            #     plt.show()
+            buf.close()
 
 
 def zoom_splitter(zoom):
@@ -170,7 +187,7 @@ def plot_everything(args):
         zoom_levels = calc_zoom_levels(zoom)
         for i, x_lines in enumerate(zoom_levels):
             for j, zoom_ranges in enumerate(x_lines):
-                focused_df = space_data.focus(*zoom_ranges)
+                focused_df, x_limits, y_limits = space_data.focus(*zoom_ranges)
                 if len(focused_df) < args.min_img_points:
                     pd.to_pickle(gene_space.space_data, os.path.join(
                         outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.pkl'))
@@ -187,7 +204,8 @@ def plot_everything(args):
                 )
                 perms = gene_space.extract_permutations()
                 binned_df = gene_space.bin_space_for_image()
-                gene_space.plot_binned_spaces(perms, binned_df)
+                gene_space.plot_binned_spaces(
+                    perms, binned_df, x_limits, y_limits)
 
 
 if __name__ == "__main__":
@@ -203,7 +221,7 @@ if __name__ == "__main__":
                           help='max number of bins [default:30]')
     argparse.add_argument('--fmt', default='svg', type=str,
                           help='image format [default: svg]')
-    argparse.add_argument('--min-img-points', default=1000, type=int,
+    argparse.add_argument('--min-img-points', default=500, type=int,
                           help='Number of points for image. If less a pickle will be created [default: 1000]')
     argparse.add_argument('--save_img', default=1, type=int, help='whether to save figures or display them, 1 is True,'
                                                                   ' else 0 [default: 1]')
