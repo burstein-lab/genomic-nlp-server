@@ -3,7 +3,7 @@
     <v-container fluid>
       <v-row>
         <v-col>
-          <space-map />
+          <SpaceMap />
         </v-col>
       </v-row>
     </v-container>
@@ -11,5 +11,5 @@
 </template>
 
 <script setup lang="ts">
-import SpaceMap from "./components/SpaceMap.vue";
+import SpaceMap from "@/components/SpaceMap.vue";
 </script>

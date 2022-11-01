@@ -10,6 +10,7 @@ import numpy as np
 from flask_cors import CORS
 from gensim.models import word2vec as w2v
 import pandas as pd
+# from google.cloud import storage
 
 from coords import Point
 
@@ -21,6 +22,28 @@ HEAD_LIMIT = 50
 MAX_TILE_SIZE = 1024
 MAX_ZOOM = 5
 ZOOM_TILE_SPLIT_FACTOR = 4
+
+# storage_client = storage.Client()
+# if not os.path.isfile("model_data.pkl"):
+#     with open("model_data.pkl", "w") as f:
+#         storage_client.download_blob_to_file(
+#             "gs://gnlp-public-assets/data/model_data.pkl", f)
+
+# if not os.path.isfile("label_to_word.pkl"):
+#     with open("label_to_word.pkl", "w") as f:
+#         storage_client.download_blob_to_file(
+#             "gs://gnlp-public-assets/data/label_to_word.pkl", f)
+
+# if not os.path.isfile("data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v"):
+#     with open("data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", "w") as f:
+#         storage_client.download_blob_to_file(
+#             "gs://gnlp-public-assets/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", f)
+#     with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy", "w") as f:
+#         storage_client.download_blob_to_file(
+#             "gs://gnlp-public-assets/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy", f)
+#     with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy", "w") as f:
+#         storage_client.download_blob_to_file(
+#             "gs://gnlp-public-assets/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy", f)
 
 DF = pd.read_pickle("model_data.pkl")
 LABEL_TO_WORD = pd.read_pickle("label_to_word.pkl")
@@ -182,14 +205,6 @@ def filter_by_gene(name):
     g2ko_spaces = df[df["name"].str.match(name)]
     spaces = DF[DF["KO"].isin(g2ko_spaces["ko"])]
     return spaces_df_to_features(spaces)
-
-
-@app.route("/diamond")
-def diamond():
-    process = subprocess.Popen(
-        "diamond/diamond blastp -d diamond/words.dmnd -q sequences.fasta -o sequences_matches.tsv --outfmt 6 qseqid stitle evalue pident --max-target-seqs 1 --evalue 1e-4", shell=True)
-    out, err = process.communicate(None, 60)
-    return jsonify({"out": out, "err": err})
 
 
 @app.route("/word/get/<label>")

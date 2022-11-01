@@ -41,7 +41,7 @@
           :options="getJsonOptions"
         />
         <l-control ref="controlRef" position="topleft">
-          <control-card :loading="loading" @select="onSelect" />
+          <ControlCard :loading="loading" @search="onSearch" />
         </l-control>
       </l-map>
     </div>
@@ -212,7 +212,8 @@ export default {
     coordsToString(z: number, x: number, y: number) {
       return `${z}-${x}-${y}`;
     },
-    onSelect(type: string, e: string[], k: number) {
+    onSearch(type: string, e: string[], k: number) {
+      console.log(type);
       this.loading = true;
       const url = new URL(`${this.apiUrl}/${type}/get/${e.toString()}`);
       if (type === "neighbors") {
@@ -253,24 +254,11 @@ export default {
 </script>
 
 <style>
-.info {
-  padding: 6px 8px;
-  font: 14px/16px Arial, Helvetica, sans-serif;
-  background: white;
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-}
-.info h4 {
-  margin: 0 0 5px;
-  color: #777;
-}
-
 .leaflet-pane {
   z-index: 1;
 }
 
 #mapRef {
-  background: white;
+  background: rgb(var(--v-theme-background));
 }
 </style>

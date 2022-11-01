@@ -1,46 +1,42 @@
 import argparse
+import io
 import itertools
 import os
 
-
 import matplotlib.pyplot as plt
+import cv2
+from PIL import Image
 import numpy as np
 import pandas as pd
 import seaborn as sns
 
 
 class Space:
-    """Plots a pickled dataframe
-    """
-
-    def __init__(self, data_path, dest, bins=1, max_bins=30, fmt='svg', save_img=True):
+    def __init__(self, data_path):
         self.data_path = data_path
-        self.dest = dest
-        self.bins = bins
-        self.max_bins = max_bins
-        self.fmt = fmt
-        self.save_img = save_img
-        self.space_data = None
+        self.space_data = pd.read_pickle(data_path)
+        self.max_x = self.space_data.x.max()
+        self.mix_x = self.space_data.x.min()
+        self.max_y = self.space_data.y.max()
+        self.min_y = self.space_data.y.min()
 
-    def load_data(self, x_range, y_range):
-        if not os.path.exists(self.data_path):
-            raise FileNotFoundError
+    def focus(self, x_range, y_range):
         try:
-            space_data = pd.read_pickle(self.data_path)
-            x_min = space_data.x.min()
-            y_min = space_data.y.min()
-            x_max = space_data.x.max()
-            y_max = space_data.y.max()
+            result = self.space_data
+            x_min = result.x.min()
+            y_min = result.y.min()
+            x_max = result.x.max()
+            y_max = result.y.max()
 
             x_range_min = self.normalize(x_range[0], x_min, x_max)
             x_range_max = self.normalize(x_range[1], x_min, x_max)
             y_range_min = self.normalize(y_range[0], y_min, y_max)
             y_range_max = self.normalize(y_range[1], y_min, y_max)
-            space_data = space_data[space_data["x"] <=
-                                    x_range_max][space_data["x"] >= x_range_min]
-            space_data = space_data[space_data["y"] <=
-                                    y_range_max][space_data["y"] >= y_range_min]
-            self.space_data = space_data
+            result = result[result["x"] <= x_range_max]
+            result = result[result["x"] >= x_range_min]
+            result = result[result["y"] <= y_range_max]
+            result = result[result["y"] >= y_range_min]
+            return result, (x_range_min, x_range_max), (y_range_min, y_range_max)
         except Exception as exc:
             raise TypeError(f'Input data file should be a pickled data frame, provided'
                             f' {os.path.splitext(self.data_path)[1]} extension') from exc
@@ -48,6 +44,19 @@ class Space:
     @staticmethod
     def normalize(value, value_min, value_max):
         return value * (value_max - value_min) + value_min
+
+
+class Plot:
+    """Plots a pickled dataframe
+    """
+
+    def __init__(self, space_data, dest, bins=1, max_bins=30, fmt='svg', save_img=True):
+        self.space_data = space_data
+        self.dest = dest
+        self.bins = bins
+        self.max_bins = max_bins
+        self.fmt = fmt
+        self.save_img = save_img
 
     def bin_space_for_image(self):
         if self.bins < 1 | self.bins > self.max_bins:
@@ -74,38 +83,28 @@ class Space:
         bins = np.arange(1, self.bins + 1)
         return list(itertools.permutations(bins)) + [(bin, bin) for bin in bins]
 
-    def plot_binned_spaces(self, permutations, bin_df):
-        # perm_img_dir = os.path.join(self.outdir, f'binned_{self.bins}')
+    def normalize(value, value_min, value_max):
+        return (value - value_min) / (value_max - value_min)
+
+    def plot_binned_spaces(self, permutations, bin_df: pd.DataFrame, x_limits, y_limits):
         for perm in permutations:
             perm_df = bin_df[bin_df['2d_bin'] == perm]
+            if perm_df.empty:
+                continue
 
-            _ = plt.figure(figsize=(15, 15), frameon=False)
-            # fig.set_size_inches(15,15)
-            # ax = plt.Axes(fig, [0., 0., 1., 1.])
-            # ax.set_axis_off()
-            # fig.add_axes(ax)
+            layer1 = np.zeros((1024, 1024, 4))
 
-            _ = sns.scatterplot(x='x', y='y', data=perm_df, hue='label', legend=False, alpha=0.4,
-                                s=10, palette='gist_rainbow')
-            # plt.xticks([])
-            # plt.yticks([])
-            # plt.xlabel('')
-            # plt.ylabel('')
+            color = (0, 0, 255, 255)
+            border_color = (0, 255, 0, 255)
+            radius = 10  # including border
+            border_width = 1
 
-            # hide axes
-            # for axis in ['top', 'bottom', 'left', 'right']:
-            #     ax.spines[axis].set_linewidth(2)  # change width
-            #     ax.spines[axis].set_color('#EDE8EB')    # change color
+            for _, row in perm_df.iterrows():
+                center = (int(row['x']), int(row['y']))
+                cv2.circle(layer1, center, radius, color, -1)
+                cv2.circle(layer1, center, radius, border_color, border_width)
 
-            if self.save_img:
-                # ax = plt.Axes(fig, [0., 0., 1., 1.])
-                # ax.set_axis_off()
-                # fig.add_axes(ax)
-                plt.axis('off')
-                plt.savefig(self.dest, bbox_inches='tight',
-                            transparent=False, pad_inches=0)
-            else:
-                plt.show()
+            cv2.imwrite("out.png", layer1)
 
 
 def zoom_splitter(zoom):
@@ -152,13 +151,21 @@ def calc_zoom_levels(zoom):
 
 def plot_everything(args):
     for zoom in range(args.max_zoom + 1):
+        space_data = Space(args.data)
         outdir = os.path.join(args.outdir, str(zoom))
+
         os.makedirs(outdir, exist_ok=True)
         zoom_levels = calc_zoom_levels(zoom)
         for i, x_lines in enumerate(zoom_levels):
             for j, zoom_ranges in enumerate(x_lines):
-                gene_space = Space(
-                    data_path=args.data,
+                focused_df, x_limits, y_limits = space_data.focus(*zoom_ranges)
+                if len(focused_df) < args.min_img_points:
+                    pd.to_pickle(gene_space.space_data, os.path.join(
+                        outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.pkl'))
+                    continue
+
+                gene_space = Plot(
+                    space_data=focused_df,
                     dest=os.path.join(
                         outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.{args.fmt}'),
                     bins=args.bins,
@@ -166,15 +173,10 @@ def plot_everything(args):
                     fmt=args.fmt,
                     save_img=args.save_img,
                 )
-                gene_space.load_data(*zoom_ranges)
-                if len(gene_space.space_data) < args.min_img_points:
-                    pd.to_pickle(gene_space.space_data, os.path.join(
-                        outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.pkl'))
-                    continue
-
                 perms = gene_space.extract_permutations()
                 binned_df = gene_space.bin_space_for_image()
-                gene_space.plot_binned_spaces(perms, binned_df)
+                gene_space.plot_binned_spaces(
+                    perms, binned_df, x_limits, y_limits)
 
 
 if __name__ == "__main__":
@@ -190,7 +192,7 @@ if __name__ == "__main__":
                           help='max number of bins [default:30]')
     argparse.add_argument('--fmt', default='svg', type=str,
                           help='image format [default: svg]')
-    argparse.add_argument('--min-img-points', default=1000, type=int,
+    argparse.add_argument('--min-img-points', default=500, type=int,
                           help='Number of points for image. If less a pickle will be created [default: 1000]')
     argparse.add_argument('--save_img', default=1, type=int, help='whether to save figures or display them, 1 is True,'
                                                                   ' else 0 [default: 1]')
