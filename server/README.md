@@ -1,12 +1,11 @@
 # Deployment
 
-Following https://devcenter.heroku.com/articles/container-registry-and-runtime (https://github.com/heroku/alpinehelloworld)
+Based on https://medium.com/google-developer-experts/building-a-flask-app-using-docker-and-deploy-to-google-cloud-run-8f311ad36040
 
 ```bash
-heroku container:push web -a gnlp-server
-heroku container:release web -a gnlp-server
-heroku open -a gnlp-server # Or go to https://gnlp-server.herokuapp.com/
-heroku logs -a gnlp-server --tail
+pipenv requirements > requirements.txt
+docker build . -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server
+docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest
 ```
 
 ## Local
