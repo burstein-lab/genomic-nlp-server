@@ -3,6 +3,7 @@ import pickle
 import json
 import math
 import re
+import subprocess
 
 from flask import Flask, jsonify, request
 import numpy as np
@@ -183,6 +184,14 @@ def filter_by_gene(name):
     return spaces_df_to_features(spaces)
 
 
+@app.route("/diamond")
+def diamond():
+    process = subprocess.Popen(
+        "diamond/diamond blastp -d diamond/words.dmnd -q sequences.fasta -o sequences_matches.tsv --outfmt 6 qseqid stitle evalue pident --max-target-seqs 1 --evalue 1e-4", shell=True)
+    out, err = process.communicate(None, 60)
+    return jsonify({"out": out, "err": err})
+
+
 @app.route("/word/get/<label>")
 def filter_by_word(label):
     notna_df = DF.dropna(subset=["word"])
@@ -225,7 +234,7 @@ def plot_scatter(word):
     for i, v in enumerate(pred_df['score'].values):
         data.append({
             "x": my_range[i],
-            "y": v,
+            "y": math.log(v),
         })
 
     return jsonify(
@@ -257,4 +266,4 @@ def search(column, filter_: str):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0")
+    app.run(host="0.0.0.0", port=8080)

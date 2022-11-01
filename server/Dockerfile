@@ -1,22 +1,16 @@
 FROM python:3.10
 
-# Enforces .venv to be in project.
-ENV PIPENV_VENV_IN_PROJECT=true
-
-ADD . /opt/webapp/
-WORKDIR /opt/webapp
-
+COPY requirements.txt .
 RUN pip install --upgrade pip
-RUN pip install pipenv
-RUN pipenv install --deploy
+RUN pip install -r requirements.txt
 
-# Expose is NOT supported by Heroku
-# EXPOSE 5000 		
+COPY app.py .
+COPY coords.py .
+COPY model_data.pkl .
+COPY label_to_word.pkl .
+COPY data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v .
+COPY data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy .
+COPY data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy .
+COPY data_gene_names_to_ko.pkl .
 
-## Run the image as a non-root user
-#RUN adduser --disabled-login myuser
-#USER myuser
-
-# Run the app.  CMD is required to run on Heroku
-# $PORT is set by Heroku			
-CMD pipenv run gunicorn --bind 0.0.0.0:$PORT wsgi 
+ENTRYPOINT ["gunicorn"  , "-b", "0.0.0.0:8080", "app:app"]
