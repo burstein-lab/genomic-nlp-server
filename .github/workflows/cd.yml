@@ -51,7 +51,7 @@ jobs:
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: pipenv requirements > requirements.txt
       - run: gcloud auth configure-docker us-central1-docker.pkg.dev
-      - run: docker build . -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server
+      - run: docker build server -f server/Dockerfile -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server
       - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest
   # create-public-assets:
   #   runs-on: ubuntu-latest
