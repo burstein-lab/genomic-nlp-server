@@ -26,11 +26,8 @@ jobs:
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: pipenv requirements > requirements.txt
       - run: gcloud auth configure-docker us-central1-docker.pkg.dev
-      - uses: docker/build-push-action@v2
-        with:
-          push: true
-          context: diamond
-          tags: us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest
+      - run: docker build diamond -f diamond/Dockerfile -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond
+      - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest
   # TODO: update running instance and remove old images.
   deploy-server:
     runs-on: ubuntu-latest
