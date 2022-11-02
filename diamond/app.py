@@ -12,12 +12,9 @@ app.config.from_object(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
-@app.route("/diamond")
+@app.route("/diamond", methods=["GET", "POST"])
 def diamond():
-    result = subprocess.run(
-        "diamond blastp -d words.dmnd --outfmt 6 qseqid stitle evalue pident --max-target-seqs 1 --evalue 1e-4 --memory-limit 4",
-        shell=True,
-        input=""">K00001.1
+    sequence = """>K00001.1
 MGAVSSNAPTSRALVLEAPRRLVVRELAVPEIGADDALVRVEACGLCGTDHEQYTGALSG
 GFAFVPGHETVGIIEAIGPQAARRWGVAAGDRVAVEVFQSCRQCPNCLAGEYRRCERHGL
 ADMYGFIPVDRAPGLWGGYAEYQYLAPDSMVLPVPAGLDPAVASLFNPLGAGIRWGATLP
@@ -33,7 +30,14 @@ DPRMTRSLPPRITASTGMDALVHAIEGYTSIQRNPLSDAYAWAAIELIREYLPRAVANGQ
 DTEARLAMANAALMAGAAFSNAMVGLVHAIGHAVGGVARVAHGDAMAILLPHVMEYNLDM
 LSDRYGRLLLALAGPEVYAATPDNVRGSQAIAVVRAFAERLHQACGLPLRLRDVGVTEAQ
 LPAIARTTMNDGALLMNAKEAGPDDVMQILRKAF
-""",
+"""
+    if method == "POST":
+        request.form.get("sequence")
+
+    result = subprocess.run(
+        "diamond blastp -d words.dmnd --outfmt 6 qseqid stitle evalue pident --max-target-seqs 1 --evalue 1e-4 --memory-limit 4",
+        shell=True,
+        input=sequence,
         capture_output=True,
         text=True,
     )

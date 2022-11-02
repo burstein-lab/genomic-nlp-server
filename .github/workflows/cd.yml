@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  deploy-server:
+  deploy-diamond:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -31,7 +31,7 @@ jobs:
           push: true
           context: diamond
           tags: us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest
-      # TODO: update running instance and remove old images.
+  # TODO: update running instance and remove old images.
   deploy-server:
     runs-on: ubuntu-latest
     steps:
@@ -56,25 +56,24 @@ jobs:
           push: true
           context: server
           tags: us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest
-      # TODO: update running instance and remove old images.
-  create-public-assets:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: google-github-actions/auth@v0
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-      - uses: google-github-actions/setup-gcloud@v0
-      - uses: actions/setup-python@v3
-        with:
-          python-version: "3.10"
-      - run: python -m pip install --upgrade pip
-      - run: python -m pip install pipenv
-      - uses: actions/cache@v3
-        with:
-          path: ~/.local/share/virtualenvs
-          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-      - run: pipenv install --deploy
-      - run: gsutil cp gs://gnlp-public-assets/data/model_data.pkl model_data.pkl
-      - run: pipenv run python server/scripts/plot.py --data model_data.pkl --outdir=web/src/assets/map --fmt png --max-zoom 5
-      - run: gsutil -m rsync web/src/assets/map gs://gnlp-public-assets/map
+  # create-public-assets:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: google-github-actions/auth@v0
+  #       with:
+  #         credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+  #     - uses: google-github-actions/setup-gcloud@v0
+  #     - uses: actions/setup-python@v3
+  #       with:
+  #         python-version: "3.10"
+  #     - run: python -m pip install --upgrade pip
+  #     - run: python -m pip install pipenv
+  #     - uses: actions/cache@v3
+  #       with:
+  #         path: ~/.local/share/virtualenvs
+  #         key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+  #     - run: pipenv install --deploy
+  #     - run: gsutil cp gs://gnlp-public-assets/data/model_data.pkl model_data.pkl
+  #     - run: pipenv run python server/scripts/plot.py --data model_data.pkl --outdir=web/src/assets/map --fmt png --max-zoom 5
+  #     - run: gsutil -m rsync web/src/assets/map gs://gnlp-public-assets/map

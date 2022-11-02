@@ -35,6 +35,11 @@ function spaceToFeature(
   };
 }
 
+interface LatLng {
+  lat: number;
+  lng: number;
+}
+
 interface Space {
   id: string;
   x: number;
@@ -48,12 +53,12 @@ interface Coords {
   z: number;
 }
 
-export interface FeatureCollection {
+interface FeatureCollection {
   type: "FeatureCollection";
   features: Feature[];
 }
 
-export interface Feature {
+interface Feature {
   type: "Feature";
   properties: {
     id: number;
@@ -68,3 +73,5 @@ export interface Feature {
     coordinates: number[];
   };
 }
+
+export type { Coords, Space, Feature, FeatureCollection, LatLng };

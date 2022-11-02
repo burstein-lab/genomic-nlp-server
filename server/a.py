@@ -3,8 +3,8 @@ import cv2
 
 layer1 = np.zeros((1024, 1024, 4))
 
-color = (0, 0, 255, 255)
-border_color = (0, 255, 0, 255)
+color = (0, 0, 255, 128)
+border_color = (0, 255, 0, 128)
 radius = 10  # including border
 border_width = 1
 center = (255, 255)

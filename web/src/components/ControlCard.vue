@@ -64,6 +64,7 @@
           />
           <div v-if="searchMode === 'Sequence'">
             <v-textarea
+              v-model="sequence"
               filled
               auto-grow
               label="Search by sequence"
@@ -71,7 +72,7 @@
               row-height="30"
               shaped
               append-icon="mdi-send"
-              @click:append=""
+              @click:append="onSequenceSearch('sequence', [sequence])"
             />
             <v-file-input show-size label="From file" />
           </div>
@@ -145,15 +146,19 @@ export default {
         "Gene",
         "Sequence",
       ],
+      sequence: "",
       shouldShowMap: useShouldShowMap(),
       apiUrl: import.meta.env.VITE_SERVER_URL,
     };
   },
   methods: {
+    onSequenceSearch() {
+      this.$emit("sequenceSearch", this.sequence);
+    },
     onSearch(type: string, e: string[]) {
       this.$emit("search", type, e, this.kNeighbors);
     },
-    emits: ["search"],
+    emits: ["search", "sequenceSearch"],
     barPlot() {
       fetch(`${this.apiUrl}/plot/bar/${this.clickPoint.value.word}`)
         .then((res) => res.json())

@@ -11,6 +11,17 @@ import pandas as pd
 import seaborn as sns
 
 
+TILE_SIZE = 1024
+# https://coolors.co/b24c63-5438dc-357ded-56eef4-32e875
+COLOR_PICKER = itertools.cycle([
+    (178, 76, 99),
+    (84, 56, 220),
+    (53, 125, 237),
+    (86, 238, 244),
+    (50, 232, 117),
+])
+
+
 class Space:
     def __init__(self, data_path):
         self.data_path = data_path
@@ -83,7 +94,7 @@ class Plot:
         bins = np.arange(1, self.bins + 1)
         return list(itertools.permutations(bins)) + [(bin, bin) for bin in bins]
 
-    def normalize(value, value_min, value_max):
+    def normalize(self, value, value_min, value_max):
         return (value - value_min) / (value_max - value_min)
 
     def plot_binned_spaces(self, permutations, bin_df: pd.DataFrame, x_limits, y_limits):
@@ -92,19 +103,30 @@ class Plot:
             if perm_df.empty:
                 continue
 
-            layer1 = np.zeros((1024, 1024, 4))
+            # https://stackoverflow.com/questions/44595160/create-transparent-image-in-opencv-python
+            layer1 = np.zeros((TILE_SIZE, TILE_SIZE, 4))
 
-            color = (0, 0, 255, 255)
-            border_color = (0, 255, 0, 255)
-            radius = 10  # including border
+            radius = 5  # including border
             border_width = 1
+            opacity = int(0.8 * 255)
 
             for _, row in perm_df.iterrows():
-                center = (int(row['x']), int(row['y']))
-                cv2.circle(layer1, center, radius, color, -1)
-                cv2.circle(layer1, center, radius, border_color, border_width)
+                color = next(COLOR_PICKER)
+                center = (
+                    round(TILE_SIZE * self.normalize(row['x'], *x_limits)),
+                    round(TILE_SIZE * self.normalize(row['y'], *y_limits)),
+                )
+                # RGBA color
+                cv2.circle(layer1, center, radius, (*color, opacity), -1)
+                cv2.circle(
+                    layer1,
+                    center,
+                    radius,
+                    (*color, 255),
+                    border_width,
+                )
 
-            cv2.imwrite("out.png", layer1)
+            cv2.imwrite(self.dest, layer1)
 
 
 def zoom_splitter(zoom):
@@ -161,13 +183,14 @@ def plot_everything(args):
                 focused_df, x_limits, y_limits = space_data.focus(*zoom_ranges)
                 if len(focused_df) < args.min_img_points:
                     pd.to_pickle(gene_space.space_data, os.path.join(
-                        outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.pkl'))
+                        outdir, f'space_by_label_{i}_{j}.pkl'))
                     continue
 
+                print(f'Plotting zoom {zoom} tile {i}_{j}', zoom_ranges)
                 gene_space = Plot(
                     space_data=focused_df,
                     dest=os.path.join(
-                        outdir, f'space_by_label_{i}_{len(x_lines) - j - 1}.{args.fmt}'),
+                        outdir, f'space_by_label_{i}_{j}.{args.fmt}'),
                     bins=args.bins,
                     max_bins=args.max_bins,
                     fmt=args.fmt,
@@ -195,5 +218,5 @@ if __name__ == "__main__":
     argparse.add_argument('--min-img-points', default=500, type=int,
                           help='Number of points for image. If less a pickle will be created [default: 1000]')
     argparse.add_argument('--save_img', default=1, type=int, help='whether to save figures or display them, 1 is True,'
-                                                                  ' else 0 [default: 1]')
+                          ' else 0 [default: 1]')
     plot_everything(argparse.parse_args())

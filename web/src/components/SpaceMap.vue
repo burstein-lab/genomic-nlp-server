@@ -41,7 +41,11 @@
           :options="getJsonOptions"
         />
         <l-control ref="controlRef" position="topleft">
-          <ControlCard :loading="loading" @search="onSearch" />
+          <ControlCard
+            :loading="loading"
+            @search="onSearch"
+            @sequenceSearch="onSequenceSearch"
+          />
         </l-control>
       </l-map>
     </div>
@@ -71,11 +75,12 @@ import {
   useHoverPoint,
   useClickPoint,
   useShouldShowMap,
-} from "../composables/states";
+} from "@/composables/states";
 import ControlCard from "./ControlCard.vue";
-import { spacesToCollection } from "../composables/spaces";
+import { spacesToCollection, Coords, LatLng } from "@/composables/spaces";
 
 export default {
+  name: "SpaceMap",
   components: {
     LMap,
     LIcon,
@@ -98,6 +103,7 @@ export default {
       zoom: useZoom(),
       publicAssetsUrl: import.meta.env.VITE_PUBLIC_URL,
       apiUrl: import.meta.env.VITE_SERVER_URL,
+      diamondUrl: import.meta.env.VITE_DIAMOND_URL,
       getJsonOptions: {
         onEachFeature: this.onEachFeature,
       },
@@ -108,14 +114,15 @@ export default {
       tileSize: 1024,
       searchCollection: null,
       loading: false,
+      map: null,
     };
   },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
     // And now the Leaflet circleMarker function can be used by the options:
-    this.getJsonOptions.pointToLayer = (feature, latlng) =>
+    this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) =>
       circleMarker(latlng, {
-        radius: 10,
+        radius: 7,
         fillColor: feature.properties.isSearch ? "#007800" : "#ff7800",
         color: "#000",
         weight: 1,
@@ -137,14 +144,14 @@ export default {
         self.getFeatures(event.coords);
       });
     },
-    geoJsonObj(k) {
+    geoJsonObj(k: string) {
       // When using v-for, ref is a list.
       return this.$refs[`geoJson${k}Ref`][0].leafletObject;
     },
     onMapReady(self) {
       self.map = this.$refs.mapRef.leafletObject;
     },
-    getFeatures(coords) {
+    getFeatures(coords: Coords) {
       fetch(`${this.apiUrl}/points?z=${coords.z}&x=${coords.x}&y=${coords.y}`)
         .then((res) => res.json())
         .then((res) => {
@@ -206,11 +213,34 @@ export default {
       obj.resetStyle(e.target);
       this.hoverPoint = null;
     },
-    zoomToFeature(latlng, zoom: number) {
+    zoomToFeature(latlng: LatLng, zoom: number) {
       this.map.setView(latlng, zoom);
     },
     coordsToString(z: number, x: number, y: number) {
       return `${z}-${x}-${y}`;
+    },
+    onSequenceSearch(sequence: string) {
+      this.loading = true;
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sequence }),
+      };
+      const url = new URL(`${this.diamondUrl}/diamond`);
+      fetch(url.href, requestOptions)
+        .then((res) => {
+          console.log("1", res);
+          return res.json();
+        })
+        .then((res) => {
+          console.log("2", res);
+        })
+        .catch((error) => {
+          console.error(error);
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
     onSearch(type: string, e: string[], k: number) {
       console.log(type);
