@@ -2,6 +2,14 @@ import subprocess
 
 from flask import Flask, jsonify
 from flask_cors import CORS
+# from google.cloud import storage
+
+
+# storage_client = storage.Client()
+# if not os.path.isfile("words.dmnd"):
+#     with open("words.dmnd", "w") as f:
+#         storage_client.download_blob_to_file(
+#             "gs://gnlp-public-assets/data/diamond/words.dmnd", f)
 
 
 # instantiate the app

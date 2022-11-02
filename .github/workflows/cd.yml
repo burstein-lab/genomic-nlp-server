@@ -25,7 +25,7 @@ jobs:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: pipenv requirements > requirements.txt
-      - run: gcloud auth configure-docker
+      - run: gcloud auth configure-docker us-central1-docker.pkg.dev
       - uses: docker/build-push-action@v2
         with:
           push: true
@@ -50,7 +50,7 @@ jobs:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: pipenv requirements > requirements.txt
-      - run: gcloud auth configure-docker
+      - run: gcloud auth configure-docker us-central1-docker.pkg.dev
       - uses: docker/build-push-action@v2
         with:
           push: true
