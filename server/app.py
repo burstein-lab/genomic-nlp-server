@@ -25,25 +25,25 @@ ZOOM_TILE_SPLIT_FACTOR = 4
 
 if not os.path.isfile("model_data.pkl"):
     storage_client = storage.Client()
-    with open("model_data.pkl", "w") as f:
+    with open("model_data.pkl", "wb") as f:
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/model_data.pkl", f)
 
 if not os.path.isfile("label_to_word.pkl"):
     storage_client = storage.Client()
-    with open("label_to_word.pkl", "w") as f:
+    with open("label_to_word.pkl", "wb") as f:
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/label_to_word.pkl", f)
 
 if not os.path.isfile("data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v"):
     storage_client = storage.Client()
-    with open("data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", "w") as f:
+    with open("data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", "wb") as f:
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", f)
-    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy", "w") as f:
+    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy", "wb") as f:
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy", f)
-    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy", "w") as f:
+    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy", "wb") as f:
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy", f)
 
