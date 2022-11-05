@@ -24,9 +24,9 @@ jobs:
         with:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-      - run: pipenv requirements > requirements.txt
+      - run: pipenv requirements > diamond/requirements.txt
       - run: gcloud auth configure-docker us-central1-docker.pkg.dev
-      - run: docker build diamond -f diamond/Dockerfile -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond
+      - run: docker build diamond -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond
       - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest
       - run: gcloud run deploy diamond --image=us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest --region us-central1
   # TODO: update running instance and remove old images.
@@ -47,9 +47,9 @@ jobs:
         with:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-      - run: pipenv requirements > requirements.txt
+      - run: pipenv requirements > server/requirements.txt
       - run: gcloud auth configure-docker us-central1-docker.pkg.dev
-      - run: docker build server -f server/Dockerfile -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server
+      - run: docker build server -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server
       - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest
       - run: gcloud run deploy gnlp-server --image=us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest --region us-central1
 
