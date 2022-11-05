@@ -1,4 +1,6 @@
 import argparse
+import shutil
+import tempfile
 import io
 import itertools
 import os
@@ -22,52 +24,15 @@ COLOR_PICKER = itertools.cycle([
 ])
 
 
-class Space:
-    def __init__(self, data_path):
+class NewPlotter:
+    def __init__(self, data_path, bins):
         self.data_path = data_path
+        self.bins = bins
         self.space_data = pd.read_pickle(data_path)
         self.max_x = self.space_data.x.max()
-        self.mix_x = self.space_data.x.min()
+        self.min_x = self.space_data.x.min()
         self.max_y = self.space_data.y.max()
         self.min_y = self.space_data.y.min()
-
-    def focus(self, x_range, y_range):
-        try:
-            result = self.space_data
-            x_min = result.x.min()
-            y_min = result.y.min()
-            x_max = result.x.max()
-            y_max = result.y.max()
-
-            x_range_min = self.normalize(x_range[0], x_min, x_max)
-            x_range_max = self.normalize(x_range[1], x_min, x_max)
-            y_range_min = self.normalize(y_range[0], y_min, y_max)
-            y_range_max = self.normalize(y_range[1], y_min, y_max)
-            result = result[result["x"] <= x_range_max]
-            result = result[result["x"] >= x_range_min]
-            result = result[result["y"] <= y_range_max]
-            result = result[result["y"] >= y_range_min]
-            return result, (x_range_min, x_range_max), (y_range_min, y_range_max)
-        except Exception as exc:
-            raise TypeError(f'Input data file should be a pickled data frame, provided'
-                            f' {os.path.splitext(self.data_path)[1]} extension') from exc
-
-    @staticmethod
-    def normalize(value, value_min, value_max):
-        return value * (value_max - value_min) + value_min
-
-
-class Plot:
-    """Plots a pickled dataframe
-    """
-
-    def __init__(self, space_data, dest, bins=1, max_bins=30, fmt='svg', save_img=True):
-        self.space_data = space_data
-        self.dest = dest
-        self.bins = bins
-        self.max_bins = max_bins
-        self.fmt = fmt
-        self.save_img = save_img
 
     def bin_space_for_image(self):
         if self.bins < 1 | self.bins > self.max_bins:
@@ -94,39 +59,159 @@ class Plot:
         bins = np.arange(1, self.bins + 1)
         return list(itertools.permutations(bins)) + [(bin, bin) for bin in bins]
 
-    def normalize(self, value, value_min, value_max):
+    @staticmethod
+    def normalize_to_standard(value, value_min, value_max):
         return (value - value_min) / (value_max - value_min)
 
-    def plot_binned_spaces(self, permutations, bin_df: pd.DataFrame, x_limits, y_limits):
-        for perm in permutations:
-            perm_df = bin_df[bin_df['2d_bin'] == perm]
-            if perm_df.empty:
-                continue
+    @staticmethod
+    def normalize_from_standard(value, value_min, value_max):
+        return value * (value_max - value_min) + value_min
 
-            # https://stackoverflow.com/questions/44595160/create-transparent-image-in-opencv-python
-            layer1 = np.zeros((TILE_SIZE, TILE_SIZE, 4))
+    def crop_tiles(self, filename, outdir, zoom):
+        if zoom == 0:
+            shutil.copy(
+                filename,
+                os.path.join(outdir, "space_by_label_0_0.png"),
+            )
+            return
 
-            radius = 5  # including border
-            border_width = 1
-            opacity = int(0.8 * 255)
+        # Based on https://stackoverflow.com/a/65698752
+        img = Image.open(filename)
+        w, h = img.size
+        d = TILE_SIZE
+        print("image size:", w, h)
 
-            for _, row in perm_df.iterrows():
-                color = next(COLOR_PICKER)
-                center = (
-                    round(TILE_SIZE * self.normalize(row['x'], *x_limits)),
-                    round(TILE_SIZE * self.normalize(row['y'], *y_limits)),
+        grid = itertools.product(range(0, h-h % d, d), range(0, w-w % d, d))
+        for i, j in grid:
+            print(f'Plotting zoom {zoom} tile {i}_{j}')
+            box = (j, i, j+d, i+d)
+            out = os.path.join(
+                outdir, f'space_by_label_{int(j / TILE_SIZE)}_{int(i / TILE_SIZE)}.png')
+            img.crop(box).save(out)
+
+    def _focus(self, x_range, y_range):
+        x_range_min = self.normalize_from_standard(
+            x_range[0],
+            self.min_x,
+            self.max_x,
+        )
+        x_range_max = self.normalize_from_standard(
+            x_range[1],
+            self.min_x,
+            self.max_x,
+        )
+        y_range_min = self.normalize_from_standard(
+            y_range[0],
+            self.min_y,
+            self.max_y,
+        )
+        y_range_max = self.normalize_from_standard(
+            y_range[1],
+            self.min_y,
+            self.max_y,
+        )
+        return x_range_min, x_range_max, y_range_min, y_range_max
+
+    def plot_pkls(self, df: pd.DataFrame, outdir: str, zoom: int, threshold: int) -> pd.DataFrame:
+        zoom_levels = calc_zoom_levels(zoom)
+        for i, x_lines in enumerate(zoom_levels):
+            for j, zoom_ranges in enumerate(x_lines):
+                min_x, max_x, min_y, max_y = self._focus(*zoom_ranges)
+                # Including all boundaries. We won't have overlaps even if this and neighboring tiles will be plotted because the points are masked from the main df.
+                mask = (
+                    (df["x"] >= min_x) &
+                    (df["x"] <= max_x) &
+                    (df["y"] >= min_y) &
+                    (df["y"] <= max_y)
                 )
-                # RGBA color
-                cv2.circle(layer1, center, radius, (*color, opacity), -1)
-                cv2.circle(
-                    layer1,
-                    center,
-                    radius,
-                    (*color, 255),
-                    border_width,
-                )
 
-            cv2.imwrite(self.dest, layer1)
+                pkl_df = df[mask]
+                print(len(pkl_df))
+                if len(pkl_df) >= threshold or len(pkl_df) == 0:
+                    continue
+
+                pd.to_pickle(
+                    pkl_df,
+                    os.path.join(outdir, f'space_by_label_{i}_{j}.pkl'),
+                )
+                df = df[~mask]
+
+        return df
+
+    def plot_binned_spaces(self, perm_df: pd.DataFrame, outdir: str, zoom: int) -> str:
+        tile_size = TILE_SIZE * (2 ** zoom)
+        # https://stackoverflow.com/questions/44595160/create-transparent-image-in-opencv-python
+        layer1 = np.zeros((tile_size, tile_size, 4))
+
+        radius = 3  # including border
+        border_width = 1
+        opacity = int(0.8 * 255)
+
+        for _, row in perm_df.iterrows():
+            color = next(COLOR_PICKER)
+            center = (
+                round(
+                    tile_size *
+                    self.normalize_to_standard(
+                        row['x'],
+                        self.min_x,
+                        self.max_x,
+                    ),
+                ),
+                round(
+                    tile_size *
+                    self.normalize_to_standard(
+                        row['y'],
+                        self.min_y,
+                        self.max_y,
+                    ),
+                ),
+            )
+            # RGBA color
+            cv2.circle(layer1, center, radius, (*color, opacity), -1)
+            cv2.circle(
+                layer1,
+                center,
+                radius,
+                (*color, 255),
+                border_width,
+            )
+
+        filename = os.path.join(outdir, "uncropped.png")
+        cv2.imwrite(filename, layer1)
+
+        return filename
+
+
+class SpaceFocus:
+    def __init__(self, data_path):
+        self.data_path = data_path
+        self.space_data = pd.read_pickle(data_path)
+
+    def focus(self, x_range, y_range):
+        try:
+            result = self.space_data
+            x_min = result.x.min()
+            y_min = result.y.min()
+            x_max = result.x.max()
+            y_max = result.y.max()
+
+            x_range_min = self.normalize(x_range[0], x_min, x_max)
+            x_range_max = self.normalize(x_range[1], x_min, x_max)
+            y_range_min = self.normalize(y_range[0], y_min, y_max)
+            y_range_max = self.normalize(y_range[1], y_min, y_max)
+            result = result[result["x"] < x_range_max]
+            result = result[result["x"] >= x_range_min]
+            result = result[result["y"] < y_range_max]
+            result = result[result["y"] >= y_range_min]
+            return result, (x_range_min, x_range_max), (y_range_min, y_range_max)
+        except Exception as exc:
+            raise TypeError(f'Input data file should be a pickled data frame, provided'
+                            f' {os.path.splitext(self.data_path)[1]} extension') from exc
+
+    @staticmethod
+    def normalize(value, value_min, value_max):
+        return value * (value_max - value_min) + value_min
 
 
 def zoom_splitter(zoom):
@@ -155,51 +240,83 @@ def zoom_union(parts):
 def calc_zoom_levels(zoom):
     """
     0 -> [
-        ((0, 0), (1, 1)),
+        [
+            [[0, 1.0], [0, 1.0]],
+        ],
     ]
     1 -> [
-        ((0, 0), (0.5, 0.5)),
-        ((0.5, 0.5), (1, 1)),
-    ]
-    2 -> [
-        ((0, 0), (0.25, 0.25)),
-        ((0.25, 0.25), (0.5, 0.5)),
-        ((0.5, 0.5), (0.75, 0.75)),
-        ((0.75, 0.75), (1, 1)),
+        [
+            [[0, 0.5], [0, 0.5]],
+            [[0, 0.5], [0.5, 1.0]],
+        ],
+        [
+            [[0.5, 1.0], [0, 0.5]],
+            [[0.5, 1.0], [0.5, 1.0]],
+        ],
     ]
     """
     return zoom_union(zoom_splitter(zoom))
 
 
+# def plot_everything2(args):
+#     for zoom in range(args.max_zoom + 1):
+#         space_data = Space(args.data)
+#         outdir = os.path.join(args.outdir, str(zoom))
+
+#         os.makedirs(outdir, exist_ok=True)
+#         zoom_levels = calc_zoom_levels(zoom)
+#         for i, x_lines in enumerate(zoom_levels):
+#             for j, zoom_ranges in enumerate(x_lines):
+#                 focused_df, x_limits, y_limits = space_data.focus(*zoom_ranges)
+#                 if len(focused_df) < args.min_img_points:
+#                     pd.to_pickle(gene_space.space_data, os.path.join(
+#                         outdir, f'space_by_label_{i}_{j}.pkl'))
+#                     continue
+
+#                 print(f'Plotting zoom {zoom} tile {i}_{j}', zoom_ranges)
+#                 gene_space = Plot(
+#                     space_data=focused_df,
+#                     dest=os.path.join(
+#                         outdir, f'space_by_label_{i}_{j}.{args.fmt}'),
+#                     bins=args.bins,
+#                     max_bins=args.max_bins,
+#                     fmt=args.fmt,
+#                     save_img=args.save_img,
+#                 )
+#                 perms = gene_space.extract_permutations()
+#                 binned_df = gene_space.bin_space_for_image()
+#                 gene_space.plot_binned_spaces(
+#                     perms,
+#                     binned_df,
+#                     x_limits,
+#                     y_limits,
+#                 )
+
+
 def plot_everything(args):
+    new_plotter = NewPlotter(args.data, args.bins)
+    perms = new_plotter.extract_permutations()
+    binned_df = new_plotter.bin_space_for_image()
     for zoom in range(args.max_zoom + 1):
-        space_data = Space(args.data)
         outdir = os.path.join(args.outdir, str(zoom))
-
         os.makedirs(outdir, exist_ok=True)
-        zoom_levels = calc_zoom_levels(zoom)
-        for i, x_lines in enumerate(zoom_levels):
-            for j, zoom_ranges in enumerate(x_lines):
-                focused_df, x_limits, y_limits = space_data.focus(*zoom_ranges)
-                if len(focused_df) < args.min_img_points:
-                    pd.to_pickle(gene_space.space_data, os.path.join(
-                        outdir, f'space_by_label_{i}_{j}.pkl'))
-                    continue
+        for perm in perms:
+            perm_df = binned_df[binned_df['2d_bin'] == perm]
+            if perm_df.empty:
+                continue
 
-                print(f'Plotting zoom {zoom} tile {i}_{j}', zoom_ranges)
-                gene_space = Plot(
-                    space_data=focused_df,
-                    dest=os.path.join(
-                        outdir, f'space_by_label_{i}_{j}.{args.fmt}'),
-                    bins=args.bins,
-                    max_bins=args.max_bins,
-                    fmt=args.fmt,
-                    save_img=args.save_img,
-                )
-                perms = gene_space.extract_permutations()
-                binned_df = gene_space.bin_space_for_image()
-                gene_space.plot_binned_spaces(
-                    perms, binned_df, x_limits, y_limits)
+            perm_df = new_plotter.plot_pkls(
+                perm_df,
+                outdir,
+                zoom,
+                args.min_img_points,
+            )
+            filename = new_plotter.plot_binned_spaces(
+                perm_df,
+                outdir,
+                zoom,
+            )
+            new_plotter.crop_tiles(filename, outdir, zoom)
 
 
 if __name__ == "__main__":

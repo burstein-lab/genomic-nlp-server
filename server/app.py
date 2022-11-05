@@ -29,15 +29,21 @@ if not os.path.isfile("model_data.pkl"):
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/model_data.pkl", f)
 
+if not os.path.isfile("names_to_ko.pkl"):
+    storage_client = storage.Client()
+    with open("names_to_ko.pkl", "wb") as f:
+        storage_client.download_blob_to_file(
+            "gs://gnlp-public-assets/data/names_to_ko.pkl", f)
+
 if not os.path.isfile("label_to_word.pkl"):
     storage_client = storage.Client()
     with open("label_to_word.pkl", "wb") as f:
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/label_to_word.pkl", f)
 
-if not os.path.isfile("data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v"):
+if not os.path.isfile("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v"):
     storage_client = storage.Client()
-    with open("data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", "wb") as f:
+    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", "wb") as f:
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", f)
     with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy", "wb") as f:
@@ -50,9 +56,9 @@ if not os.path.isfile("data_embeddings_gene2vec_w5_v300_tf24_annotation_extended
 DF = pd.read_pickle("model_data.pkl")
 LABEL_TO_WORD = pd.read_pickle("label_to_word.pkl")
 MDL = w2v.Word2Vec.load(
-    "data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v")
+    "gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v")
 
-with open("data_gene_names_to_ko.pkl", "rb") as o:
+with open("names_to_ko.pkl", "rb") as o:
     G2KO = pd.DataFrame(pickle.load(o).items(), columns=["name", "ko"])
 
 X_MAX, Y_MAX, X_MIN, Y_MIN = DF.x.max(), DF.y.max(), DF.x.min(), DF.y.min()
@@ -96,11 +102,11 @@ def points():
         "z": zoom,
         "x": tile_x,
         "y": tile_y,
-        "exists": os.path.isfile(f"web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"),
+        "exists": os.path.isfile(f"../web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"),
     }
 
     df = None
-    path = f"web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"
+    path = f"../web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"
     if os.path.isfile(path):
         df = pd.read_pickle(path)
 

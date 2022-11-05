@@ -151,6 +151,7 @@ export default {
       apiUrl: import.meta.env.VITE_SERVER_URL,
     };
   },
+  emits: ["search", "sequenceSearch"],
   methods: {
     onSequenceSearch() {
       this.$emit("sequenceSearch", this.sequence);
@@ -158,7 +159,6 @@ export default {
     onSearch(type: string, e: string[]) {
       this.$emit("search", type, e, this.kNeighbors);
     },
-    emits: ["search", "sequenceSearch"],
     barPlot() {
       fetch(`${this.apiUrl}/plot/bar/${this.clickPoint.value.word}`)
         .then((res) => res.json())

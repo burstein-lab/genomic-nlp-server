@@ -1,54 +1,54 @@
 <template>
-  <div>
-    <div style="height: 98vh; width: 98vw">
-      <l-map
-        id="mapRef"
-        ref="mapRef"
-        v-model="zoom"
-        v-model:zoom="zoom"
-        crs="Simple"
-        :center="[-512, 512]"
-        :maxBounds="[
-          [tileSize * 0.5, -tileSize * 0.5],
-          [-tileSize * 1.5, tileSize * 1.5],
-        ]"
-        :boundsViscosity="0.5"
-        :options="{ zoomControl: false }"
-        @ready="onMapReady(this)"
-      >
-        <l-control-zoom position="bottomright"></l-control-zoom>
-        <l-tile-layer
-          v-if="isMapVisible"
-          ref="tileLayerRef"
-          :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
-          layer-type="base"
-          name="OpenStreetMap"
-          :max-zoom="5"
-          :min-zoom="0"
-          :tileSize="tileSize"
-          @ready="onTileLayerReady(this)"
-        />
+  <div style="height: 100vh; width: 100vw">
+    <l-map
+      id="mapRef"
+      ref="mapRef"
+      v-model="zoom"
+      v-model:zoom="zoom"
+      crs="Simple"
+      :center="[-512, 512]"
+      :maxBounds="[
+        [tileSize * 0.5, -tileSize * 0.5],
+        [-tileSize * 1.5, tileSize * 1.5],
+      ]"
+      :boundsViscosity="0.5"
+      :options="{ zoomControl: false }"
+      @ready="onMapReady(this)"
+    >
+      <l-control-zoom position="bottomright"></l-control-zoom>
+      <l-tile-layer
+        v-if="isMapVisible"
+        ref="tileLayerRef"
+        :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
+        layer-type="base"
+        name="OpenStreetMap"
+        :max-zoom="5"
+        :min-zoom="0"
+        :tileSize="tileSize"
+        @ready="onTileLayerReady(this)"
+      />
+      <l-geo-json :geojson="geojson"></l-geo-json>
 
-        <l-geo-json
-          :geojson="searchCollection"
-          :ref="'geoJsonSearchRef'"
-          :options="getJsonOptions"
+      <l-geo-json
+        :geojson="searchCollection"
+        :ref="'geoJsonSearchRef'"
+        :options="getJsonOptions"
+      />
+      <l-geo-json
+        v-for="[k, v] in collections"
+        :key="k"
+        :ref="'geoJson' + k + 'Ref'"
+        :geojson="v"
+        :options="getJsonOptions"
+      />
+      <l-control ref="controlRef" position="topleft">
+        <ControlCard
+          :loading="loading"
+          @search="onSearch"
+          @sequenceSearch="onSequenceSearch"
         />
-        <l-geo-json
-          v-for="[k, v] in collections"
-          :ref="'geoJson' + k + 'Ref'"
-          :geojson="v"
-          :options="getJsonOptions"
-        />
-        <l-control ref="controlRef" position="topleft">
-          <ControlCard
-            :loading="loading"
-            @search="onSearch"
-            @sequenceSearch="onSequenceSearch"
-          />
-        </l-control>
-      </l-map>
-    </div>
+      </l-control>
+    </l-map>
   </div>
 </template>
 
@@ -64,8 +64,10 @@ import {
   LImageOverlay,
   LGeoJson,
   LPolyline,
+  LCircleMarker,
   LPolygon,
   LControl,
+  LFeatureGroup,
   LRectangle,
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -84,8 +86,10 @@ export default {
   components: {
     LMap,
     LIcon,
+    LCircleMarker,
     LTileLayer,
     LControlZoom,
+    LFeatureGroup,
     LMarker,
     LImageOverlay,
     LTooltip,
@@ -115,16 +119,23 @@ export default {
       searchCollection: null,
       loading: false,
       map: null,
+      geojson: null,
     };
+  },
+  async created() {
+    const response = await fetch(
+      "https://rawgit.com/gregoiredavid/france-geojson/master/regions/pays-de-la-loire/communes-pays-de-la-loire.geojson"
+    );
+    this.geojson = await response.json();
   },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
     // And now the Leaflet circleMarker function can be used by the options:
     this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) =>
       circleMarker(latlng, {
-        radius: 7,
+        radius: 1000,
         fillColor: feature.properties.isSearch ? "#007800" : "#ff7800",
-        color: "#000",
+        // color: "#000",
         weight: 1,
         opacity: 1,
         fillOpacity: 0.8,
@@ -159,16 +170,11 @@ export default {
             this.coordsToString(coords.z, coords.x, coords.y),
             spacesToCollection(res["features"], coords, false)
           );
+          console.log("map set", res["features"].length);
         })
         .catch((err) => {
           console.error(err);
         });
-    },
-    changeIcon() {
-      this.iconWidth += 2;
-      if (this.iconWidth > this.iconHeight) {
-        this.iconWidth = Math.floor(this.iconHeight / 2);
-      }
     },
     onEachFeature(feature, layer) {
       layer.on({
