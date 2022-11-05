@@ -14,7 +14,7 @@ RUN pip install pipenv
 RUN sh -c "$(curl -fsSL https://starship.rs/install.sh)" -- --yes
 RUN npm install --global yarn
 # Required for cv2. https://stackoverflow.com/questions/55313610/importerror-libgl-so-1-cannot-open-shared-object-file-no-such-file-or-directo
-RUN apt-get install libgl1
+RUN apt-get install -y libgl1
 
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get install -y nodejs
