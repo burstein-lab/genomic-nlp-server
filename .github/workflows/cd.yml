@@ -28,7 +28,7 @@ jobs:
       - run: gcloud auth configure-docker us-central1-docker.pkg.dev
       - run: docker build diamond -f diamond/Dockerfile -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond
       - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest
-      - run: gcloud builds submit --quiet --tag us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest
+      - run: gcloud run deploy diamond --image=us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest
   # TODO: update running instance and remove old images.
   deploy-server:
     runs-on: ubuntu-latest
@@ -51,7 +51,7 @@ jobs:
       - run: gcloud auth configure-docker us-central1-docker.pkg.dev
       - run: docker build server -f server/Dockerfile -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server
       - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest
-      - run: gcloud builds submit --quiet --tag us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest
+      - run: gcloud run deploy gnlp-server --image=us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest
 
   # create-public-assets:
   #   runs-on: ubuntu-latest
