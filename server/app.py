@@ -70,6 +70,7 @@ def normalize(value, value_min, value_max):
 
 def df_coord_to_latlng(y_value, x_value):
     return normalize(y_value, Y_MAX, Y_MIN) * -MAX_TILE_SIZE, normalize(x_value, X_MIN, X_MAX) * MAX_TILE_SIZE
+    return -(MAX_TILE_SIZE - (normalize(y_value, Y_MAX, Y_MIN) * MAX_TILE_SIZE)), normalize(x_value, X_MIN, X_MAX) * MAX_TILE_SIZE
 
 
 # instantiate the app
