@@ -16,6 +16,7 @@
       @ready="onMapReady(this)"
     >
       <l-control-zoom position="bottomright"></l-control-zoom>
+      <l-control-zoom position="bottomright" />
       <l-tile-layer
         v-if="isMapVisible"
         ref="tileLayerRef"
@@ -125,6 +126,7 @@ export default {
     this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) =>
       circleMarker(latlng, {
         radius: 1000,
+        radius: 8,
         fillColor: feature.properties.isSearch ? "#007800" : "#ff7800",
         // color: "#000",
         weight: 1,
