@@ -31,7 +31,7 @@ const spaceToFeature = (
     },
     geometry: {
       type: "Point",
-      coordinates: [space["x"], space["y"]],
+      coordinates: [space.y, space.x],
     },
   };
 };
