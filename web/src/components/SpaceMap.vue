@@ -27,8 +27,6 @@
         :tileSize="tileSize"
         @ready="onTileLayerReady(this)"
       />
-      <l-geo-json :geojson="geojson"></l-geo-json>
-
       <l-geo-json
         :geojson="searchCollection"
         :ref="'geoJsonSearchRef'"
@@ -119,14 +117,7 @@ export default {
       searchCollection: null,
       loading: false,
       map: null,
-      geojson: null,
     };
-  },
-  async created() {
-    const response = await fetch(
-      "https://rawgit.com/gregoiredavid/france-geojson/master/regions/pays-de-la-loire/communes-pays-de-la-loire.geojson"
-    );
-    this.geojson = await response.json();
   },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
