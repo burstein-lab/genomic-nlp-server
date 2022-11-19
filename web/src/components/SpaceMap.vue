@@ -15,7 +15,6 @@
       :options="{ zoomControl: false }"
       @ready="onMapReady(this)"
     >
-      <l-control-zoom position="bottomright"></l-control-zoom>
       <l-control-zoom position="bottomright" />
       <l-tile-layer
         v-if="isMapVisible"
