@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from google.cloud import storage
 
@@ -40,7 +40,7 @@ DTEARLAMANAALMAGAAFSNAMVGLVHAIGHAVGGVARVAHGDAMAILLPHVMEYNLDM
 LSDRYGRLLLALAGPEVYAATPDNVRGSQAIAVVRAFAERLHQACGLPLRLRDVGVTEAQ
 LPAIARTTMNDGALLMNAKEAGPDDVMQILRKAF
 """
-    if method == "POST":
+    if request.method == "POST":
         request.form.get("sequence")
 
     result = subprocess.run(
