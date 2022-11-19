@@ -124,7 +124,6 @@ export default {
     // And now the Leaflet circleMarker function can be used by the options:
     this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) =>
       circleMarker(latlng, {
-        radius: 1000,
         radius: 8,
         fillColor: feature.properties.isSearch ? "#007800" : "#ff7800",
         // color: "#000",
