@@ -29,11 +29,11 @@ if not os.path.isfile("model_data.pkl"):
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/model_data.pkl", f)
 
-if not os.path.isfile("names_to_ko.pkl"):
+if not os.path.isfile("gene_names_to_ko.pkl"):
     storage_client = storage.Client()
-    with open("names_to_ko.pkl", "wb") as f:
+    with open("gene_names_to_ko.pkl", "wb") as f:
         storage_client.download_blob_to_file(
-            "gs://gnlp-public-assets/data/names_to_ko.pkl", f)
+            "gs://gnlp-public-assets/data/gene_names_to_ko.pkl", f)
 
 if not os.path.isfile("label_to_word.pkl"):
     storage_client = storage.Client()
@@ -58,7 +58,7 @@ LABEL_TO_WORD = pd.read_pickle("label_to_word.pkl")
 MDL = w2v.Word2Vec.load(
     "gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v")
 
-with open("names_to_ko.pkl", "rb") as o:
+with open("gene_names_to_ko.pkl", "rb") as o:
     G2KO = pd.DataFrame(pickle.load(o).items(), columns=["name", "ko"])
 
 X_MAX, Y_MAX, X_MIN, Y_MIN = DF.x.max(), DF.y.max(), DF.x.min(), DF.y.min()
