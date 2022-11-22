@@ -1,16 +1,12 @@
 import argparse
 import shutil
-import tempfile
-import io
 import itertools
 import os
 
-import matplotlib.pyplot as plt
 import cv2
 from PIL import Image
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
 
 TILE_SIZE = 1024
