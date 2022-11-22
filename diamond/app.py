@@ -41,7 +41,7 @@ LSDRYGRLLLALAGPEVYAATPDNVRGSQAIAVVRAFAERLHQACGLPLRLRDVGVTEAQ
 LPAIARTTMNDGALLMNAKEAGPDDVMQILRKAF
 """
     if request.method == "POST":
-        request.form.get("sequence")
+        sequence = request.form.get("sequence")
 
     result = subprocess.run(
         "diamond blastp -d words.dmnd --outfmt 6 qseqid stitle evalue pident --max-target-seqs 1 --evalue 1e-4 --memory-limit 4",
