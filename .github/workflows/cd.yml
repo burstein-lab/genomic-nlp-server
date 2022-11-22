@@ -90,4 +90,4 @@ jobs:
           cache: "npm"
       - run: yarn install
       - run: yarn vite build
-      - run: gsutil -m rsync web/dist gs://gnlp-public-assets
+      - run: gsutil -m rsync dist gs://gnlp-public-assets
