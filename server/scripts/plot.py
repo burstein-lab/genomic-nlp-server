@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 
-Image.MAX_IMAGE_PIXELS = 268435456
+Image.MAX_IMAGE_PIXELS = 1073741824
 
 
 TILE_SIZE = 1024
@@ -313,6 +313,8 @@ def plot_everything(args):
             if not len(perm_df):
                 print("finished plotting at zoom", zoom)
                 break
+            else:
+                print("len of perm_df", len(perm_df), "zoom", zoom)
 
             filename = new_plotter.plot_binned_spaces(
                 perm_df,
