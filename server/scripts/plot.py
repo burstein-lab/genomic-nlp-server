@@ -82,7 +82,6 @@ class NewPlotter:
 
         grid = itertools.product(range(0, h-h % d, d), range(0, w-w % d, d))
         for i, j in grid:
-            print(f'Plotting zoom {zoom} tile {i}_{j}')
             box = (j, i, j+d, i+d)
             out = os.path.join(
                 outdir, f'space_by_label_{int(j / TILE_SIZE)}_{int(i / TILE_SIZE)}.png')
@@ -125,8 +124,10 @@ class NewPlotter:
                 )
 
                 pkl_df = df[mask]
-                print(len(pkl_df))
                 if len(pkl_df) >= threshold or len(pkl_df) == 0:
+                    if len(pkl_df) >= threshold:
+                        print("zoom:", zoom, "i:", i, "j:", j,
+                              "above threshold:", len(pkl_df))
                     continue
 
                 pd.to_pickle(
@@ -337,7 +338,7 @@ if __name__ == "__main__":
                           help='max number of bins [default:30]')
     argparse.add_argument('--fmt', default='svg', type=str,
                           help='image format [default: svg]')
-    argparse.add_argument('--min-img-points', default=500, type=int,
+    argparse.add_argument('--min-img-points', default=2000, type=int,
                           help='Number of points for image. If less a pickle will be created [default: 1000]')
     argparse.add_argument('--save_img', default=1, type=int, help='whether to save figures or display them, 1 is True,'
                           ' else 0 [default: 1]')
