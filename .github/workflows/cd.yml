@@ -69,7 +69,7 @@ jobs:
         with:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-      - run: pipenv install --deploy
+      - run: pipenv install --dev
       - run: gsutil cp gs://gnlp-public-assets/data/model_data.pkl model_data.pkl
       - run: pipenv run python server/scripts/plot.py --data model_data.pkl --outdir=web/src/assets/map --fmt png --max-zoom 5
       - run: gsutil -m rsync web/src/assets/map gs://gnlp-public-assets/map
