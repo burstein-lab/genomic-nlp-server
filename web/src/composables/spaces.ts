@@ -1,23 +1,24 @@
-export function spacesToCollection(
+const spacesToCollection = (
   spaces: Space[],
   coords: Coords,
   isSearch: boolean
-): FeatureCollection {
+): FeatureCollection => {
   const features: Feature[] = [];
   for (var i = 0; i < spaces.length; i++) {
     features.push(spaceToFeature(spaces[i], coords, isSearch));
   }
+  console.log(features);
   return {
     type: "FeatureCollection",
     features: features,
   };
-}
+};
 
-function spaceToFeature(
+const spaceToFeature = (
   space: Space,
   coords: Coords,
   isSearch: boolean
-): Feature {
+): Feature => {
   return {
     type: "Feature",
     properties: {
@@ -30,9 +31,14 @@ function spaceToFeature(
     },
     geometry: {
       type: "Point",
-      coordinates: [space["x"], space["y"]],
+      coordinates: [space.x, space.y],
     },
   };
+};
+
+interface LatLng {
+  lat: number;
+  lng: number;
 }
 
 interface Space {
@@ -48,15 +54,15 @@ interface Coords {
   z: number;
 }
 
-export interface FeatureCollection {
+interface FeatureCollection {
   type: "FeatureCollection";
   features: Feature[];
 }
 
-export interface Feature {
+interface Feature {
   type: "Feature";
   properties: {
-    id: number;
+    id: string;
     zoom: number;
     tileX: number;
     tileY: number;
@@ -68,3 +74,6 @@ export interface Feature {
     coordinates: number[];
   };
 }
+
+export type { Coords, Space, Feature, FeatureCollection, LatLng };
+export { spacesToCollection };

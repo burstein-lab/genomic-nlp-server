@@ -1,50 +1,52 @@
 <template>
-  <div>
-    <div style="height: 98vh; width: 98vw">
-      <l-map
-        id="mapRef"
-        ref="mapRef"
-        v-model="zoom"
-        v-model:zoom="zoom"
-        crs="Simple"
-        :center="[-512, 512]"
-        :maxBounds="[
-          [tileSize * 0.5, -tileSize * 0.5],
-          [-tileSize * 1.5, tileSize * 1.5],
-        ]"
-        :boundsViscosity="0.5"
-        :options="{ zoomControl: false }"
-        @ready="onMapReady(this)"
-      >
-        <l-control-zoom position="bottomright"></l-control-zoom>
-        <l-tile-layer
-          v-if="isMapVisible"
-          ref="tileLayerRef"
-          :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
-          layer-type="base"
-          name="OpenStreetMap"
-          :max-zoom="5"
-          :min-zoom="0"
-          :tileSize="tileSize"
-          @ready="onTileLayerReady(this)"
+  <div style="height: 100vh; width: 100vw">
+    <l-map
+      id="mapRef"
+      ref="mapRef"
+      v-model="zoom"
+      v-model:zoom="zoom"
+      crs="Simple"
+      :center="[-512, 512]"
+      :maxBounds="[
+        [tileSize * 0.5, -tileSize * 0.5],
+        [-tileSize * 1.5, tileSize * 1.5],
+      ]"
+      :boundsViscosity="0.5"
+      :options="{ zoomControl: false }"
+      @ready="onMapReady(this)"
+    >
+      <l-control-zoom position="bottomright" />
+      <l-tile-layer
+        v-if="isMapVisible"
+        ref="tileLayerRef"
+        :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
+        layer-type="base"
+        name="OpenStreetMap"
+        :max-zoom="5"
+        :min-zoom="0"
+        :tileSize="tileSize"
+        @ready="onTileLayerReady(this)"
+      />
+      <l-geo-json
+        :geojson="searchCollection"
+        :ref="'geoJsonSearchRef'"
+        :options="getJsonOptions"
+      />
+      <l-geo-json
+        v-for="[k, v] in collections"
+        :key="k"
+        :ref="'geoJson' + k + 'Ref'"
+        :geojson="v"
+        :options="getJsonOptions"
+      />
+      <l-control ref="controlRef" position="topleft">
+        <ControlCard
+          :loading="loading"
+          @search="onSearch"
+          @sequenceSearch="onSequenceSearch"
         />
-
-        <l-geo-json
-          :geojson="searchCollection"
-          :ref="'geoJsonSearchRef'"
-          :options="getJsonOptions"
-        />
-        <l-geo-json
-          v-for="[k, v] in collections"
-          :ref="'geoJson' + k + 'Ref'"
-          :geojson="v"
-          :options="getJsonOptions"
-        />
-        <l-control ref="controlRef" position="topleft">
-          <control-card :loading="loading" @select="onSelect" />
-        </l-control>
-      </l-map>
-    </div>
+      </l-control>
+    </l-map>
   </div>
 </template>
 
@@ -60,8 +62,10 @@ import {
   LImageOverlay,
   LGeoJson,
   LPolyline,
+  LCircleMarker,
   LPolygon,
   LControl,
+  LFeatureGroup,
   LRectangle,
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -71,16 +75,19 @@ import {
   useHoverPoint,
   useClickPoint,
   useShouldShowMap,
-} from "../composables/states";
+} from "@/composables/states";
 import ControlCard from "./ControlCard.vue";
-import { spacesToCollection } from "../composables/spaces";
+import { spacesToCollection, Coords, LatLng } from "@/composables/spaces";
 
 export default {
+  name: "SpaceMap",
   components: {
     LMap,
     LIcon,
+    LCircleMarker,
     LTileLayer,
     LControlZoom,
+    LFeatureGroup,
     LMarker,
     LImageOverlay,
     LTooltip,
@@ -98,6 +105,7 @@ export default {
       zoom: useZoom(),
       publicAssetsUrl: import.meta.env.VITE_PUBLIC_URL,
       apiUrl: import.meta.env.VITE_SERVER_URL,
+      diamondUrl: import.meta.env.VITE_DIAMOND_URL,
       getJsonOptions: {
         onEachFeature: this.onEachFeature,
       },
@@ -108,16 +116,17 @@ export default {
       tileSize: 1024,
       searchCollection: null,
       loading: false,
+      map: null,
     };
   },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
     // And now the Leaflet circleMarker function can be used by the options:
-    this.getJsonOptions.pointToLayer = (feature, latlng) =>
+    this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) =>
       circleMarker(latlng, {
-        radius: 10,
+        radius: 8,
         fillColor: feature.properties.isSearch ? "#007800" : "#ff7800",
-        color: "#000",
+        // color: "#000",
         weight: 1,
         opacity: 1,
         fillOpacity: 0.8,
@@ -137,14 +146,14 @@ export default {
         self.getFeatures(event.coords);
       });
     },
-    geoJsonObj(k) {
+    geoJsonObj(k: string) {
       // When using v-for, ref is a list.
       return this.$refs[`geoJson${k}Ref`][0].leafletObject;
     },
     onMapReady(self) {
       self.map = this.$refs.mapRef.leafletObject;
     },
-    getFeatures(coords) {
+    getFeatures(coords: Coords) {
       fetch(`${this.apiUrl}/points?z=${coords.z}&x=${coords.x}&y=${coords.y}`)
         .then((res) => res.json())
         .then((res) => {
@@ -152,16 +161,11 @@ export default {
             this.coordsToString(coords.z, coords.x, coords.y),
             spacesToCollection(res["features"], coords, false)
           );
+          console.log("map set", res["features"].length);
         })
         .catch((err) => {
           console.error(err);
         });
-    },
-    changeIcon() {
-      this.iconWidth += 2;
-      if (this.iconWidth > this.iconHeight) {
-        this.iconWidth = Math.floor(this.iconHeight / 2);
-      }
     },
     onEachFeature(feature, layer) {
       layer.on({
@@ -206,13 +210,37 @@ export default {
       obj.resetStyle(e.target);
       this.hoverPoint = null;
     },
-    zoomToFeature(latlng, zoom: number) {
+    zoomToFeature(latlng: LatLng, zoom: number) {
       this.map.setView(latlng, zoom);
     },
     coordsToString(z: number, x: number, y: number) {
       return `${z}-${x}-${y}`;
     },
-    onSelect(type: string, e: string[], k: number) {
+    onSequenceSearch(sequence: string) {
+      this.loading = true;
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sequence }),
+      };
+      const url = new URL(`${this.diamondUrl}/diamond`);
+      fetch(url.href, requestOptions)
+        .then((res) => {
+          console.log("1", res);
+          return res.json();
+        })
+        .then((res) => {
+          console.log("2", res);
+        })
+        .catch((error) => {
+          console.error(error);
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    onSearch(type: string, e: string[], k: number) {
+      console.log(type);
       this.loading = true;
       const url = new URL(`${this.apiUrl}/${type}/get/${e.toString()}`);
       if (type === "neighbors") {
@@ -253,24 +281,11 @@ export default {
 </script>
 
 <style>
-.info {
-  padding: 6px 8px;
-  font: 14px/16px Arial, Helvetica, sans-serif;
-  background: white;
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-}
-.info h4 {
-  margin: 0 0 5px;
-  color: #777;
-}
-
 .leaflet-pane {
   z-index: 1;
 }
 
 #mapRef {
-  background: white;
+  background: rgb(var(--v-theme-background));
 }
 </style>

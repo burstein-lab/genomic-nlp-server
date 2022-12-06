@@ -7,39 +7,52 @@ on:
       - main
 
 jobs:
-  deploy-web:
+  deploy-diamond:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: gonuit/heroku-docker-deploy@v1.3.3
+      - uses: google-github-actions/auth@v0
         with:
-          email: ${{ secrets.HEROKU_EMAIL }}
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_WEB_APP_NAME }}
-          dockerfile_directory: ./web/
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - uses: google-github-actions/setup-gcloud@v0
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install pipenv
+      - uses: actions/cache@v3
+        with:
+          path: ~/.local/share/virtualenvs
+          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+      - run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      - run: docker build diamond -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond
+      - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest
+      - run: gcloud run deploy diamond --image=us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest --region us-central1
+  # TODO: update running instance and remove old images.
   deploy-server:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: cp Pipfile* server/
-      - uses: gonuit/heroku-docker-deploy@v1.3.3
+      - uses: google-github-actions/auth@v0
         with:
-          email: ${{ secrets.HEROKU_EMAIL }}
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_SERVER_APP_NAME }}
-          dockerfile_directory: ./server/
-  build-env:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: docker/login-action@v1
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - uses: google-github-actions/setup-gcloud@v0
+      - uses: actions/setup-python@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-      - uses: docker/build-push-action@v2
+          python-version: "3.10"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install pipenv
+      - uses: actions/cache@v3
         with:
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USER }}/gnlp:latest
-  create-public-assets:
+          path: ~/.local/share/virtualenvs
+          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+      - run: pipenv requirements > server/requirements.txt
+      - run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      - run: docker build server -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server
+      - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest
+      - run: gcloud run deploy gnlp-server --image=us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest --region us-central1
+
+  create-map:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -60,3 +73,21 @@ jobs:
       - run: gsutil cp gs://gnlp-public-assets/data/model_data.pkl model_data.pkl
       - run: pipenv run python server/scripts/plot.py --data model_data.pkl --outdir=web/src/assets/map --fmt png --max-zoom 5
       - run: gsutil -m rsync web/src/assets/map gs://gnlp-public-assets/map
+
+  create-web:
+    runs-on: ubuntu-latest
+    env:
+      working-directory: web
+    steps:
+      - uses: actions/checkout@v3
+      - uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - uses: google-github-actions/setup-gcloud@v0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+      - run: yarn install
+      - run: yarn vite build
+      - run: gsutil -m rsync dist gs://gnlp-public-assets

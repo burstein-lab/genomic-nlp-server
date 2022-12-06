@@ -1,8 +1,9 @@
 <template>
   <v-autocomplete
+    color="primary"
     v-model="model"
     v-model:search="search"
-    @update:modelValue="select"
+    @update:modelValue="onSearch"
     :items="items"
     :multiple="multiple"
     :loading="isLoading"
@@ -17,7 +18,7 @@
 <script lang="ts">
 export default {
   name: "Search",
-  emits: ["select"],
+  emits: ["search"],
   props: {
     multiple: {
       type: Boolean,
@@ -40,8 +41,8 @@ export default {
     apiUrl: import.meta.env.VITE_SERVER_URL,
   }),
   methods: {
-    select() {
-      this.$emit("select", this.model);
+    onSearch() {
+      this.$emit("search", this.model);
     },
   },
   created() {

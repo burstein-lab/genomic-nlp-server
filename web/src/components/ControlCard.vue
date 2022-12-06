@@ -1,52 +1,83 @@
 <template>
   <div>
-    <v-card width="500" color="rgba(255, 255, 255, 0.8)">
+    <v-card width="500" style="opacity: 0.9">
       <v-card-text>
-        <v-switch
-          v-model="shouldShowMap"
-          color="primary"
-          label="Show Map"
-          hide-details
-        />
+        <v-row>
+          <v-col cols="auto">
+            <ThemeToggle />
+          </v-col>
+          <v-col cols="auto">
+            <v-switch
+              v-model="shouldShowMap"
+              color="primary"
+              label="Show Map"
+              hide-details
+            />
+          </v-col>
+          <v-col></v-col>
+        </v-row>
+      </v-card-text>
+      <v-divider class="mx-4 mb-4" />
+      <v-card-text>
         <v-select
+          color="primary"
           v-model="searchMode"
           :items="searchModes"
           label="Search Mode"
         />
-        <search
-          v-if="searchMode === 'Space'"
-          @select="(e: string[]) => onSelect('space', e)"
-          label="Space"
-          type="space"
-        />
-        <search
-          v-if="searchMode === 'Label'"
-          @select="(e: string[]) => onSelect('label', e)"
-          label="Label"
-          type="label"
-        />
-        <search
-          v-if="searchMode === 'KO / Hypo'"
-          @select="(e: string[]) => onSelect('word', e)"
-          label="KO / Hypo"
-          type="word"
-          multiple
-        />
-        <div v-if="searchMode === 'Neighbors'">
-          <search
-            @select="(e: string[]) => {neighbors=e; onSelect('neighbors', e)}"
-            label="Word"
-            type="word"
-          />
-          <v-text-field v-model="kNeighbors" label="K" type="number" />
-        </div>
-        <search
-          v-if="searchMode === 'Gene'"
-          @select="(e: string[]) => onSelect('gene', e)"
-          label="Gene"
-          type="gene"
-        />
       </v-card-text>
+      <div v-if="searchMode">
+        <v-divider class="mx-4 mb-4" />
+        <v-card-text>
+          <search
+            v-if="searchMode === 'Space'"
+            @search="(e: string[]) => onSearch('space', e)"
+            label="Space"
+            type="space"
+          />
+          <search
+            v-if="searchMode === 'Label'"
+            @search="(e: string[]) => onSearch('label', e)"
+            label="Label"
+            type="label"
+          />
+          <search
+            v-if="searchMode === 'KO / Hypo'"
+            @search="(e: string[]) => onSearch('word', e)"
+            label="KO / Hypo"
+            type="word"
+            multiple
+          />
+          <div v-if="searchMode === 'Neighbors'">
+            <search
+              @search="(e: string[]) => {neighbors=e; onSearch('neighbors', e)}"
+              label="Word"
+              type="word"
+            />
+            <v-text-field v-model="kNeighbors" label="K" type="number" />
+          </div>
+          <search
+            v-if="searchMode === 'Gene'"
+            @search="(e: string[]) => onSearch('gene', e)"
+            label="Gene"
+            type="gene"
+          />
+          <div v-if="searchMode === 'Sequence'">
+            <v-textarea
+              v-model="sequence"
+              filled
+              auto-grow
+              label="Search by sequence"
+              rows="4"
+              row-height="30"
+              shaped
+              append-icon="mdi-send"
+              @click:append="onSequenceSearch('sequence', [sequence])"
+            />
+            <v-file-input show-size label="From file" />
+          </div>
+        </v-card-text>
+      </div>
       <v-divider class="mx-4" />
       <v-card-text>
         <div v-if="loading">
@@ -82,9 +113,8 @@
 <script lang="ts">
 import { BarChart, ScatterChart } from "vue-chart-3";
 import Search from "./Search.vue";
+import ThemeToggle from "./ThemeToggle.vue";
 import {
-  useZoom,
-  useLatLng,
   useHoverPoint,
   useClickPoint,
   useShouldShowMap,
@@ -92,28 +122,42 @@ import {
 
 export default {
   name: "ControlCard",
-  components: { Search, BarChart, ScatterChart },
+  components: { Search, BarChart, ScatterChart, ThemeToggle },
   props: {
     loading: {
       type: Boolean,
       default: false,
     },
   },
-  data: () => ({
-    searchMode: null,
-    neighbors: null,
-    barData: null,
-    scatterData: null,
-    hoverPoint: useHoverPoint(),
-    clickPoint: useClickPoint(),
-    kNeighbors: 20,
-    searchModes: ["Space", "Label", "KO / Hypo", "Neighbors", "Gene"],
-    shouldShowMap: useShouldShowMap(),
-    apiUrl: import.meta.env.VITE_SERVER_URL,
-  }),
+  data: () => {
+    return {
+      searchMode: null,
+      neighbors: null,
+      barData: null,
+      scatterData: null,
+      hoverPoint: useHoverPoint(),
+      clickPoint: useClickPoint(),
+      kNeighbors: 20,
+      searchModes: [
+        "Space",
+        "Label",
+        "KO / Hypo",
+        "Neighbors",
+        "Gene",
+        "Sequence",
+      ],
+      sequence: "",
+      shouldShowMap: useShouldShowMap(),
+      apiUrl: import.meta.env.VITE_SERVER_URL,
+    };
+  },
+  emits: ["search", "sequenceSearch"],
   methods: {
-    onSelect(type: string, e: string[]) {
-      this.$emit("select", type, e, this.kNeighbors);
+    onSequenceSearch() {
+      this.$emit("sequenceSearch", this.sequence);
+    },
+    onSearch(type: string, e: string[]) {
+      this.$emit("search", type, e, this.kNeighbors);
     },
     barPlot() {
       fetch(`${this.apiUrl}/plot/bar/${this.clickPoint.value.word}`)
@@ -158,7 +202,7 @@ export default {
         this.kNeighbors = 100;
       }
       if (this.neighbors !== null) {
-        this.onSelect("neighbors", this.neighbors);
+        this.onSearch("neighbors", this.neighbors);
       }
     },
     clickPoint(val: Point) {

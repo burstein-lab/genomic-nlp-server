@@ -1,7 +1,16 @@
+import os
 import subprocess
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
+from google.cloud import storage
+
+
+if not os.path.isfile("words.dmnd"):
+    storage_client = storage.Client()
+    with open("words.dmnd", "wb") as f:
+        storage_client.download_blob_to_file(
+            "gs://gnlp-public-assets/data/diamond/words.dmnd", f)
 
 
 # instantiate the app
@@ -12,12 +21,9 @@ app.config.from_object(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
-@app.route("/diamond")
+@app.route("/diamond", methods=["GET", "POST"])
 def diamond():
-    result = subprocess.run(
-        "diamond blastp -d words.dmnd --outfmt 6 qseqid stitle evalue pident --max-target-seqs 1 --evalue 1e-4 --memory-limit 4",
-        shell=True,
-        input=""">K00001.1
+    sequence = """>K00001.1
 MGAVSSNAPTSRALVLEAPRRLVVRELAVPEIGADDALVRVEACGLCGTDHEQYTGALSG
 GFAFVPGHETVGIIEAIGPQAARRWGVAAGDRVAVEVFQSCRQCPNCLAGEYRRCERHGL
 ADMYGFIPVDRAPGLWGGYAEYQYLAPDSMVLPVPAGLDPAVASLFNPLGAGIRWGATLP
@@ -33,7 +39,14 @@ DPRMTRSLPPRITASTGMDALVHAIEGYTSIQRNPLSDAYAWAAIELIREYLPRAVANGQ
 DTEARLAMANAALMAGAAFSNAMVGLVHAIGHAVGGVARVAHGDAMAILLPHVMEYNLDM
 LSDRYGRLLLALAGPEVYAATPDNVRGSQAIAVVRAFAERLHQACGLPLRLRDVGVTEAQ
 LPAIARTTMNDGALLMNAKEAGPDDVMQILRKAF
-""",
+"""
+    if request.method == "POST":
+        sequence = request.json["sequence"]
+
+    result = subprocess.run(
+        "diamond blastp -d words.dmnd --outfmt 6 qseqid stitle evalue pident --max-target-seqs 1 --evalue 1e-4 --memory-limit 4",
+        shell=True,
+        input=sequence,
         capture_output=True,
         text=True,
     )

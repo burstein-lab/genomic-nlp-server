@@ -10,6 +10,7 @@ import numpy as np
 from flask_cors import CORS
 from gensim.models import word2vec as w2v
 import pandas as pd
+from google.cloud import storage
 
 from coords import Point
 
@@ -22,12 +23,42 @@ MAX_TILE_SIZE = 1024
 MAX_ZOOM = 5
 ZOOM_TILE_SPLIT_FACTOR = 4
 
+if not os.path.isfile("model_data.pkl"):
+    storage_client = storage.Client()
+    with open("model_data.pkl", "wb") as f:
+        storage_client.download_blob_to_file(
+            "gs://gnlp-public-assets/data/model_data.pkl", f)
+
+if not os.path.isfile("gene_names_to_ko.pkl"):
+    storage_client = storage.Client()
+    with open("gene_names_to_ko.pkl", "wb") as f:
+        storage_client.download_blob_to_file(
+            "gs://gnlp-public-assets/data/gene_names_to_ko.pkl", f)
+
+if not os.path.isfile("label_to_word.pkl"):
+    storage_client = storage.Client()
+    with open("label_to_word.pkl", "wb") as f:
+        storage_client.download_blob_to_file(
+            "gs://gnlp-public-assets/data/label_to_word.pkl", f)
+
+if not os.path.isfile("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v"):
+    storage_client = storage.Client()
+    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", "wb") as f:
+        storage_client.download_blob_to_file(
+            "gs://gnlp-public-assets/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", f)
+    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy", "wb") as f:
+        storage_client.download_blob_to_file(
+            "gs://gnlp-public-assets/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy", f)
+    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy", "wb") as f:
+        storage_client.download_blob_to_file(
+            "gs://gnlp-public-assets/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy", f)
+
 DF = pd.read_pickle("model_data.pkl")
 LABEL_TO_WORD = pd.read_pickle("label_to_word.pkl")
 MDL = w2v.Word2Vec.load(
-    "data_embeddings_gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v")
+    "gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v")
 
-with open("data_gene_names_to_ko.pkl", "rb") as o:
+with open("gene_names_to_ko.pkl", "rb") as o:
     G2KO = pd.DataFrame(pickle.load(o).items(), columns=["name", "ko"])
 
 X_MAX, Y_MAX, X_MIN, Y_MIN = DF.x.max(), DF.y.max(), DF.x.min(), DF.y.min()
@@ -38,7 +69,7 @@ def normalize(value, value_min, value_max):
 
 
 def df_coord_to_latlng(y_value, x_value):
-    return normalize(y_value, Y_MAX, Y_MIN) * -MAX_TILE_SIZE, normalize(x_value, X_MIN, X_MAX) * MAX_TILE_SIZE
+    return -(MAX_TILE_SIZE - (normalize(y_value, Y_MAX, Y_MIN) * MAX_TILE_SIZE)), normalize(x_value, X_MIN, X_MAX) * MAX_TILE_SIZE
 
 
 # instantiate the app
@@ -71,11 +102,11 @@ def points():
         "z": zoom,
         "x": tile_x,
         "y": tile_y,
-        "exists": os.path.isfile(f"web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"),
+        "exists": os.path.isfile(f"../web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"),
     }
 
     df = None
-    path = f"web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"
+    path = f"../web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"
     if os.path.isfile(path):
         df = pd.read_pickle(path)
 
@@ -182,14 +213,6 @@ def filter_by_gene(name):
     g2ko_spaces = df[df["name"].str.match(name)]
     spaces = DF[DF["KO"].isin(g2ko_spaces["ko"])]
     return spaces_df_to_features(spaces)
-
-
-@app.route("/diamond")
-def diamond():
-    process = subprocess.Popen(
-        "diamond/diamond blastp -d diamond/words.dmnd -q sequences.fasta -o sequences_matches.tsv --outfmt 6 qseqid stitle evalue pident --max-target-seqs 1 --evalue 1e-4", shell=True)
-    out, err = process.communicate(None, 60)
-    return jsonify({"out": out, "err": err})
 
 
 @app.route("/word/get/<label>")

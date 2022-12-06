@@ -1,4 +1,6 @@
-gunicorn==20.1.0
-flask==2.1.1
-flask-compress==1.11
-flask-cors==3.0.10
+-i https://pypi.org/simple
+flask
+flask-cors
+google-cloud-storage
+gunicorn
+werkzeug

@@ -29,7 +29,9 @@ dist-ssr
 *.sw?
 
 web/public/
+*.png
 *.pkl
 *.pyc
 *.npy
 *.w2v
+*.dmnd
