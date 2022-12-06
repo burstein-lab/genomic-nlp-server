@@ -72,7 +72,7 @@ jobs:
       - run: pipenv install --dev
       - run: gsutil cp gs://gnlp-public-assets/data/model_data.pkl model_data.pkl
       - run: pipenv run python server/scripts/plot.py --data model_data.pkl --outdir=web/src/assets/map --fmt png --max-zoom 5
-      - run: gsutil -m rsync web/src/assets/map gs://gnlp-public-assets/map
+      - run: gsutil -m rsync -r web/src/assets/map gs://gnlp-public-assets/map
 
   create-web:
     runs-on: ubuntu-latest
@@ -89,4 +89,4 @@ jobs:
           cache-dependency-path: web/yarn.lock
       - run: yarn --cwd web install
       - run: yarn --cwd web vite build
-      - run: gsutil -m rsync web/dist gs://gnlp-public-assets
+      - run: gsutil -m rsync -r web/dist gs://gnlp-public-assets
