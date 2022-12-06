@@ -84,23 +84,26 @@
           Getting data...
           <v-progress-linear indeterminate color="primary" rounded />
         </div>
-        <div v-else-if="hoverPoint">
-          {{ hoverPoint }}
-          Click point for more options
-        </div>
         <div v-else-if="clickPoint">
           {{ clickPoint }}
-          <v-btn color="primary" @click="barPlot">Bar Plot</v-btn>
-          <v-btn color="primary" @click="scatterPlot">Scatter Plot</v-btn>
-          <v-btn class="ma-1" color="grey" icon dark @click="clickPoint = null">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
+          <v-btn-group>
+            <v-btn color="primary" @click="centerPoint">Center</v-btn>
+            <v-btn color="primary" @click="barPlot">Bar Plot</v-btn>
+            <v-btn color="primary" @click="scatterPlot">Scatter Plot</v-btn>
+            <v-btn color="grey" icon dark @click="resetClickPoint">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-btn-group>
           <div v-if="clickPoint && barData">
             <BarChart :chartData="barData" />
           </div>
           <div v-if="clickPoint && scatterData">
             <ScatterChart :chartData="scatterData" />
           </div>
+        </div>
+        <div v-else-if="hoverPoint">
+          {{ hoverPoint }}
+          Click point for more options
         </div>
         <div v-else>
           Search to explore the model and hover a point to view extra options
@@ -151,16 +154,25 @@ export default {
       apiUrl: import.meta.env.VITE_SERVER_URL,
     };
   },
-  emits: ["search", "sequenceSearch"],
+  emits: ["search", "sequenceSearch", "centerPoint", "resetClickPoint"],
   methods: {
+    resetClickPoint() {
+      this.$emit("resetClickPoint");
+      this.clickPoint = null;
+    },
     onSequenceSearch() {
       this.$emit("sequenceSearch", this.sequence);
     },
     onSearch(type: string, e: string[]) {
       this.$emit("search", type, e, this.kNeighbors);
     },
+    centerPoint() {
+      this.$emit("centerPoint");
+    },
     barPlot() {
-      fetch(`${this.apiUrl}/plot/bar/${this.clickPoint.value.word}`)
+      fetch(
+        `${this.apiUrl}/plot/bar/${this.clickPoint.feature.properties.word}`
+      )
         .then((res) => res.json())
         .then((res) => {
           this.barData = {
@@ -177,7 +189,9 @@ export default {
         });
     },
     scatterPlot() {
-      fetch(`${this.apiUrl}/plot/scatter/${this.clickPoint.value.word}`)
+      fetch(
+        `${this.apiUrl}/plot/scatter/${this.clickPoint.feature.properties.word}`
+      )
         .then((res) => res.json())
         .then((res) => {
           this.scatterData = {
