@@ -9,6 +9,9 @@ import numpy as np
 import pandas as pd
 
 
+Image.MAX_IMAGE_PIXELS = 268435456
+
+
 TILE_SIZE = 1024
 # https://coolors.co/b24c63-5438dc-357ded-56eef4-32e875
 COLOR_PICKER = itertools.cycle([
@@ -307,6 +310,10 @@ def plot_everything(args):
                 zoom,
                 args.min_img_points,
             )
+            if not len(perm_df):
+                print("finished plotting at zoom", zoom)
+                break
+
             filename = new_plotter.plot_binned_spaces(
                 perm_df,
                 outdir,
