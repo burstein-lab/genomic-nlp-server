@@ -3,10 +3,8 @@ import pickle
 import json
 import math
 import re
-import subprocess
 
 from flask import Flask, jsonify, request
-import numpy as np
 from flask_cors import CORS
 from gensim.models import word2vec as w2v
 import pandas as pd
@@ -24,25 +22,25 @@ MAX_ZOOM = 5
 ZOOM_TILE_SPLIT_FACTOR = 4
 
 if not os.path.isfile("model_data.pkl"):
-    storage_client = storage.Client()
+    storage_client = storage.Client(project="genomic-nlp")
     with open("model_data.pkl", "wb") as f:
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/model_data.pkl", f)
 
 if not os.path.isfile("gene_names_to_ko.pkl"):
-    storage_client = storage.Client()
+    storage_client = storage.Client(project="genomic-nlp")
     with open("gene_names_to_ko.pkl", "wb") as f:
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/gene_names_to_ko.pkl", f)
 
 if not os.path.isfile("label_to_word.pkl"):
-    storage_client = storage.Client()
+    storage_client = storage.Client(project="genomic-nlp")
     with open("label_to_word.pkl", "wb") as f:
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/label_to_word.pkl", f)
 
 if not os.path.isfile("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v"):
-    storage_client = storage.Client()
+    storage_client = storage.Client(project="genomic-nlp")
     with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", "wb") as f:
         storage_client.download_blob_to_file(
             "gs://gnlp-public-assets/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", f)
