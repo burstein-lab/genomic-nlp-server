@@ -42,6 +42,9 @@
       <l-control ref="controlRef" position="topleft">
         <ControlCard
           :loading="loading"
+          @cancelClickPoint="onCancelClickPoint"
+          @resetClickPoint="onResetClickPoint"
+          @centerPoint="onCenterPoint"
           @search="onSearch"
           @sequenceSearch="onSequenceSearch"
         />
@@ -111,6 +114,7 @@ export default {
       },
       hoverPoint: useHoverPoint(),
       clickPoint: useClickPoint(),
+      clickPointTarget: null,
       isMapVisible: useShouldShowMap(),
       collections: new Map(),
       tileSize: 1024,
@@ -126,7 +130,6 @@ export default {
       circleMarker(latlng, {
         radius: 8,
         fillColor: feature.properties.isSearch ? "#007800" : "#ff7800",
-        // color: "#000",
         weight: 1,
         opacity: 1,
         fillOpacity: 0.8,
@@ -150,6 +153,22 @@ export default {
       // When using v-for, ref is a list.
       return this.$refs[`geoJson${k}Ref`][0].leafletObject;
     },
+    onResetClickPoint() {
+      const e = this.clickPointTarget;
+      let obj;
+      if (e.target.feature.properties.isSearch) {
+        obj = this.$refs[`geoJsonSearchRef`].leafletObject;
+      } else {
+        obj = this.geoJsonObj(
+          this.coordsToString(
+            e.target.feature.properties.zoom,
+            e.target.feature.properties.tileX,
+            e.target.feature.properties.tileY
+          )
+        );
+      }
+      obj.resetStyle(e.target);
+    },
     onMapReady(self) {
       self.map = this.$refs.mapRef.leafletObject;
     },
@@ -172,15 +191,35 @@ export default {
         mouseover: this.highlightFeature,
         mouseout: this.resetHighlight,
         click: (e) => {
-          this.clickPoint = e.target.feature.properties;
+          let obj;
+          if (e.target.feature.properties.isSearch) {
+            obj = this.$refs[`geoJsonSearchRef`].leafletObject;
+          } else {
+            obj = this.geoJsonObj(
+              this.coordsToString(
+                e.target.feature.properties.zoom,
+                e.target.feature.properties.tileX,
+                e.target.feature.properties.tileY
+              )
+            );
+          }
+          this.clickPoint = e.target.feature;
+          this.clickPointTarget = e;
           this.zoomToFeature(e.latlng, this.zoom);
+          e.target.setStyle({
+            weight: 5,
+            color: "#222",
+            fillColor: "#111",
+            dashArray: "",
+            fillOpacity: 0.7,
+          });
         },
       });
     },
     highlightFeature(e) {
       if (
         this.clickPoint &&
-        this.clickPoint.id === e.target.feature.properties.id
+        this.clickPoint.properties.id === e.target.feature.properties.id
       ) {
         return;
       }
@@ -195,6 +234,12 @@ export default {
       this.hoverPoint = e.target.feature.properties;
     },
     resetHighlight(e) {
+      if (
+        this.clickPoint &&
+        this.clickPoint.properties.id === e.target.feature.properties.id
+      ) {
+        return;
+      }
       let obj;
       if (e.target.feature.properties.isSearch) {
         obj = this.$refs[`geoJsonSearchRef`].leafletObject;
@@ -238,6 +283,18 @@ export default {
         .finally(() => {
           this.loading = false;
         });
+    },
+    onCancelClickPoint() {
+      this.resetHighlight;
+    },
+    onCenterPoint() {
+      this.zoomToFeature(
+        {
+          lat: this.clickPoint.geometry.coordinates[1],
+          lng: this.clickPoint.geometry.coordinates[0],
+        },
+        this.zoom
+      );
     },
     onSearch(type: string, e: string[], k: number) {
       console.log(type);
