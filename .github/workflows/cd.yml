@@ -76,8 +76,6 @@ jobs:
 
   create-web:
     runs-on: ubuntu-latest
-    env:
-      working-directory: web
     steps:
       - uses: actions/checkout@v3
       - uses: google-github-actions/auth@v0
@@ -88,6 +86,7 @@ jobs:
         with:
           node-version: 18
           cache: "npm"
-      - run: yarn install
-      - run: yarn vite build
-      - run: gsutil -m rsync dist gs://gnlp-public-assets
+          cache-dependency-path: web/yarn.lock
+      - run: yarn --cwd web install
+      - run: yarn --cwd web vite build
+      - run: gsutil -m rsync web/dist gs://gnlp-public-assets
