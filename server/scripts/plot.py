@@ -93,7 +93,7 @@ class NewPlotter:
                 pd.to_pickle(
                     pkl_df,
                     os.path.join(
-                        outdir, f'space_by_label_{i}_{zoom - j}.pkl'),
+                        outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.pkl'),
                 )
                 df = df[~mask]
 
@@ -101,12 +101,16 @@ class NewPlotter:
 
     def plot_binned_spaces(self, df: pd.DataFrame, outdir: str, zoom: int) -> str:
         zoom_levels = calc_zoom_levels(zoom)
-        radius = 3  # including border
+        radius = 3
+        opacity = int(0.8 * 255)
         uncropped_size = TILE_SIZE * (2 ** zoom)
+        df = df.copy()
+        df['plot_x'] = df.apply(lambda row: round(
+            uncropped_size * self.normalize_to_standard(row['x'], self.min_x, self.max_x)), axis=1)
+        df['plot_y'] = df.apply(lambda row: round(
+            uncropped_size * self.normalize_to_standard(row['y'], self.min_y, self.max_y)), axis=1)
         for i, x_lines in enumerate(zoom_levels):
             for j, zoom_ranges in enumerate(x_lines):
-                border_width = 1
-                opacity = int(0.8 * 255)
                 plt.clf()
                 fig = plt.gcf()
                 fig.set_size_inches(TILE_SIZE, TILE_SIZE)
@@ -120,28 +124,37 @@ class NewPlotter:
                     uncropped_size * zoom_ranges[0][1]) + threshold
                 max_y_edge = round(
                     uncropped_size * zoom_ranges[1][1]) + threshold
-                for _, row in df.iterrows():
-                    center = (
-                        round(
-                            uncropped_size *
-                            self.normalize_to_standard(
-                                row['x'],
-                                self.min_x,
-                                self.max_x,
-                            ),
-                        ),
-                        round(
-                            uncropped_size *
-                            self.normalize_to_standard(
-                                row['y'],
-                                self.min_y,
-                                self.max_y,
-                            ),
-                        ),
-                    )
 
-                    if center[0] < min_x_edge or center[0] > max_x_edge or center[1] < min_y_edge or center[1] > max_y_edge:
-                        continue
+                mask = (
+                    (df["plot_x"] > min_x_edge) &
+                    (df["plot_x"] < max_x_edge) &
+                    (df["plot_y"] > min_y_edge) &
+                    (df["plot_y"] < max_y_edge)
+                )
+                plot_df = df[mask]
+
+                for _, row in plot_df.iterrows():
+                    # center = (
+                    #     round(
+                    #         uncropped_size *
+                    #         self.normalize_to_standard(
+                    #             row['x'],
+                    #             self.min_x,
+                    #             self.max_x,
+                    #         ),
+                    #     ),
+                    #     round(
+                    #         uncropped_size *
+                    #         self.normalize_to_standard(
+                    #             row['y'],
+                    #             self.min_y,
+                    #             self.max_y,
+                    #         ),
+                    #     ),
+                    # )
+
+                    # if center[0] < min_x_edge or center[0] > max_x_edge or center[1] < min_y_edge or center[1] > max_y_edge:
+                    #     continue
 
                     color = pick_color(row['x'], row['y'])
                     center = (
@@ -167,7 +180,7 @@ class NewPlotter:
                     fig.patches.append(circle)
 
                 filename = os.path.join(
-                    outdir, f'space_by_label_{i}_{zoom - j}.png')
+                    outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.png')
                 fig.savefig(filename, dpi=1, transparent=True)
 
 
