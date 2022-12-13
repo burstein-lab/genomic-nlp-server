@@ -46,27 +46,6 @@ class NewPlotter:
     def normalize_from_standard(value, value_min, value_max):
         return value * (value_max - value_min) + value_min
 
-    def crop_tiles(self, filename, outdir, zoom):
-        if zoom == 0:
-            shutil.copy(
-                filename,
-                os.path.join(outdir, "space_by_label_0_0.png"),
-            )
-            return
-
-        # Based on https://stackoverflow.com/a/65698752
-        img = Image.open(filename)
-        width, height = img.size
-        print("image size:", width, height)
-
-        grid = itertools.product(
-            range(0, height-height % TILE_SIZE, TILE_SIZE), range(0, width-width % TILE_SIZE, TILE_SIZE))
-        for i, j in grid:
-            box = (j, i, j+TILE_SIZE, i+TILE_SIZE)
-            out = os.path.join(
-                outdir, f'space_by_label_{int(j / TILE_SIZE)}_{int(i / TILE_SIZE)}.png')
-            img.crop(box).save(out)
-
     def _focus(self, x_range, y_range):
         x_range_min = self.normalize_from_standard(
             x_range[0],
@@ -187,7 +166,8 @@ class NewPlotter:
                         i / 255 for i in (*color, opacity))), fill=True)
                     fig.patches.append(circle)
 
-                filename = os.path.join(outdir, f'space_by_label_{i}_{j}.png')
+                filename = os.path.join(
+                    outdir, f'space_by_label_{i}_{zoom - j}.png')
                 fig.savefig(filename, dpi=1, transparent=True)
 
 
