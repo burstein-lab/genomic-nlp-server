@@ -12,13 +12,9 @@ flask-cors = "*"
 gunicorn = "*"
 werkzeug = "*"
 google-cloud-storage = "*"
-matplotlib = "*"
 
 [dev-packages]
-seaborn = "*"
-opencv-python = "*"
-dash = "*"
-plotly = "*"
+matplotlib = "*"
 pylint = "*"
 autopep8 = "*"
 
