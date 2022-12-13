@@ -18,7 +18,7 @@ DEBUG = True
 
 HEAD_LIMIT = 50
 MAX_TILE_SIZE = 1024
-MAX_ZOOM = 5
+MAX_ZOOM = 8
 ZOOM_TILE_SPLIT_FACTOR = 4
 
 if not os.path.isfile("model_data.pkl"):
@@ -67,7 +67,7 @@ def normalize(value, value_min, value_max):
 
 
 def df_coord_to_latlng(y_value, x_value):
-    return -(MAX_TILE_SIZE - (normalize(y_value, Y_MAX, Y_MIN) * MAX_TILE_SIZE)), normalize(x_value, X_MIN, X_MAX) * MAX_TILE_SIZE
+    return normalize(y_value, Y_MAX, Y_MIN) * - MAX_TILE_SIZE, normalize(x_value, X_MIN, X_MAX) * MAX_TILE_SIZE
 
 
 # instantiate the app
@@ -76,11 +76,6 @@ app.config.from_object(__name__)
 
 # enable CORS
 CORS(app, resources={r"/*": {"origins": "*"}})
-
-
-@ app.route("/hello")
-def hello():
-    return "Hello world!"
 
 
 # sanity check route
