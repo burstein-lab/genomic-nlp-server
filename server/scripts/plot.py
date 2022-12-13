@@ -33,31 +33,6 @@ class NewPlotter:
         self.max_y = self.space_data.y.max()
         self.min_y = self.space_data.y.min()
 
-    def bin_space_for_image(self):
-        if self.bins < 1 | self.bins > self.max_bins:
-            raise ValueError(f"Bin number should be in the range of [1,{self.max_bins}], but {self.bins} were provided"
-                             f"please choose a valid bin number")
-        bin_df = self.space_data
-        _, xedges, yedges = np.histogram2d(
-            bin_df['x'], bin_df['y'], bins=self.bins)
-        bin_df['x_bin'] = bin_df['x'].apply(
-            lambda x: np.searchsorted(xedges, x))
-        bin_df['y_bin'] = bin_df['x'].apply(
-            lambda y: np.searchsorted(yedges, y))
-
-        # indices are calculated through right assignment, 0 indicated the minimal x/y value
-        bin_df['x_bin'] = bin_df['x_bin'].apply(lambda x: 1 if x == 0 else x)
-        bin_df['y_bin'] = bin_df['y_bin'].apply(lambda y: 1 if y == 0 else y)
-
-        bin_df["2d_bin"] = bin_df.apply(lambda row: (
-            row['x_bin'], row['y_bin']), axis=1)
-
-        return bin_df
-
-    def extract_permutations(self):
-        bins = np.arange(1, self.bins + 1)
-        return list(itertools.permutations(bins)) + [(bin, bin) for bin in bins]
-
     @staticmethod
     def normalize_to_standard(value, value_min, value_max):
         return (value - value_min) / (value_max - value_min)
@@ -110,7 +85,8 @@ class NewPlotter:
         )
         return x_range_min, x_range_max, y_range_min, y_range_max
 
-    def plot_pkls(self, df: pd.DataFrame, outdir: str, zoom: int, threshold: int) -> pd.DataFrame:
+    def plot_pkls(self, outdir: str, zoom: int, threshold: int) -> pd.DataFrame:
+        df = self.space_data.copy()
         zoom_levels = calc_zoom_levels(zoom)
         for i, x_lines in enumerate(zoom_levels):
             for j, zoom_ranges in enumerate(x_lines):
@@ -258,71 +234,28 @@ def calc_zoom_levels(zoom):
     return zoom_union(zoom_splitter(zoom))
 
 
-# def plot_everything2(args):
-#     for zoom in range(args.max_zoom + 1):
-#         space_data = Space(args.data)
-#         outdir = os.path.join(args.outdir, str(zoom))
-
-#         os.makedirs(outdir, exist_ok=True)
-#         zoom_levels = calc_zoom_levels(zoom)
-#         for i, x_lines in enumerate(zoom_levels):
-#             for j, zoom_ranges in enumerate(x_lines):
-#                 focused_df, x_limits, y_limits = space_data.focus(*zoom_ranges)
-#                 if len(focused_df) < args.min_img_points:
-#                     pd.to_pickle(gene_space.space_data, os.path.join(
-#                         outdir, f'space_by_label_{i}_{j}.pkl'))
-#                     continue
-
-#                 print(f'Plotting zoom {zoom} tile {i}_{j}', zoom_ranges)
-#                 gene_space = Plot(
-#                     space_data=focused_df,
-#                     dest=os.path.join(
-#                         outdir, f'space_by_label_{i}_{j}.{args.fmt}'),
-#                     bins=args.bins,
-#                     max_bins=args.max_bins,
-#                     fmt=args.fmt,
-#                     save_img=args.save_img,
-#                 )
-#                 perms = gene_space.extract_permutations()
-#                 binned_df = gene_space.bin_space_for_image()
-#                 gene_space.plot_binned_spaces(
-#                     perms,
-#                     binned_df,
-#                     x_limits,
-#                     y_limits,
-#                 )
-
-
 def plot_everything(args):
     new_plotter = NewPlotter(args.data, args.bins)
-    perms = new_plotter.extract_permutations()
-    binned_df = new_plotter.bin_space_for_image()
     for zoom in range(args.max_zoom + 1):
         outdir = os.path.join(args.outdir, str(zoom))
         os.makedirs(outdir, exist_ok=True)
-        for perm in perms:
-            perm_df = binned_df[binned_df['2d_bin'] == perm]
-            if perm_df.empty:
-                continue
+        perm_df = new_plotter.plot_pkls(
+            outdir,
+            zoom,
+            args.min_img_points,
+        )
+        if not len(perm_df):
+            print("finished plotting at zoom", zoom)
+            break
+        else:
+            print("len of perm_df", len(perm_df), "zoom", zoom)
 
-            perm_df = new_plotter.plot_pkls(
-                perm_df,
-                outdir,
-                zoom,
-                args.min_img_points,
-            )
-            if not len(perm_df):
-                print("finished plotting at zoom", zoom)
-                break
-            else:
-                print("len of perm_df", len(perm_df), "zoom", zoom)
-
-            filename = new_plotter.plot_binned_spaces(
-                perm_df,
-                outdir,
-                zoom,
-            )
-            new_plotter.crop_tiles(filename, outdir, zoom)
+        filename = new_plotter.plot_binned_spaces(
+            perm_df,
+            outdir,
+            zoom,
+        )
+        new_plotter.crop_tiles(filename, outdir, zoom)
 
 
 if __name__ == "__main__":
