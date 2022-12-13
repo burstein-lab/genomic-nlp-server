@@ -6,6 +6,7 @@ import os
 import cv2
 from PIL import Image
 import numpy as np
+import matplotlib.pyplot as plt
 import pandas as pd
 
 
@@ -55,13 +56,13 @@ class NewPlotter:
 
         # Based on https://stackoverflow.com/a/65698752
         img = Image.open(filename)
-        w, h = img.size
-        d = TILE_SIZE
-        print("image size:", w, h)
+        width, height = img.size
+        print("image size:", width, height)
 
-        grid = itertools.product(range(0, h-h % d, d), range(0, w-w % d, d))
+        grid = itertools.product(
+            range(0, height-height % TILE_SIZE, TILE_SIZE), range(0, width-width % TILE_SIZE, TILE_SIZE))
         for i, j in grid:
-            box = (j, i, j+d, i+d)
+            box = (j, i, j+TILE_SIZE, i+TILE_SIZE)
             out = os.path.join(
                 outdir, f'space_by_label_{int(j / TILE_SIZE)}_{int(i / TILE_SIZE)}.png')
             img.crop(box).save(out)
@@ -120,13 +121,15 @@ class NewPlotter:
 
     def plot_binned_spaces(self, perm_df: pd.DataFrame, outdir: str, zoom: int) -> str:
         tile_size = TILE_SIZE * (2 ** zoom)
-        # https://stackoverflow.com/questions/44595160/create-transparent-image-in-opencv-python
-        layer1 = np.zeros((tile_size, tile_size, 4))
+        # # https://stackoverflow.com/questions/44595160/create-transparent-image-in-opencv-python
+        # layer1 = np.zeros((tile_size, tile_size, 4))
 
         radius = 3  # including border
         border_width = 1
         opacity = int(0.8 * 255)
 
+        fig = plt.gcf()
+        fig.set_size_inches(tile_size, tile_size)
         for _, row in perm_df.iterrows():
             color = pick_color(row['x'], row['y'])
             center = (
@@ -147,18 +150,24 @@ class NewPlotter:
                     ),
                 ),
             )
+
+            circle = plt.Circle(center, radius, color=tuple((
+                i / 255 for i in (*color, opacity))), fill=True)
+            # circle.set_alpha(opacity)
+            fig.patches.append(circle)
             # RGBA color
-            cv2.circle(layer1, center, radius, (*color, opacity), -1)
-            cv2.circle(
-                layer1,
-                center,
-                radius,
-                (*color, 255),
-                border_width,
-            )
+            # cv2.circle(layer1, center, radius, (*color, opacity), -1)
+            # cv2.circle(
+            #     layer1,
+            #     center,
+            #     radius,
+            #     (*color, 255),
+            #     border_width,
+            # )
 
         filename = os.path.join(outdir, "uncropped.png")
-        cv2.imwrite(filename, layer1)
+        # cv2.imwrite(filename, layer1)
+        fig.savefig(filename, dpi=1, transparent=True)
 
         return filename
 
@@ -248,11 +257,11 @@ def plot_everything(args):
             zoom,
             args.min_img_points,
         )
-        if not len(perm_df):
+        if len(perm_df) == 0:
             print("finished plotting at zoom", zoom)
             break
-        else:
-            print("len of perm_df", len(perm_df), "zoom", zoom)
+
+        print("len of perm_df", len(perm_df), "zoom", zoom)
 
         filename = new_plotter.plot_binned_spaces(
             perm_df,
