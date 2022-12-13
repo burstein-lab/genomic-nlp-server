@@ -134,28 +134,6 @@ class NewPlotter:
                 plot_df = df[mask]
 
                 for _, row in plot_df.iterrows():
-                    # center = (
-                    #     round(
-                    #         uncropped_size *
-                    #         self.normalize_to_standard(
-                    #             row['x'],
-                    #             self.min_x,
-                    #             self.max_x,
-                    #         ),
-                    #     ),
-                    #     round(
-                    #         uncropped_size *
-                    #         self.normalize_to_standard(
-                    #             row['y'],
-                    #             self.min_y,
-                    #             self.max_y,
-                    #         ),
-                    #     ),
-                    # )
-
-                    # if center[0] < min_x_edge or center[0] > max_x_edge or center[1] < min_y_edge or center[1] > max_y_edge:
-                    #     continue
-
                     color = pick_color(row['x'], row['y'])
                     center = (
                         round(
@@ -280,7 +258,6 @@ def plot_everything(args):
             outdir,
             zoom,
         )
-        # new_plotter.crop_tiles(filename, outdir, zoom)
 
 
 if __name__ == "__main__":
