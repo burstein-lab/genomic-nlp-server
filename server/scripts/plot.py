@@ -14,13 +14,17 @@ Image.MAX_IMAGE_PIXELS = 1073741824
 
 TILE_SIZE = 1024
 # https://coolors.co/b24c63-5438dc-357ded-56eef4-32e875
-COLOR_PICKER = itertools.cycle([
+COLOR_PICKER = [
     (178, 76, 99),
     (84, 56, 220),
     (53, 125, 237),
     (86, 238, 244),
     (50, 232, 117),
-])
+]
+
+
+def pick_color(x, y):
+    return COLOR_PICKER[abs(int(x * y)) % len(COLOR_PICKER)]
 
 
 class NewPlotter:
@@ -124,7 +128,7 @@ class NewPlotter:
         opacity = int(0.8 * 255)
 
         for _, row in perm_df.iterrows():
-            color = next(COLOR_PICKER)
+            color = pick_color(row['x'], row['y'])
             center = (
                 round(
                     tile_size *
