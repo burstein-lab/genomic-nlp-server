@@ -6,7 +6,7 @@
       v-model="zoom"
       v-model:zoom="zoom"
       crs="Simple"
-      :center="[-512, 512]"
+      :center="[-(tileSize / 2), tileSize / 2]"
       :maxBounds="[
         [tileSize * 0.5, -tileSize * 0.5],
         [-tileSize * 1.5, tileSize * 1.5],
