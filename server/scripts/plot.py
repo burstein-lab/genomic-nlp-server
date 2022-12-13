@@ -25,7 +25,7 @@ COLOR_PICKER = [
 
 
 def pick_color(x, y):
-    return COLOR_PICKER[abs(int(x * y)) % len(COLOR_PICKER)]
+    return COLOR_PICKER[hash(x * y) % len(COLOR_PICKER)]
 
 
 class NewPlotter:
@@ -45,27 +45,6 @@ class NewPlotter:
     @staticmethod
     def normalize_from_standard(value, value_min, value_max):
         return value * (value_max - value_min) + value_min
-
-    def crop_tiles(self, filename, outdir, zoom):
-        if zoom == 0:
-            shutil.copy(
-                filename,
-                os.path.join(outdir, "space_by_label_0_0.png"),
-            )
-            return
-
-        # Based on https://stackoverflow.com/a/65698752
-        img = Image.open(filename)
-        width, height = img.size
-        print("image size:", width, height)
-
-        grid = itertools.product(
-            range(0, height-height % TILE_SIZE, TILE_SIZE), range(0, width-width % TILE_SIZE, TILE_SIZE))
-        for i, j in grid:
-            box = (j, i, j+TILE_SIZE, i+TILE_SIZE)
-            out = os.path.join(
-                outdir, f'space_by_label_{int(j / TILE_SIZE)}_{int(i / TILE_SIZE)}.png')
-            img.crop(box).save(out)
 
     def _focus(self, x_range, y_range):
         x_range_min = self.normalize_from_standard(
@@ -113,63 +92,74 @@ class NewPlotter:
 
                 pd.to_pickle(
                     pkl_df,
-                    os.path.join(outdir, f'space_by_label_{i}_{j}.pkl'),
+                    os.path.join(
+                        outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.pkl'),
                 )
                 df = df[~mask]
 
         return df
 
-    def plot_binned_spaces(self, perm_df: pd.DataFrame, outdir: str, zoom: int) -> str:
-        tile_size = TILE_SIZE * (2 ** zoom)
-        # # https://stackoverflow.com/questions/44595160/create-transparent-image-in-opencv-python
-        # layer1 = np.zeros((tile_size, tile_size, 4))
-
-        radius = 3  # including border
-        border_width = 1
+    def plot_binned_spaces(self, df: pd.DataFrame, outdir: str, zoom: int) -> str:
+        zoom_levels = calc_zoom_levels(zoom)
+        radius = 3
         opacity = int(0.8 * 255)
+        uncropped_size = TILE_SIZE * (2 ** zoom)
+        df = df.copy()
+        df['plot_x'] = df.apply(lambda row: round(
+            uncropped_size * self.normalize_to_standard(row['x'], self.min_x, self.max_x)), axis=1)
+        df['plot_y'] = df.apply(lambda row: round(
+            uncropped_size * self.normalize_to_standard(row['y'], self.min_y, self.max_y)), axis=1)
+        for i, x_lines in enumerate(zoom_levels):
+            for j, zoom_ranges in enumerate(x_lines):
+                plt.clf()
+                fig = plt.gcf()
+                fig.set_size_inches(TILE_SIZE, TILE_SIZE)
+                threshold = radius
+                min_x, max_x, min_y, max_y = self._focus(*zoom_ranges)
+                min_x_edge = round(
+                    uncropped_size * zoom_ranges[0][0]) - threshold
+                min_y_edge = round(
+                    uncropped_size * zoom_ranges[1][0]) - threshold
+                max_x_edge = round(
+                    uncropped_size * zoom_ranges[0][1]) + threshold
+                max_y_edge = round(
+                    uncropped_size * zoom_ranges[1][1]) + threshold
 
-        fig = plt.gcf()
-        fig.set_size_inches(tile_size, tile_size)
-        for _, row in perm_df.iterrows():
-            color = pick_color(row['x'], row['y'])
-            center = (
-                round(
-                    tile_size *
-                    self.normalize_to_standard(
-                        row['x'],
-                        self.min_x,
-                        self.max_x,
-                    ),
-                ),
-                round(
-                    tile_size *
-                    self.normalize_to_standard(
-                        row['y'],
-                        self.min_y,
-                        self.max_y,
-                    ),
-                ),
-            )
+                mask = (
+                    (df["plot_x"] > min_x_edge) &
+                    (df["plot_x"] < max_x_edge) &
+                    (df["plot_y"] > min_y_edge) &
+                    (df["plot_y"] < max_y_edge)
+                )
+                plot_df = df[mask]
 
-            circle = plt.Circle(center, radius, color=tuple((
-                i / 255 for i in (*color, opacity))), fill=True)
-            # circle.set_alpha(opacity)
-            fig.patches.append(circle)
-            # RGBA color
-            # cv2.circle(layer1, center, radius, (*color, opacity), -1)
-            # cv2.circle(
-            #     layer1,
-            #     center,
-            #     radius,
-            #     (*color, 255),
-            #     border_width,
-            # )
+                for _, row in plot_df.iterrows():
+                    color = pick_color(row['x'], row['y'])
+                    center = (
+                        round(
+                            TILE_SIZE *
+                            self.normalize_to_standard(
+                                row['x'],
+                                min_x,
+                                max_x,
+                            ),
+                        ),
+                        round(
+                            TILE_SIZE *
+                            self.normalize_to_standard(
+                                row['y'],
+                                min_y,
+                                max_y,
+                            ),
+                        ),
+                    )
+                    circle = plt.Circle(center, radius, color=tuple((
+                        i / 255 for i in (*color, opacity))), fill=True)
+                    fig.patches.append(circle)
 
-        filename = os.path.join(outdir, "uncropped.png")
-        # cv2.imwrite(filename, layer1)
-        fig.savefig(filename, dpi=1, transparent=True)
-
-        return filename
+                filename = os.path.join(
+                    outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.png')
+                fig.savefig(filename, dpi=1, transparent=True)
 
 
 class SpaceFocus:
@@ -263,12 +253,11 @@ def plot_everything(args):
 
         print("len of perm_df", len(perm_df), "zoom", zoom)
 
-        filename = new_plotter.plot_binned_spaces(
+        new_plotter.plot_binned_spaces(
             perm_df,
             outdir,
             zoom,
         )
-        new_plotter.crop_tiles(filename, outdir, zoom)
 
 
 if __name__ == "__main__":

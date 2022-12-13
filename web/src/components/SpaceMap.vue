@@ -22,7 +22,7 @@
         :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
         layer-type="base"
         name="OpenStreetMap"
-        :max-zoom="5"
+        :max-zoom="8"
         :min-zoom="0"
         :tileSize="tileSize"
         @ready="onTileLayerReady(this)"
