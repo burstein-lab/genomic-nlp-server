@@ -129,33 +129,51 @@ class NewPlotter:
                 )
                 plot_df = df[mask]
 
-                for _, row in plot_df.iterrows():
-                    color = pick_color(row['x'], row['y'])
-                    center = (
-                        round(
-                            TILE_SIZE *
-                            self.normalize_to_standard(
-                                row['x'],
-                                min_x,
-                                max_x,
-                            ),
+                fig.patches.extend(
+                    plot_df.apply(
+                        lambda row: self.create_circle(
+                            min_x,
+                            max_x,
+                            min_y,
+                            max_y,
+                            radius,
+                            opacity,
+                            row,
                         ),
-                        round(
-                            TILE_SIZE *
-                            self.normalize_to_standard(
-                                row['y'],
-                                min_y,
-                                max_y,
-                            ),
-                        ),
-                    )
-                    circle = plt.Circle(center, radius, color=tuple((
-                        i / 255 for i in (*color, opacity))), fill=True)
-                    fig.patches.append(circle)
+                        axis=1,
+                    ),
+                )
 
                 filename = os.path.join(
                     outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.png')
                 fig.savefig(filename, dpi=1, transparent=True)
+
+    def create_circle(self, min_x, max_x, min_y, max_y, radius, opacity, row):
+        color = pick_color(row.x, row.y)
+        center = (
+            round(
+                TILE_SIZE *
+                self.normalize_to_standard(
+                    row.x,
+                    min_x,
+                    max_x,
+                ),
+            ),
+            round(
+                TILE_SIZE *
+                self.normalize_to_standard(
+                    row.y,
+                    min_y,
+                    max_y,
+                ),
+            ),
+        )
+        return plt.Circle(
+            center,
+            radius,
+            color=tuple((i / 255 for i in (*color, opacity))),
+            fill=True,
+        )
 
 
 class SpaceFocus:
