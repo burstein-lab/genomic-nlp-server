@@ -75,35 +75,6 @@ def ping_pong():
     return jsonify("pong!")
 
 
-# @app.route("/points")
-# def points():
-#     result = {}
-#     zoom = int(request.args.get("z"))
-#     tile_x = request.args.get("x")
-#     tile_y = request.args.get("y")
-
-#     result["exists"] = {
-#         "z": zoom,
-#         "x": tile_x,
-#         "y": tile_y,
-#         "exists": os.path.isfile(f"../web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"),
-#     }
-
-#     df = None
-#     path = f"../web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"
-#     if os.path.isfile(path):
-#         df = pd.read_pickle(path)
-
-#     return jsonify_features(df)
-
-
-# def jsonify_features(df):
-#     result = {
-#         "features": df_to_features(df),
-#     }
-#     return jsonify(result)
-
-
 def spaces_df_to_features(spaces):
     return jsonify(
         {

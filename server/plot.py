@@ -128,21 +128,20 @@ class NewPlotter:
                     (df["plot_y"] < max_y_edge)
                 )
                 plot_df = df[mask]
-
-                fig.patches.extend(
-                    plot_df.apply(
-                        lambda row: self.create_circle(
-                            min_x,
-                            max_x,
-                            min_y,
-                            max_y,
-                            radius,
-                            opacity,
-                            row,
-                        ),
-                        axis=1,
+                circles = plot_df.apply(
+                    lambda row: self.create_circle(
+                        min_x,
+                        max_x,
+                        min_y,
+                        max_y,
+                        radius,
+                        opacity,
+                        row,
                     ),
+                    axis=1,
                 )
+                if len(circles) != 0:
+                    fig.patches.extend(circles)
 
                 filename = os.path.join(
                     outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.png')
