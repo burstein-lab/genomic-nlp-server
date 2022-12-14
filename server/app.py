@@ -10,14 +10,13 @@ from gensim.models import word2vec as w2v
 import pandas as pd
 from google.cloud import storage
 
-from coords import Point
+from common import Point, df_to_features, df_coord_to_latlng, TILE_SIZE
 
 
 # configuration
 DEBUG = True
 
 HEAD_LIMIT = 50
-MAX_TILE_SIZE = 1024
 MAX_ZOOM = 8
 ZOOM_TILE_SPLIT_FACTOR = 4
 
@@ -62,14 +61,6 @@ with open("gene_names_to_ko.pkl", "rb") as o:
 X_MAX, Y_MAX, X_MIN, Y_MIN = DF.x.max(), DF.y.max(), DF.x.min(), DF.y.min()
 
 
-def normalize(value, value_min, value_max):
-    return (value - value_min) / (value_max - value_min)
-
-
-def df_coord_to_latlng(y_value, x_value):
-    return normalize(y_value, Y_MAX, Y_MIN) * - MAX_TILE_SIZE, normalize(x_value, X_MIN, X_MAX) * MAX_TILE_SIZE
-
-
 # instantiate the app
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -79,57 +70,44 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 # sanity check route
-@ app.route("/ping", methods=["GET"])
+@app.route("/ping", methods=["GET"])
 def ping_pong():
     return jsonify("pong!")
 
 
-@ app.route("/points")
-def points():
-    result = {}
-    zoom = int(request.args.get("z"))
-    tile_x = request.args.get("x")
-    tile_y = request.args.get("y")
+# @app.route("/points")
+# def points():
+#     result = {}
+#     zoom = int(request.args.get("z"))
+#     tile_x = request.args.get("x")
+#     tile_y = request.args.get("y")
 
-    result["exists"] = {
-        "z": zoom,
-        "x": tile_x,
-        "y": tile_y,
-        "exists": os.path.isfile(f"../web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"),
-    }
+#     result["exists"] = {
+#         "z": zoom,
+#         "x": tile_x,
+#         "y": tile_y,
+#         "exists": os.path.isfile(f"../web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"),
+#     }
 
-    df = None
-    path = f"../web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"
-    if os.path.isfile(path):
-        df = pd.read_pickle(path)
+#     df = None
+#     path = f"../web/public/map/{zoom}/space_by_label_{tile_x}_{tile_y}.pkl"
+#     if os.path.isfile(path):
+#         df = pd.read_pickle(path)
 
-    return jsonify_features(df)
-
-
-def jsonify_features(df):
-    result = {
-        "features": df_to_features(df),
-    }
-    return jsonify(result)
+#     return jsonify_features(df)
 
 
-def df_to_features(df):
-    features = []
-    if df is None:
-        return features
-
-    for row in df.itertuples():
-        y_coord, x_coord = df_coord_to_latlng(row.y, row.x)
-        features.append(
-            Point(row.Index, x_coord, y_coord, {"name": f"{x_coord},{y_coord}", "word": row.word}).todict())
-
-    return features
+# def jsonify_features(df):
+#     result = {
+#         "features": df_to_features(df),
+#     }
+#     return jsonify(result)
 
 
 def spaces_df_to_features(spaces):
     return jsonify(
         {
-            "spaces": df_to_features(spaces),
+            "spaces": df_to_features(spaces, Y_MIN, Y_MAX, X_MIN, X_MAX),
             "latlng": calc_center(spaces),
             "zoom": calc_zoom(spaces),
         },
@@ -155,7 +133,7 @@ def calc_zoom(spaces):
     if gap == 0:
         return MAX_ZOOM
 
-    return min(math.floor(math.log2(MAX_TILE_SIZE) - math.log2(gap)), MAX_ZOOM)
+    return min(math.floor(math.log2(TILE_SIZE) - math.log2(gap)), MAX_ZOOM)
 
 
 @app.route("/<type_>/search")

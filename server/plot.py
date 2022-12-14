@@ -1,19 +1,17 @@
 import argparse
-import shutil
-import itertools
+import json
 import os
 
-import cv2
 from PIL import Image
-import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+
+from common import TILE_SIZE, df_to_features
 
 
 Image.MAX_IMAGE_PIXELS = 1073741824
 
 
-TILE_SIZE = 1024
 # https://coolors.co/b24c63-5438dc-357ded-56eef4-32e875
 COLOR_PICKER = [
     (178, 76, 99),
@@ -69,7 +67,7 @@ class NewPlotter:
         )
         return x_range_min, x_range_max, y_range_min, y_range_max
 
-    def plot_pkls(self, outdir: str, zoom: int, threshold: int) -> pd.DataFrame:
+    def plot_jsons(self, outdir: str, zoom: int, threshold: int) -> pd.DataFrame:
         df = self.space_data.copy()
         zoom_levels = calc_zoom_levels(zoom)
         for i, x_lines in enumerate(zoom_levels):
@@ -83,18 +81,16 @@ class NewPlotter:
                     (df["y"] <= max_y)
                 )
 
-                pkl_df = df[mask]
-                if len(pkl_df) >= threshold or len(pkl_df) == 0:
-                    if len(pkl_df) >= threshold:
+                plot_df = df[mask]
+                if len(plot_df) >= threshold or len(plot_df) == 0:
+                    if len(plot_df) >= threshold:
                         print("zoom:", zoom, "i:", i, "j:", j,
-                              "above threshold:", len(pkl_df))
+                              "above threshold:", len(plot_df))
                     continue
 
-                pd.to_pickle(
-                    pkl_df,
-                    os.path.join(
-                        outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.pkl'),
-                )
+                with open(os.path.join(outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.json'), 'w') as f:
+                    f.write(json.dumps({"features": df_to_features(
+                        plot_df, self.min_y, self.max_y, self.min_x, self.max_x)}))
                 df = df[~mask]
 
         return df
@@ -133,33 +129,51 @@ class NewPlotter:
                 )
                 plot_df = df[mask]
 
-                for _, row in plot_df.iterrows():
-                    color = pick_color(row['x'], row['y'])
-                    center = (
-                        round(
-                            TILE_SIZE *
-                            self.normalize_to_standard(
-                                row['x'],
-                                min_x,
-                                max_x,
-                            ),
+                fig.patches.extend(
+                    plot_df.apply(
+                        lambda row: self.create_circle(
+                            min_x,
+                            max_x,
+                            min_y,
+                            max_y,
+                            radius,
+                            opacity,
+                            row,
                         ),
-                        round(
-                            TILE_SIZE *
-                            self.normalize_to_standard(
-                                row['y'],
-                                min_y,
-                                max_y,
-                            ),
-                        ),
-                    )
-                    circle = plt.Circle(center, radius, color=tuple((
-                        i / 255 for i in (*color, opacity))), fill=True)
-                    fig.patches.append(circle)
+                        axis=1,
+                    ),
+                )
 
                 filename = os.path.join(
                     outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.png')
                 fig.savefig(filename, dpi=1, transparent=True)
+
+    def create_circle(self, min_x, max_x, min_y, max_y, radius, opacity, row):
+        color = pick_color(row.x, row.y)
+        center = (
+            round(
+                TILE_SIZE *
+                self.normalize_to_standard(
+                    row.x,
+                    min_x,
+                    max_x,
+                ),
+            ),
+            round(
+                TILE_SIZE *
+                self.normalize_to_standard(
+                    row.y,
+                    min_y,
+                    max_y,
+                ),
+            ),
+        )
+        return plt.Circle(
+            center,
+            radius,
+            color=tuple((i / 255 for i in (*color, opacity))),
+            fill=True,
+        )
 
 
 class SpaceFocus:
@@ -242,7 +256,7 @@ def plot_everything(args):
     for zoom in range(args.max_zoom + 1):
         outdir = os.path.join(args.outdir, str(zoom))
         os.makedirs(outdir, exist_ok=True)
-        perm_df = new_plotter.plot_pkls(
+        perm_df = new_plotter.plot_jsons(
             outdir,
             zoom,
             args.min_img_points,

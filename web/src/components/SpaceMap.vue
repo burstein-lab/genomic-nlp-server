@@ -173,7 +173,9 @@ export default {
       self.map = this.$refs.mapRef.leafletObject;
     },
     getFeatures(coords: Coords) {
-      fetch(`${this.apiUrl}/points?z=${coords.z}&x=${coords.x}&y=${coords.y}`)
+      fetch(
+        `${this.publicAssetsUrl}map/${coords.z}/space_by_label_${coords.x}_${coords.y}.json`
+      )
         .then((res) => res.json())
         .then((res) => {
           this.collections.set(
