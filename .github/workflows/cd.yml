@@ -72,7 +72,7 @@ jobs:
       - run: pipenv install --dev
       - run: gsutil cp gs://gnlp-public-assets/data/model_data.pkl model_data.pkl
       - run: pipenv run python server/plot.py --data model_data.pkl --outdir=web/src/assets/map --fmt png --max-zoom 5
-      - run: gsutil -m rsync -r web/src/assets/map gs://gnlp-public-assets/map
+      - run: gsutil -m rsync -rd web/src/assets/map gs://gnlp-public-assets/map
 
   create-web:
     runs-on: ubuntu-latest

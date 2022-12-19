@@ -140,9 +140,10 @@ class NewPlotter:
                     ),
                     axis=1,
                 )
-                if len(circles) != 0:
-                    fig.patches.extend(circles)
+                if len(circles) == 0:
+                    continue
 
+                fig.patches.extend(circles)
                 filename = os.path.join(
                     outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.png')
                 fig.savefig(filename, dpi=1, transparent=True)
@@ -252,22 +253,22 @@ def calc_zoom_levels(zoom):
 
 def plot_everything(args):
     new_plotter = NewPlotter(args.data, args.bins)
-    for zoom in range(args.max_zoom + 1):
+    for zoom in range(args.min_zoom, max(args.min_zoom, args.max_zoom) + 1):
         outdir = os.path.join(args.outdir, str(zoom))
         os.makedirs(outdir, exist_ok=True)
-        perm_df = new_plotter.plot_jsons(
+        df = new_plotter.plot_jsons(
             outdir,
             zoom,
             args.min_img_points,
         )
-        if len(perm_df) == 0:
+        if len(df) == 0:
             print("finished plotting at zoom", zoom)
             break
 
-        print("len of perm_df", len(perm_df), "zoom", zoom)
+        print("len of df", len(df), "zoom", zoom)
 
         new_plotter.plot_binned_spaces(
-            perm_df,
+            df,
             outdir,
             zoom,
         )
@@ -279,6 +280,7 @@ if __name__ == "__main__":
                           help='path to the gene space dataset')
     argparse.add_argument('--outdir', default='../src/assets/', type=str,
                           help='output dir for img to be saved [default[/src/assest]')
+    argparse.add_argument('--min-zoom', default=0, type=int)
     argparse.add_argument('--max-zoom', default=0, type=int)
     argparse.add_argument('--bins', default=1, type=int,
                           help='number of bins to split the space [default:1]')
