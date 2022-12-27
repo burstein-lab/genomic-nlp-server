@@ -85,7 +85,7 @@
           <v-progress-linear indeterminate color="primary" rounded />
         </div>
         <div v-else-if="clickPoint">
-          {{ clickPoint }}
+          <SpaceInfo :space="clickPoint" />
           <v-btn-group>
             <v-btn color="primary" @click="centerPoint">Center</v-btn>
             <v-btn color="primary" @click="barPlot">Bar Plot</v-btn>
@@ -102,7 +102,7 @@
           </div>
         </div>
         <div v-else-if="hoverPoint">
-          {{ hoverPoint }}
+          <SpaceInfo :space="hoverPoint" />
           Click point for more options
         </div>
         <div v-else>
@@ -117,6 +117,7 @@
 import { BarChart, ScatterChart } from "vue-chart-3";
 import Search from "./Search.vue";
 import ThemeToggle from "./ThemeToggle.vue";
+import SpaceInfo from "./SpaceInfo.vue";
 import {
   useHoverPoint,
   useClickPoint,
@@ -125,7 +126,7 @@ import {
 
 export default {
   name: "ControlCard",
-  components: { Search, BarChart, ScatterChart, ThemeToggle },
+  components: { Search, BarChart, ScatterChart, ThemeToggle, SpaceInfo },
   props: {
     loading: {
       type: Boolean,

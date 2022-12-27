@@ -36,6 +36,18 @@ const spaceToFeature = (
   };
 };
 
+const spaceToInfo = (point: Space): string => {
+  return `
+          Word: ${point.value.word} <br />
+          KO: ${point.value.ko} <br />
+          Label: ${point.value.label} <br />
+          Product: ${point.value.product} <br />
+          Gene Name: ${point.value.gene_name} <br />
+          Significant: ${point.value.significant} <br />
+          Predicted Class: ${point.value.predicted_class} <br />
+          `;
+};
+
 interface LatLng {
   lat: number;
   lng: number;
@@ -45,7 +57,15 @@ interface Space {
   id: string;
   x: number;
   y: number;
-  value: string;
+  value: {
+    word: string;
+    ko: string;
+    label: string;
+    product: string;
+    gene_name: string;
+    significant: string;
+    predicted_class: string;
+  };
 }
 
 interface Coords {
@@ -76,4 +96,4 @@ interface Feature {
 }
 
 export type { Coords, Space, Feature, FeatureCollection, LatLng };
-export { spacesToCollection };
+export { spacesToCollection, spaceToInfo };

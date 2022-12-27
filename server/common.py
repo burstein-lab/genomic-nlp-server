@@ -33,7 +33,22 @@ def df_to_features(df, y_min, y_max, x_min, x_max):
         y_coord, x_coord = df_coord_to_latlng(
             row.y, row.x, y_min, y_max, x_min, x_max)
         features.append(
-            Point(row.Index, x_coord, y_coord, {"name": f"{x_coord},{y_coord}", "word": row.word}).todict())
+            Point(
+                row.Index,
+                x_coord,
+                y_coord,
+                {
+                    "name": f"{x_coord},{y_coord}",
+                    "word": row.word,
+                    "ko": row.KO,
+                    "label": row.label,
+                    "product": row.product,
+                    "gene_name": row.gene_name,
+                    "significant": row.significant,
+                    "predicted_class": row.predicted_class,
+                },
+            ).todict(),
+        )
 
     return features
 
