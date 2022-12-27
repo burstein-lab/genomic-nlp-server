@@ -108,7 +108,8 @@ export default {
       zoom: useZoom(),
       publicAssetsUrl: import.meta.env.VITE_PUBLIC_URL,
       apiUrl: import.meta.env.VITE_SERVER_URL,
-      diamondUrl: import.meta.env.VITE_DIAMOND_URL,
+      diamondUrl: new URL(`${import.meta.env.VITE_DIAMOND_URL}/diamond`),
+      serverUrl: new URL(import.meta.env.VITE_SERVER_URL),
       getJsonOptions: {
         onEachFeature: this.onEachFeature,
       },
@@ -124,6 +125,13 @@ export default {
     };
   },
   async beforeMount() {
+    const intervalFunc = () => {
+      fetch(this.diamondUrl.href);
+      fetch(this.serverUrl.href);
+    };
+    intervalFunc();
+    setInterval(intervalFunc, 60 * 1000);
+
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
     // And now the Leaflet circleMarker function can be used by the options:
     this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) =>
