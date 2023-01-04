@@ -136,7 +136,7 @@ export default {
     // And now the Leaflet circleMarker function can be used by the options:
     this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) =>
       circleMarker(latlng, {
-        radius: this.zoom * 2,
+        radius: (this.zoom + 2),
         fillColor: feature.properties.value.color, // TODO: border color by feature.properties.isSearch ? "#007800" : "#ff7800",
         weight: 1,
         opacity: 1,
@@ -212,6 +212,22 @@ export default {
                 e.target.feature.properties.tileY
               )
             );
+          }
+          if (this.clickPointTarget) {
+            const e2 = this.clickPointTarget;
+            let obj2;
+            if (e2.target.feature.properties.isSearch) {
+              obj2 = this.$refs[`geoJsonSearchRef`].leafletObject;
+            } else {
+              obj2 = this.geoJsonObj(
+                this.coordsToString(
+                  e2.target.feature.properties.zoom,
+                  e2.target.feature.properties.tileX,
+                  e2.target.feature.properties.tileY
+                )
+              );
+            }
+            obj2.resetStyle(e2.target);
           }
           this.clickPoint = e.target.feature;
           this.clickPointTarget = e;

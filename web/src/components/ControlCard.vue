@@ -99,10 +99,13 @@
             </v-btn>
           </v-btn-group>
           <div v-if="clickPoint && barData">
-            <BarChart :chartData="barData" />
+            <BarChart
+              :chartData="barData"
+              :options="{ title: { display: false } }"
+            />
           </div>
           <div v-if="clickPoint && scatterData">
-            <ScatterChart :chartData="scatterData" />
+            <ScatterChart :chartData="scatterData" :options="scatterOptions" />
           </div>
         </div>
         <div v-else>
@@ -156,6 +159,7 @@ export default {
       neighbors: null,
       barData: null,
       scatterData: null,
+      scatterOptions: null,
       hoverPoint: useHoverPoint(),
       clickPoint: useClickPoint(),
       kNeighbors: 20,
@@ -188,8 +192,6 @@ export default {
       this.$emit("centerPoint");
     },
     barPlot() {
-      console.log("point", this.clickPoint);
-      console.log("props", this.clickPoint.properties);
       fetch(`${this.apiUrl}/plot/bar/${this.clickPoint.properties.value.word}`)
         .then((res) => res.json())
         .then((res) => {
@@ -213,10 +215,28 @@ export default {
       )
         .then((res) => res.json())
         .then((res) => {
+          this.scatterOptions = {
+            scales: {
+              x: {
+                ticks: {
+                  // Include a dollar sign in the ticks
+                  callback: (value: string, index: number, ticks: any[]) => {
+                    return res.ticks[index];
+                  },
+                },
+              },
+            },
+          };
           this.scatterData = {
             // plt.yscale('log')
             //plt.ylabel('Prediction Score')
-            datasets: [res],
+            datasets: [
+              {
+                label: res.label,
+                data: res.data,
+                backgroundColor: "#da4ca4",
+              },
+            ],
           };
         })
         .catch((err) => {
@@ -241,6 +261,7 @@ export default {
     clickPoint(val: Point) {
       this.barData = null;
       this.scatterData = null;
+      this.scatterOptions = null;
     },
   },
 };

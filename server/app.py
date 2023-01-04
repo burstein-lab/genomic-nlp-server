@@ -224,6 +224,7 @@ def plot_scatter(word):
         {
             "label": f"Word: {word}, Hypothetical: {word_data['hypothetical'].values[0]}, Significant: {word_data['significant'].values[0]}",
             "data": data,
+            "ticks": [v for v in pred_df["class"].values],
         }
     )
 
