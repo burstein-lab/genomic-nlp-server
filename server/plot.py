@@ -22,6 +22,11 @@ COLOR_PICKER = [
 ]
 
 
+def hex_to_rgb(value):
+    h = value.lstrip('#')
+    return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+
+
 def pick_color(x, y):
     return COLOR_PICKER[hash(x * y) % len(COLOR_PICKER)]
 
@@ -31,6 +36,8 @@ class NewPlotter:
         self.data_path = data_path
         self.bins = bins
         self.space_data = pd.read_pickle(data_path)
+        self.space_data["rgb_color"] = self.space_data.apply(
+            lambda row: hex_to_rgb(row.color), axis=1)
         self.max_x = self.space_data.x.max()
         self.min_x = self.space_data.x.min()
         self.max_y = self.space_data.y.max()
@@ -149,7 +156,6 @@ class NewPlotter:
                 fig.savefig(filename, dpi=1, transparent=True)
 
     def create_circle(self, min_x, max_x, min_y, max_y, radius, opacity, row):
-        color = pick_color(row.x, row.y)
         center = (
             round(
                 TILE_SIZE *
@@ -168,10 +174,11 @@ class NewPlotter:
                 ),
             ),
         )
+        print(row.rgb_color)
         return plt.Circle(
             center,
             radius,
-            color=tuple((i / 255 for i in (*color, opacity))),
+            color=tuple((i / 255 for i in (*row.rgb_color, opacity))),
             fill=True,
         )
 
