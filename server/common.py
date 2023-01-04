@@ -43,7 +43,7 @@ def df_to_features(df, y_min, y_max, x_min, x_max):
                     "ko": row.KO,
                     "label": row.label,
                     "product": row.product,
-                    "gene_name": row.gene_name,
+                    "gene_name": "",  # TODO: row.gene_name,
                     "significant": row.significant,
                     "predicted_class": row.predicted_class,
                 },
