@@ -84,8 +84,12 @@
           Getting data...
           <v-progress-linear indeterminate color="primary" rounded />
         </div>
+        <div v-else-if="hoverPoint">
+          <SpaceInfo :space="hoverPoint" />
+          Click point for more options
+        </div>
         <div v-else-if="clickPoint">
-          <SpaceInfo :space="clickPoint" />
+          <SpaceInfo :space="clickPoint.properties" />
           <v-btn-group>
             <v-btn color="primary" @click="centerPoint">Center</v-btn>
             <v-btn color="primary" @click="barPlot">Bar Plot</v-btn>
@@ -100,10 +104,6 @@
           <div v-if="clickPoint && scatterData">
             <ScatterChart :chartData="scatterData" />
           </div>
-        </div>
-        <div v-else-if="hoverPoint">
-          <SpaceInfo :space="hoverPoint" />
-          Click point for more options
         </div>
         <div v-else>
           Search to explore the model and hover a point to view extra options
@@ -123,6 +123,23 @@ import {
   useClickPoint,
   useShouldShowMap,
 } from "../composables/states";
+
+import { Chart, registerables } from "chart.js";
+Chart.register(...registerables);
+
+// import { Chart, DoughnutController, ArcElement, Tooltip } from 'chart.js';
+// Chart.register(DoughnutController, ArcElement, Tooltip);
+
+// import {
+//   Chart as ChartJS,
+//   Title,
+//   Tooltip,
+//   Legend,
+//   BarElement,
+//   CategoryScale,
+//   LinearScale
+// } from 'chart.js'
+// ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 export default {
   name: "ControlCard",
@@ -171,9 +188,9 @@ export default {
       this.$emit("centerPoint");
     },
     barPlot() {
-      fetch(
-        `${this.apiUrl}/plot/bar/${this.clickPoint.feature.properties.word}`
-      )
+      console.log("point", this.clickPoint);
+      console.log("props", this.clickPoint.properties);
+      fetch(`${this.apiUrl}/plot/bar/${this.clickPoint.properties.value.word}`)
         .then((res) => res.json())
         .then((res) => {
           this.barData = {
@@ -181,6 +198,7 @@ export default {
             datasets: [
               {
                 data: res.y,
+                backgroundColor: "#da4ca4",
               },
             ],
           };
@@ -191,7 +209,7 @@ export default {
     },
     scatterPlot() {
       fetch(
-        `${this.apiUrl}/plot/scatter/${this.clickPoint.feature.properties.word}`
+        `${this.apiUrl}/plot/scatter/${this.clickPoint.properties.value.word}`
       )
         .then((res) => res.json())
         .then((res) => {

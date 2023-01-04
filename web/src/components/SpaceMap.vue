@@ -22,7 +22,7 @@
         :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
         layer-type="base"
         name="OpenStreetMap"
-        :max-zoom="8"
+        :max-zoom="3"
         :min-zoom="0"
         :tileSize="tileSize"
         @ready="onTileLayerReady(this)"
@@ -136,8 +136,8 @@ export default {
     // And now the Leaflet circleMarker function can be used by the options:
     this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) =>
       circleMarker(latlng, {
-        fillColor: feature.properties.isSearch ? "#007800" : "#ff7800",
         radius: this.zoom * 2,
+        fillColor: feature.properties.value.color, // TODO: border color by feature.properties.isSearch ? "#007800" : "#ff7800",
         weight: 1,
         opacity: 1,
         fillOpacity: 0.8,
@@ -215,6 +215,7 @@ export default {
           }
           this.clickPoint = e.target.feature;
           this.clickPointTarget = e;
+          this.hoverPoint = null;
           this.zoomToFeature(e.latlng, this.zoom);
           e.target.setStyle({
             weight: 5,
@@ -307,7 +308,6 @@ export default {
       );
     },
     onSearch(type: string, e: string[], k: number) {
-      console.log(type);
       this.loading = true;
       const url = new URL(`${this.apiUrl}/${type}/get/${e.toString()}`);
       if (type === "neighbors") {
