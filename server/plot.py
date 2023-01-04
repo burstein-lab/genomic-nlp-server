@@ -97,8 +97,8 @@ class NewPlotter:
 
     def plot_binned_spaces(self, df: pd.DataFrame, outdir: str, zoom: int) -> str:
         zoom_levels = calc_zoom_levels(zoom)
-        radius = 3
-        opacity = int(0.8 * 255)
+        radius = 1 + zoom
+        opacity = int(0.7 * 255)
         uncropped_size = TILE_SIZE * (2 ** zoom)
         df = df.copy()
         df['plot_x'] = df.apply(lambda row: round(
