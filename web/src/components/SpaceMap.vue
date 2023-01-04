@@ -22,7 +22,7 @@
         :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
         layer-type="base"
         name="OpenStreetMap"
-        :max-zoom="3"
+        :max-zoom="7"
         :min-zoom="0"
         :tileSize="tileSize"
         @ready="onTileLayerReady(this)"
@@ -136,7 +136,7 @@ export default {
     // And now the Leaflet circleMarker function can be used by the options:
     this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) =>
       circleMarker(latlng, {
-        radius: (this.zoom + 2),
+        radius: this.zoom + 2,
         fillColor: feature.properties.value.color, // TODO: border color by feature.properties.isSearch ? "#007800" : "#ff7800",
         weight: 1,
         opacity: 1,
