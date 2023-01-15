@@ -79,39 +79,36 @@
     </div>
     <v-divider class="mx-4" />
     <v-card-text>
-      <div v-if="hoverPoint">
+      <div v-if="loading">
+        Getting data...
+        <v-progress-linear indeterminate color="primary" rounded />
+      </div>
+      <div v-else-if="hoverPoint">
         <SpaceInfo :space="hoverPoint" />
         Click point for more options
       </div>
       <div v-else-if="clickPoint">
         <SpaceInfo :space="clickPoint.properties" />
-        <v-btn-toggle color="primary" variant="outlined" v-model="plotToggle">
-          <v-btn value="bar">Bar Plot</v-btn>
-          <v-btn value="scatter">Scatter Plot</v-btn>
-        </v-btn-toggle>
         <v-btn-group>
           <v-btn color="primary" @click="centerPoint">Center</v-btn>
+          <v-btn color="primary" @click="barPlot">Bar Plot</v-btn>
+          <v-btn color="primary" @click="scatterPlot">Scatter Plot</v-btn>
           <v-btn color="grey" icon dark @click="resetClickPoint">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-btn-group>
-        <BarChart
-          v-if="plotToggle == 'bar' && clickPoint && barData"
-          :chartData="barData"
-          :options="{ title: { display: false } }"
-        />
-        <ScatterChart
-          v-if="plotToggle == 'scatter' && clickPoint && scatterData"
-          :chartData="scatterData"
-          :options="scatterOptions"
-        />
+        <div v-if="clickPoint && barData">
+          <BarChart
+            :chartData="barData"
+            :options="{ title: { display: false } }"
+          />
+        </div>
+        <div v-if="clickPoint && scatterData">
+          <ScatterChart :chartData="scatterData" :options="scatterOptions" />
+        </div>
       </div>
       <div v-else>
         Search to explore the model and hover a point to view extra options
-      </div>
-      <div v-if="loading">
-        Getting data...
-        <v-progress-linear indeterminate color="primary" rounded />
       </div>
     </v-card-text>
   </v-card>
@@ -134,14 +131,17 @@ Chart.register(...registerables);
 export default {
   name: "ControlCard",
   components: { Search, BarChart, ScatterChart, ThemeToggle, SpaceInfo },
-  props: {},
+  props: {
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+  },
   data: () => {
     return {
       searchMode: "",
       neighbors: null as string[] | null,
       barData: null as Object | null,
-      loading: false,
-      plotToggle: "",
       scatterData: null as Object | null,
       scatterOptions: null as Object | null,
       hoverPoint: useHoverPoint(),
@@ -167,19 +167,65 @@ export default {
       this.clickPoint = null;
     },
     onSequenceSearch() {
-      this.loading = true;
       this.$emit("sequenceSearch", this.sequence);
-      // TODO: do search here so loading will behave well.
-      this.loading = false;
     },
     onSearch(type: string, e: string[]) {
-      this.loading = true;
       this.$emit("search", type, e, this.kNeighbors);
-      // TODO: do search here so loading will behave well.
-      this.loading = false;
     },
     centerPoint() {
       this.$emit("centerPoint");
+    },
+    barPlot() {
+      fetch(`${this.apiUrl}/plot/bar/${this.clickPoint?.properties.value.word}`)
+        .then((res) => res.json())
+        .then((res) => {
+          this.barData = {
+            labels: res.x,
+            datasets: [
+              {
+                data: res.y,
+                backgroundColor: "#da4ca4",
+              },
+            ],
+          };
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    },
+    scatterPlot() {
+      fetch(
+        `${this.apiUrl}/plot/scatter/${this.clickPoint?.properties.value.word}`
+      )
+        .then((res) => res.json())
+        .then((res) => {
+          this.scatterOptions = {
+            scales: {
+              x: {
+                ticks: {
+                  // Include a dollar sign in the ticks
+                  callback: (value: string, index: number, ticks: any[]) => {
+                    return res.ticks[index];
+                  },
+                },
+              },
+            },
+          };
+          this.scatterData = {
+            // plt.yscale('log')
+            //plt.ylabel('Prediction Score')
+            datasets: [
+              {
+                label: res.label,
+                data: res.data,
+                backgroundColor: "#da4ca4",
+              },
+            ],
+          };
+        })
+        .catch((err) => {
+          console.error(err);
+        });
     },
   },
   watch: {
@@ -200,66 +246,6 @@ export default {
       this.barData = null;
       this.scatterData = null;
       this.scatterOptions = null;
-      this.plotToggle = "";
-    },
-    plotToggle(val) {
-      if (val == "bar") {
-        this.loading = true;
-        fetch(
-          `${this.apiUrl}/plot/bar/${this.clickPoint?.properties.value.word}`
-        )
-          .then((res) => res.json())
-          .then((res) => {
-            this.barData = {
-              labels: res.x,
-              datasets: [
-                {
-                  data: res.y,
-                  backgroundColor: "#da4ca4",
-                },
-              ],
-            };
-            this.loading = false;
-          })
-          .catch((err) => {
-            console.error(err);
-          });
-      } else if (val == "scatter") {
-        this.loading = true;
-        fetch(
-          `${this.apiUrl}/plot/scatter/${this.clickPoint?.properties.value.word}`
-        )
-          .then((res) => res.json())
-          .then((res) => {
-            this.scatterOptions = {
-              scales: {
-                x: {
-                  ticks: {
-                    // Include a dollar sign in the ticks
-                    callback: (value: string, index: number, ticks: any[]) => {
-                      return res.ticks[index];
-                    },
-                  },
-                },
-              },
-            };
-            this.scatterData = {
-              // plt.yscale('log')
-              //plt.ylabel('Prediction Score')
-              datasets: [
-                {
-                  label: res.label,
-                  data: res.data,
-                  backgroundColor: "#da4ca4",
-                },
-              ],
-            };
-            this.loading = false;
-          })
-          .catch((err) => {
-            console.error(err);
-          });
-      }
     },
   },
 };

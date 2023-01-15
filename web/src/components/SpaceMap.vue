@@ -41,7 +41,6 @@
       />
       <l-control ref="controlRef" position="topleft">
         <ControlCard
-          :loading="loading"
           @cancelClickPoint="onCancelClickPoint"
           @resetClickPoint="onResetClickPoint"
           @centerPoint="onCenterPoint"
@@ -59,6 +58,7 @@ import {
   LIcon,
   LTileLayer,
   LMarker,
+  LControl,
   LControlZoom,
   LTooltip,
   LPopup,
@@ -67,7 +67,6 @@ import {
   LPolyline,
   LCircleMarker,
   LPolygon,
-  LControl,
   LFeatureGroup,
   LRectangle,
 } from "@vue-leaflet/vue-leaflet";
@@ -120,7 +119,6 @@ export default {
       collections: new Map(),
       tileSize: 1024,
       searchCollection: null,
-      loading: false,
       map: null,
     };
   },
@@ -190,7 +188,6 @@ export default {
             this.coordsToString(coords.z, coords.x, coords.y),
             spacesToCollection(res["features"], coords, false)
           );
-          console.log("map set", res["features"].length);
         })
         .catch((err) => {
           console.error(err);
@@ -289,7 +286,6 @@ export default {
       return `${z}-${x}-${y}`;
     },
     onSequenceSearch(sequence: string) {
-      this.loading = true;
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -298,18 +294,12 @@ export default {
       const url = new URL(`${this.diamondUrl}/diamond`);
       fetch(url.href, requestOptions)
         .then((res) => {
-          console.log("1", res);
           return res.json();
-        })
-        .then((res) => {
-          console.log("2", res);
         })
         .catch((error) => {
           console.error(error);
         })
-        .finally(() => {
-          this.loading = false;
-        });
+        .finally(() => {});
     },
     onCancelClickPoint() {
       this.resetHighlight;
@@ -324,7 +314,6 @@ export default {
       );
     },
     onSearch(type: string, e: string[], k: number) {
-      this.loading = true;
       const url = new URL(`${this.apiUrl}/${type}/get/${e.toString()}`);
       if (type === "neighbors") {
         url.searchParams.append("k", k.toString());
@@ -347,9 +336,7 @@ export default {
         .catch((error) => {
           console.error(error);
         })
-        .finally(() => {
-          this.loading = false;
-        });
+        .finally(() => {});
     },
   },
   watch: {

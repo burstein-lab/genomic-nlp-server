@@ -1,34 +1,16 @@
 import argparse
-import json
+import simplejson
 import os
 
-from PIL import Image
 import matplotlib.pyplot as plt
 import pandas as pd
 
 from common import TILE_SIZE, df_to_features
 
 
-Image.MAX_IMAGE_PIXELS = 1073741824
-
-
-# https://coolors.co/b24c63-5438dc-357ded-56eef4-32e875
-COLOR_PICKER = [
-    (178, 76, 99),
-    (84, 56, 220),
-    (53, 125, 237),
-    (86, 238, 244),
-    (50, 232, 117),
-]
-
-
 def hex_to_rgb(value):
     h = value.lstrip('#')
     return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
-
-
-def pick_color(x, y):
-    return COLOR_PICKER[hash(x * y) % len(COLOR_PICKER)]
 
 
 class NewPlotter:
@@ -89,20 +71,25 @@ class NewPlotter:
                 )
 
                 plot_df = df[mask]
-                if len(plot_df) >= threshold or len(plot_df) == 0:
+                if (threshold != -1 and len(plot_df) >= threshold) or len(plot_df) == 0:
                     if len(plot_df) >= threshold:
                         print("zoom:", zoom, "i:", i, "j:", j,
                               "above threshold:", len(plot_df))
                     continue
 
                 with open(os.path.join(outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.json'), 'w') as f:
-                    f.write(json.dumps({"features": df_to_features(
-                        plot_df, self.min_y, self.max_y, self.min_x, self.max_x)}))
+                    f.write(
+                        simplejson.dumps(
+                            {"features": df_to_features(
+                                plot_df, self.min_y, self.max_y, self.min_x, self.max_x)},
+                            ignore_nan=True,
+                        ),
+                    )
                 df = df[~mask]
 
         return df
 
-    def plot_binned_spaces(self, df: pd.DataFrame, outdir: str, zoom: int) -> str:
+    def plot_static(self, df: pd.DataFrame, outdir: str, zoom: int) -> str:
         zoom_levels = calc_zoom_levels(zoom)
         radius = 1 + zoom
         opacity = int(0.7 * 255)
@@ -174,7 +161,6 @@ class NewPlotter:
                 ),
             ),
         )
-        print(row.rgb_color)
         return plt.Circle(
             center,
             radius,
@@ -266,7 +252,7 @@ def plot_everything(args):
         df = new_plotter.plot_jsons(
             outdir,
             zoom,
-            args.min_img_points,
+            -1 if zoom == args.max_zoom else args.min_img_points,
         )
         if len(df) == 0:
             print("finished plotting at zoom", zoom)
@@ -274,7 +260,7 @@ def plot_everything(args):
 
         print("len of df", len(df), "zoom", zoom)
 
-        new_plotter.plot_binned_spaces(
+        new_plotter.plot_static(
             df,
             outdir,
             zoom,
