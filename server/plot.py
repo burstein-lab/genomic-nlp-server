@@ -7,6 +7,9 @@ import pandas as pd
 
 from common import TILE_SIZE, df_to_features
 
+GREY_HEX = "#808080"
+GREY_OPACITY = int(0.3 * 255)
+
 
 def hex_to_rgb(value):
     h = value.lstrip('#')
@@ -19,7 +22,19 @@ class NewPlotter:
         self.bins = bins
         self.space_data = pd.read_pickle(data_path)
         self.space_data["rgb_color"] = self.space_data.apply(
-            lambda row: hex_to_rgb(row.color), axis=1)
+            lambda row: hex_to_rgb(row.color), axis=1,
+        )
+        # in order to plot grey circles first.
+        self.space_data["order"] = self.space_data.apply(
+            lambda row: 0 if row.color == GREY_HEX else 1, axis=1,
+        )
+
+        before = str(chr(ord("#") - 1))
+        self.space_data.sort_values(
+            by=["order"],
+            ascending=True,
+            inplace=True,
+        )
         self.max_x = self.space_data.x.max()
         self.min_x = self.space_data.x.min()
         self.max_y = self.space_data.y.max()
@@ -92,7 +107,6 @@ class NewPlotter:
     def plot_static(self, df: pd.DataFrame, outdir: str, zoom: int) -> str:
         zoom_levels = calc_zoom_levels(zoom)
         radius = 1 + zoom
-        opacity = int(0.7 * 255)
         uncropped_size = TILE_SIZE * (2 ** zoom)
         df = df.copy()
         df['plot_x'] = df.apply(lambda row: round(
@@ -129,7 +143,6 @@ class NewPlotter:
                         min_y,
                         max_y,
                         radius,
-                        opacity,
                         row,
                     ),
                     axis=1,
@@ -142,7 +155,8 @@ class NewPlotter:
                     outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.png')
                 fig.savefig(filename, dpi=1, transparent=True)
 
-    def create_circle(self, min_x, max_x, min_y, max_y, radius, opacity, row):
+    def create_circle(self, min_x, max_x, min_y, max_y, radius, row):
+        opacity = int(0.5 * 255)
         center = (
             round(
                 TILE_SIZE *
@@ -164,7 +178,8 @@ class NewPlotter:
         return plt.Circle(
             center,
             radius,
-            color=tuple((i / 255 for i in (*row.rgb_color, opacity))),
+            color=tuple((i / 255 for i in (*row.rgb_color,
+                        GREY_OPACITY if row.color == GREY_HEX else opacity))),
             fill=True,
         )
 
