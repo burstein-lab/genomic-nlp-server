@@ -32,13 +32,16 @@
         :ref="'geoJsonSearchRef'"
         :options="getJsonOptions"
       />
-      <l-geo-json
-        v-for="[k, v] in collections"
-        :key="k"
-        :ref="'geoJson' + k + 'Ref'"
-        :geojson="v"
-        :options="getJsonOptions"
-      />
+      <div v-for="[k, v] in collections" :key="k">
+        <l-geo-json
+          v-for="[k2, v2] in v"
+          v-if="k == zoom"
+          :key="k2"
+          :ref="'geoJson' + k2 + 'Ref'"
+          :geojson="v2"
+          :options="getJsonOptions"
+        />
+      </div>
       <l-control ref="controlRef" position="topleft">
         <ControlCard
           @cancelClickPoint="onCancelClickPoint"
@@ -102,6 +105,11 @@ export default {
     ControlCard,
   },
   data() {
+    const collections = new Map();
+    for (let i = 0; i <= 7; i++) {
+      collections.set(i, new Map());
+    }
+
     return {
       latlng: useLatLng(),
       zoom: useZoom(),
@@ -116,7 +124,7 @@ export default {
       clickPoint: useClickPoint(),
       clickPointTarget: null,
       isMapVisible: useShouldShowMap(),
-      collections: new Map(),
+      collections: collections,
       tileSize: 1024,
       searchCollection: null,
       map: null,
@@ -147,9 +155,11 @@ export default {
       self.tileLayer = this.$refs.tileLayerRef.leafletObject;
       // https://leafletjs.com/reference.html#tilelayer
       self.tileLayer.on("tileunload", function (event) {
-        self.collections.delete(
-          self.coordsToString(event.coords.z, event.coords.x, event.coords.y)
-        );
+        self.collections
+          .get(event.coords.z)
+          .delete(
+            self.coordsToString(event.coords.z, event.coords.x, event.coords.y)
+          );
       });
       self.tileLayer.on("tileloadstart", function (event) {
         self.getFeatures(event.coords);
@@ -184,7 +194,8 @@ export default {
       )
         .then((res) => res.json())
         .then((res) => {
-          this.collections.set(
+          const zCollection = this.collections.get(coords.z);
+          zCollection.set(
             this.coordsToString(coords.z, coords.x, coords.y),
             spacesToCollection(res["features"], coords, false)
           );
