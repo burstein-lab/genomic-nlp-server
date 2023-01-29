@@ -131,12 +131,9 @@ export default {
     };
   },
   async beforeMount() {
-    const intervalFunc = () => {
-      fetch(this.diamondUrl.href);
-      fetch(this.serverUrl.href);
-    };
-    intervalFunc();
-    setInterval(intervalFunc, 60 * 1000);
+    // ping servers to avoid cold starts.
+    fetch(this.diamondUrl.href);
+    fetch(this.serverUrl.href);
 
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
     // And now the Leaflet circleMarker function can be used by the options:
