@@ -115,7 +115,7 @@ export default {
       zoom: useZoom(),
       publicAssetsUrl: import.meta.env.VITE_PUBLIC_URL,
       apiUrl: import.meta.env.VITE_SERVER_URL,
-      diamondUrl: new URL(`${import.meta.env.VITE_DIAMOND_URL}/diamond`),
+      diamondUrl: new URL(`${import.meta.env.VITE_DIAMOND_URL}`),
       serverUrl: new URL(import.meta.env.VITE_SERVER_URL),
       getJsonOptions: {
         onEachFeature: this.onEachFeature,
@@ -299,7 +299,7 @@ export default {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sequence }),
       };
-      const url = new URL(`${this.diamondUrl}/diamond`);
+      const url = new URL(`${this.diamondUrl}diamond`);
       fetch(url.href, requestOptions)
         .then((res) => {
           return res.json();

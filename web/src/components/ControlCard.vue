@@ -71,9 +71,9 @@
             row-height="30"
             shaped
             append-icon="mdi-send"
-            @click:append="onSequenceSearch('sequence', [sequence])"
+            @click:append="onSequenceSearch(sequence)"
           />
-          <v-file-input show-size label="From file" />
+          <v-file-input show-size v-model="sequenceFile" label="From file" />
         </div>
       </v-card-text>
     </div>
@@ -144,6 +144,7 @@ export default {
       plotToggle: "",
       scatterData: null as Object | null,
       scatterOptions: null as Object | null,
+      sequenceFile: new Array(),
       hoverPoint: useHoverPoint(),
       clickPoint: useClickPoint(),
       kNeighbors: 20,
@@ -166,9 +167,9 @@ export default {
       this.$emit("resetClickPoint");
       this.clickPoint = null;
     },
-    onSequenceSearch() {
+    onSequenceSearch(sequence: string) {
       this.loading = true;
-      this.$emit("sequenceSearch", this.sequence);
+      this.$emit("sequenceSearch", sequence);
       // TODO: do search here so loading will behave well.
       this.loading = false;
     },
@@ -181,8 +182,26 @@ export default {
     centerPoint() {
       this.$emit("centerPoint");
     },
+    loadTextFromFile(ev) {
+      const file = ev.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = (e) => this.$emit("load", e.target.result);
+      reader.readAsText(file);
+    },
   },
   watch: {
+    sequenceFile(val) {
+      if (!val) {
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.onSequenceSearch(e.target.result);
+      };
+      reader.readAsText(val[0]);
+    },
     searchMode(val: string) {
       this.kNeighbors = 20;
     },
