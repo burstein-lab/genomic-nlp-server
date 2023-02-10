@@ -301,8 +301,14 @@ export default {
       };
       const url = new URL(`${this.diamondUrl}diamond`);
       fetch(url.href, requestOptions)
+        .then((res) => res.json())
         .then((res) => {
-          return res.json();
+          // for each line in the output, split on tab and take the second element.
+          const ids = res["out"]
+            .trim()
+            .split("\n")
+            .map((line: string) => line.split("\t")[1]);
+          this.onSearch("word", ids, 0);
         })
         .catch((error) => {
           console.error(error);
