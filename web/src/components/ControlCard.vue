@@ -141,7 +141,6 @@ export default {
       plotToggle: "",
       scatterData: null as Object | null,
       scatterOptions: null as Object | null,
-      sequenceFile: new Array(),
       hoverPoint: useHoverPoint(),
       clickPoint: useClickPoint(),
       kNeighbors: 20,
@@ -179,14 +178,6 @@ export default {
     fetch(new URL(this.apiUrl).href);
   },
   watch: {
-    sequenceFile(val) {
-      if (!val) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.onSequenceSearch(e.target.result);
-      };
-      reader.readAsText(val[0]);
-    },
     searchMode(val: string) {
       this.kNeighbors = 20;
     },
