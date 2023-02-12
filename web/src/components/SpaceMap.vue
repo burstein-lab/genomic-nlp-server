@@ -144,15 +144,15 @@ export default {
       // this != component instance on ready event from some reason...
       self.tileLayer = this.$refs.tileLayerRef.leafletObject;
       // https://leafletjs.com/reference.html#tilelayer
-      self.tileLayer.on("tileunload", function (event) {
+      self.tileLayer.on("tileunload", async (event) => {
         self.collections
           .get(event.coords.z)
           .delete(
             self.coordsToString(event.coords.z, event.coords.x, event.coords.y)
           );
       });
-      self.tileLayer.on("tileloadstart", function (event) {
-        self.getFeatures(event.coords);
+      self.tileLayer.on("tileloadstart", async (event) => {
+        await self.getFeatures(event.coords);
       });
     },
     geoJsonObj(k: string) {
@@ -178,21 +178,16 @@ export default {
     onMapReady(self) {
       self.map = this.$refs.mapRef.leafletObject;
     },
-    getFeatures(coords: Coords) {
-      fetch(
+    async getFeatures(coords: Coords) {
+      const rawRes = await fetch(
         `${this.publicAssetsUrl}map/${coords.z}/space_by_label_${coords.x}_${coords.y}.json`
-      )
-        .then((res) => res.json())
-        .then((res) => {
-          const zCollection = this.collections.get(coords.z);
-          zCollection.set(
-            this.coordsToString(coords.z, coords.x, coords.y),
-            spacesToCollection(res["features"], coords, false)
-          );
-        })
-        .catch((err) => {
-          console.error(err);
-        });
+      );
+      const res = await rawRes.json();
+      const zCollection = this.collections.get(coords.z);
+      zCollection.set(
+        this.coordsToString(coords.z, coords.x, coords.y),
+        spacesToCollection(res["features"], coords, false)
+      );
     },
     onEachFeature(feature, layer) {
       layer.on({
