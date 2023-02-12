@@ -49,6 +49,7 @@ LPAIARTTMNDGALLMNAKEAGPDDVMQILRKAF
         input=sequence,
         capture_output=True,
         text=True,
+        check=False,
     )
     return jsonify({"returncode": result.returncode, "out": result.stdout, "err": result.stderr})
 

@@ -118,7 +118,7 @@ export default {
       isMapVisible: true,
       collections: collections,
       tileSize: 1024,
-      searchCollection: null,
+      searchCollection: { type: "FeatureCollection", features: [] },
       map: null,
     };
   },
@@ -136,6 +136,11 @@ export default {
   },
   methods: {
     onSetMap(res) {
+      if (!res) {
+        this.searchCollection = { type: "FeatureCollection", features: [] };
+        return;
+      }
+
       this.zoom = res.zoom;
       this.searchCollection = spacesToCollection(
         res.spaces,
@@ -168,6 +173,8 @@ export default {
       return this.$refs[`geoJson${k}Ref`][0].leafletObject;
     },
     onResetClickPoint() {
+      if (!this.clickPointTarget) return;
+
       const e = this.clickPointTarget;
       let obj;
       if (e.target.feature.properties.isSearch) {

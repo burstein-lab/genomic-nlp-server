@@ -91,8 +91,8 @@ class NewPlotter:
                               "above threshold:", len(plot_df))
                     continue
 
-                with open(os.path.join(outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.json'), 'w') as f:
-                    f.write(
+                with open(os.path.join(outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.json'), 'w') as dest:
+                    dest.write(
                         simplejson.dumps(
                             {"features": df_to_features(
                                 plot_df, self.min_y, self.max_y, self.min_x, self.max_x)},
@@ -137,10 +137,10 @@ class NewPlotter:
                 plot_df = df[mask]
                 circles = plot_df.apply(
                     lambda row: self.create_circle(
-                        min_x,
-                        max_x,
-                        min_y,
-                        max_y,
+                        min_x,  # pylint: disable=cell-var-from-loop
+                        max_x,  # pylint: disable=cell-var-from-loop
+                        min_y,  # pylint: disable=cell-var-from-loop
+                        max_y,  # pylint: disable=cell-var-from-loop
                         radius,
                         row,
                     ),

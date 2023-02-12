@@ -1,4 +1,5 @@
-# pylint: disable=R0801
+# pylint: skip-file
+
 import glob
 import os
 import pickle

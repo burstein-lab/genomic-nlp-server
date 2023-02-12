@@ -8,13 +8,27 @@
         <v-col cols="auto">
           <v-switch
             v-model="shouldShowMap"
-            @change="$emit('setMapVisibility', shouldShowMap)"
+            @update:modelValue="$emit('setMapVisibility', shouldShowMap)"
             color="primary"
             label="Show Map"
             hide-details
           />
         </v-col>
         <v-col></v-col>
+        <v-col class="my-auto" cols="auto">
+          <v-btn
+            @click="
+              {
+                $emit('setMapVisibility', true);
+                $emit('setMap', null);
+                resetClickPoint();
+                searchMode = '';
+              }
+            "
+          >
+            Reset
+          </v-btn>
+        </v-col>
       </v-row>
     </v-card-text>
     <v-divider class="mx-4 mb-4" />
@@ -83,7 +97,7 @@
           <v-btn value="scatter">Gene Predictions</v-btn>
         </v-btn-toggle>
         <v-btn-group>
-          <v-btn color="primary" @click="centerPoint">Center</v-btn>
+          <v-btn color="primary" @click="$emit('centerPoint')">Center</v-btn>
           <v-btn color="grey" icon dark @click="resetClickPoint">
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -166,9 +180,6 @@ export default {
       this.loading = true;
       this.$emit("setMap", await searchSpaces(type, e, k));
       this.loading = false;
-    },
-    centerPoint() {
-      this.$emit("centerPoint");
     },
   },
   async beforeMount() {
