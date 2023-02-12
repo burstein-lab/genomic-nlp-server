@@ -152,7 +152,6 @@ export default {
         "Gene",
         "Sequence",
       ],
-      sequence: "",
       shouldShowMap: true,
       apiUrl: import.meta.env.VITE_SERVER_URL,
     };
