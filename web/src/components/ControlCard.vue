@@ -8,6 +8,7 @@
         <v-col cols="auto">
           <v-switch
             v-model="shouldShowMap"
+            @change="$emit('setMapVisibility', shouldShowMap)"
             color="primary"
             label="Show Map"
             hide-details
@@ -141,7 +142,6 @@ Chart.register(...registerables);
 export default {
   name: "ControlCard",
   components: { Search, BarChart, ScatterChart, ThemeToggle, SpaceInfo },
-  props: {},
   data: () => {
     return {
       searchMode: "",
@@ -166,12 +166,12 @@ export default {
         "Sequence",
       ],
       sequence: "",
-      shouldShowMap: useShouldShowMap(),
+      shouldShowMap: true,
       apiUrl: import.meta.env.VITE_SERVER_URL,
       downloadableDiamondResult: "",
     };
   },
-  emits: ["centerPoint", "resetClickPoint", "setMap"],
+  emits: ["centerPoint", "resetClickPoint", "setMap", "setMapVisibility"],
   methods: {
     resetClickPoint() {
       this.$emit("resetClickPoint");

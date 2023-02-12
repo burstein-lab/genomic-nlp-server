@@ -22,7 +22,7 @@
         :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
         layer-type="base"
         name="OpenStreetMap"
-        :max-zoom="7"
+        :max-zoom="maxZoom"
         :min-zoom="0"
         :tileSize="tileSize"
         @ready="onTileLayerReady(this)"
@@ -48,6 +48,7 @@
           @resetClickPoint="onResetClickPoint"
           @centerPoint="onCenterPoint"
           @setMap="onSetMap"
+          @setMapVisibility="(shouldShowMap) => (isMapVisible = shouldShowMap)"
         />
       </l-control>
     </l-map>
@@ -73,13 +74,7 @@ import {
   LRectangle,
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
-import {
-  useZoom,
-  useLatLng,
-  useHoverPoint,
-  useClickPoint,
-  useShouldShowMap,
-} from "@/composables/states";
+import { useZoom, useHoverPoint, useClickPoint } from "@/composables/states";
 import ControlCard from "./ControlCard.vue";
 import { spacesToCollection, Coords, LatLng } from "@/composables/spaces";
 
@@ -104,37 +99,30 @@ export default {
     ControlCard,
   },
   data() {
+    const maxZoom = Number(import.meta.env.VITE_MAX_ZOOM);
     const collections = new Map();
-    for (let i = 0; i <= 7; i++) {
+    for (let i = 0; i <= maxZoom; i++) {
       collections.set(i, new Map());
     }
 
     return {
-      latlng: useLatLng(),
+      maxZoom: maxZoom,
       zoom: useZoom(),
       publicAssetsUrl: import.meta.env.VITE_PUBLIC_URL,
-      apiUrl: import.meta.env.VITE_SERVER_URL,
-      diamondUrl: new URL(`${import.meta.env.VITE_DIAMOND_URL}`),
-      serverUrl: new URL(import.meta.env.VITE_SERVER_URL),
       getJsonOptions: {
         onEachFeature: this.onEachFeature,
       },
       hoverPoint: useHoverPoint(),
       clickPoint: useClickPoint(),
       clickPointTarget: null,
-      isMapVisible: useShouldShowMap(),
+      isMapVisible: true,
       collections: collections,
       tileSize: 1024,
       searchCollection: null,
       map: null,
-      downloadableDiamondResult: null,
     };
   },
   async beforeMount() {
-    // ping servers to avoid cold starts.
-    fetch(this.diamondUrl.href);
-    fetch(this.serverUrl.href);
-
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
     // And now the Leaflet circleMarker function can be used by the options:
     this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) =>
@@ -148,9 +136,9 @@ export default {
   },
   methods: {
     onSetMap(latlng: LatLng, zoom: number, searchCollection) {
-      this.latlng = latlng;
       this.zoom = zoom;
       this.searchCollection = searchCollection;
+      this.zoomToFeature(latlng, zoom);
     },
     onTileLayerReady(self) {
       // this != component instance on ready event from some reason...
@@ -314,9 +302,6 @@ export default {
   watch: {
     zoom(value: number) {
       console.log(value);
-    },
-    searchCollection(value) {
-      this.zoomToFeature(this.latlng, this.zoom);
     },
   },
 };

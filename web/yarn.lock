@@ -1476,10 +1476,10 @@
     "@volar/typescript-faster" "0.40.13"
     "@volar/vue-language-core" "0.40.13"
 
-"@vue-leaflet/vue-leaflet@^0.6.1":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@vue-leaflet/vue-leaflet/-/vue-leaflet-0.6.1.tgz#d731a5d2256d049e345f58330616180191d88b12"
-  integrity sha512-/sm0bdrdftXh5nSGEPsoKrJI1D/GtKiEsBo9X/TA2yu4lYTDcaem6U4t1Ea5CoLleiZRCNUrZr9PG/xHdUPXYA==
+"@vue-leaflet/vue-leaflet@^0.8.2":
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/@vue-leaflet/vue-leaflet/-/vue-leaflet-0.8.2.tgz#a28c87cc89e7527892895f7633b4a4384186ae52"
+  integrity sha512-/NVDAs7nT+TJ6eWZvRQ6nT5piMVm/s4TkeqfX4DFbnxQJCwBxIMALqqbBYCtAP90c0t7MoN28xnGk2sWat2ggQ==
 
 "@vue/cli-shared-utils@^5.0.8":
   version "5.0.8"

@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@mdi/font": "^7.0.96",
-    "@vue-leaflet/vue-leaflet": "^0.6.1",
+    "@vue-leaflet/vue-leaflet": "^0.8.2",
     "chart.js": "^4.1.1",
     "leaflet": "^1.9.2",
     "roboto-fontface": "*",
