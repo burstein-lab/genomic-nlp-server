@@ -237,7 +237,7 @@ export default {
       const searchResult = await this.onSearch("word", ids, 0);
       if (!searchResult) return;
       let result =
-        "query\tword\tcolumn_1\tcolumn_2\tko\tlabel\tproduct\tgene_name\tsignificant\tpredicted_class\n";
+        "query\tword\te_value\tidentical_amino_acids_percentage\tko\tlabel\tproduct\tgene_name\tsignificant\tpredicted_class\n";
 
       for (let i = 0; i < searchResult.length; i++) {
         result +=
