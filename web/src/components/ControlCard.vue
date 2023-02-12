@@ -92,8 +92,8 @@
       <div v-else-if="clickPoint">
         <SpaceInfo :space="clickPoint.properties" />
         <v-btn-toggle color="primary" variant="outlined" v-model="plotToggle">
-          <v-btn value="bar">Bar Plot</v-btn>
-          <v-btn value="scatter">Scatter Plot</v-btn>
+          <v-btn value="bar">Closest Neighbors</v-btn>
+          <v-btn value="scatter">Gene Predictions</v-btn>
         </v-btn-toggle>
         <v-btn-group>
           <v-btn color="primary" @click="centerPoint">Center</v-btn>
