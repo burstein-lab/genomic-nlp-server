@@ -94,5 +94,16 @@ interface Feature {
   };
 }
 
+const searchSpaces = async (type: string, e: string[], k?: number) => {
+  const url = new URL(
+    `${import.meta.env.VITE_SERVER_URL}/${type}/get/${e.toString()}`
+  );
+  if (type === "neighbors" && k) {
+    url.searchParams.append("k", k.toString());
+  }
+  const rawRes = await fetch(url.href);
+  return await rawRes.json();
+};
+
 export type { Coords, Space, Feature, FeatureCollection, LatLng };
-export { spacesToCollection, spaceToInfo };
+export { spacesToCollection, spaceToInfo, searchSpaces };

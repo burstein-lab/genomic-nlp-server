@@ -135,10 +135,18 @@ export default {
       });
   },
   methods: {
-    onSetMap(latlng: LatLng, zoom: number, searchCollection) {
-      this.zoom = zoom;
-      this.searchCollection = searchCollection;
-      this.zoomToFeature(latlng, zoom);
+    onSetMap(res) {
+      this.zoom = res.zoom;
+      this.searchCollection = spacesToCollection(
+        res.spaces,
+        {
+          z: res.zoom,
+          x: res.latlng.lng,
+          y: res.latlng.lat,
+        },
+        true
+      );
+      this.zoomToFeature(res.latlng, res.zoom);
     },
     onTileLayerReady(self) {
       // this != component instance on ready event from some reason...

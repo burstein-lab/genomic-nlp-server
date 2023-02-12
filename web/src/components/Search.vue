@@ -2,8 +2,9 @@
   <v-autocomplete
     color="primary"
     v-model="model"
-    v-model:search="search"
-    @update:modelValue="onSearch"
+    v-debounce:500ms="onInputChange"
+    :debounce-events="'update:searchValue'"
+    @update:modelValue="$emit('search', model)"
     :items="items"
     :multiple="multiple"
     :loading="isLoading"
@@ -16,9 +17,14 @@
 </template>
 
 <script lang="ts">
+import { vue3Debounce } from "vue-debounce";
+
 export default {
   name: "Search",
   emits: ["search"],
+  directives: {
+    debounce: vue3Debounce({ lock: true }),
+  },
   props: {
     multiple: {
       type: Boolean,
@@ -41,35 +47,25 @@ export default {
     apiUrl: import.meta.env.VITE_SERVER_URL,
   }),
   methods: {
-    onSearch() {
-      this.$emit("search", this.model);
-    },
-  },
-  created() {
-    this.search = "";
-  },
-  watch: {
-    search(val: string) {
+    async onInputChange(value: string) {
       // Items have already been requested
       if (this.isLoading) return;
 
       this.isLoading = true;
 
       // Lazily load input items
-      fetch(
+      const rawRes = await fetch(
         `${
           this.apiUrl
-        }/${this.type.toLowerCase()}/search?filter=${val.toLowerCase()}`
-      )
-        .then((res) => res.json())
-        .then((res) => {
-          this.items = res;
-        })
-        .catch((err) => {
-          console.log(err);
-        })
-        .finally(() => (this.isLoading = false));
+        }/${this.type.toLowerCase()}/search?filter=${value.toLowerCase()}`
+      );
+      const res = await rawRes.json();
+      this.items = res;
+      this.isLoading = false;
     },
+  },
+  created() {
+    this.onInputChange("");
   },
 };
 </script>

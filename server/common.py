@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 TILE_SIZE = 1024
 
 
@@ -42,11 +45,11 @@ def df_to_features(df, y_min, y_max, x_min, x_max):
                     "word": row.word,
                     "ko": row.KO,
                     "label": row.label,
-                    "product": row.product,
+                    "product": row.product if not pd.isnull(row.product) else None,
                     "gene_name": "",  # TODO: row.gene_name,
                     "significant": row.significant,
                     "predicted_class": row.predicted_class,
-                    "color": row.color, # hex color
+                    "color": row.color,  # hex color
                 },
             ).todict(),
         )
