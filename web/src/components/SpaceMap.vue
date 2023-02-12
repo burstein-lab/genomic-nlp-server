@@ -47,8 +47,7 @@
           @cancelClickPoint="onCancelClickPoint"
           @resetClickPoint="onResetClickPoint"
           @centerPoint="onCenterPoint"
-          @search="onSearch"
-          @sequenceSearch="onSequenceSearch"
+          @setMap="onSetMap"
         />
       </l-control>
     </l-map>
@@ -128,6 +127,7 @@ export default {
       tileSize: 1024,
       searchCollection: null,
       map: null,
+      downloadableDiamondResult: null,
     };
   },
   async beforeMount() {
@@ -147,6 +147,11 @@ export default {
       });
   },
   methods: {
+    onSetMap(latlng: LatLng, zoom: number, searchCollection) {
+      this.latlng = latlng;
+      this.zoom = zoom;
+      this.searchCollection = searchCollection;
+    },
     onTileLayerReady(self) {
       // this != component instance on ready event from some reason...
       self.tileLayer = this.$refs.tileLayerRef.leafletObject;
@@ -293,28 +298,6 @@ export default {
     coordsToString(z: number, x: number, y: number) {
       return `${z}-${x}-${y}`;
     },
-    onSequenceSearch(sequence: string) {
-      const requestOptions = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sequence }),
-      };
-      const url = new URL(`${this.diamondUrl}diamond`);
-      fetch(url.href, requestOptions)
-        .then((res) => res.json())
-        .then((res) => {
-          // for each line in the output, split on tab and take the second element.
-          const ids = res["out"]
-            .trim()
-            .split("\n")
-            .map((line: string) => line.split("\t")[1]);
-          this.onSearch("word", ids, 0);
-        })
-        .catch((error) => {
-          console.error(error);
-        })
-        .finally(() => {});
-    },
     onCancelClickPoint() {
       this.resetHighlight;
     },
@@ -326,31 +309,6 @@ export default {
         },
         this.zoom
       );
-    },
-    onSearch(type: string, e: string[], k: number) {
-      const url = new URL(`${this.apiUrl}/${type}/get/${e.toString()}`);
-      if (type === "neighbors") {
-        url.searchParams.append("k", k.toString());
-      }
-      fetch(url.href)
-        .then((res) => res.json())
-        .then((res) => {
-          this.latlng = res.latlng;
-          this.zoom = res.zoom;
-          this.searchCollection = spacesToCollection(
-            res.spaces,
-            {
-              z: res.zoom,
-              x: res.latlng.lng,
-              y: res.latlng.lat,
-            },
-            true
-          );
-        })
-        .catch((error) => {
-          console.error(error);
-        })
-        .finally(() => {});
     },
   },
   watch: {

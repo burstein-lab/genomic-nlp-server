@@ -7,7 +7,6 @@ const spacesToCollection = (
   for (var i = 0; i < spaces.length; i++) {
     features.push(spaceToFeature(spaces[i], coords, isSearch));
   }
-  console.log(features);
   return {
     type: "FeatureCollection",
     features: features,

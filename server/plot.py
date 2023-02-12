@@ -1,6 +1,6 @@
 import argparse
-import simplejson
 import os
+import simplejson
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -29,7 +29,6 @@ class NewPlotter:
             lambda row: 0 if row.color == GREY_HEX else 1, axis=1,
         )
 
-        before = str(chr(ord("#") - 1))
         self.space_data.sort_values(
             by=["order"],
             ascending=True,
