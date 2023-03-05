@@ -3,7 +3,7 @@
     color="primary"
     v-model="model"
     v-debounce:500ms="onInputChange"
-    :debounce-events="'update:searchValue'"
+    debounce-events="update:searchValue"
     @update:modelValue="$emit('search', model)"
     :items="items"
     :multiple="multiple"
