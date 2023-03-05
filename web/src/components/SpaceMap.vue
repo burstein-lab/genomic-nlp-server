@@ -76,7 +76,13 @@ import {
 import "leaflet/dist/leaflet.css";
 import { useZoom, useHoverPoint, useClickPoint } from "@/composables/states";
 import ControlCard from "./ControlCard.vue";
-import { spacesToCollection, Coords, LatLng } from "@/composables/spaces";
+import {
+  spacesToCollection,
+  Coords,
+  LatLng,
+  selectedPointStyle,
+  highlightedPointStyle,
+} from "@/composables/spaces";
 
 export default {
   name: "SpaceMap",
@@ -124,7 +130,6 @@ export default {
   },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
-    // And now the Leaflet circleMarker function can be used by the options:
     this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) =>
       circleMarker(latlng, {
         radius: this.zoom + 2,
@@ -197,6 +202,9 @@ export default {
       const rawRes = await fetch(
         `${this.publicAssetsUrl}map/${coords.z}/space_by_label_${coords.x}_${coords.y}.json`
       );
+
+      if (rawRes.status == 404) return;
+
       const res = await rawRes.json();
       const zCollection = this.collections.get(coords.z);
       zCollection.set(
@@ -241,13 +249,7 @@ export default {
           this.clickPointTarget = e;
           this.hoverPoint = null;
           this.zoomToFeature(e.latlng, this.zoom);
-          e.target.setStyle({
-            weight: 5,
-            color: "#222",
-            fillColor: "#111",
-            dashArray: "",
-            fillOpacity: 0.7,
-          });
+          e.target.setStyle(selectedPointStyle);
         },
       });
     },
@@ -259,12 +261,7 @@ export default {
         return;
       }
       const layer = e.target;
-      layer.setStyle({
-        weight: 5,
-        color: "#666",
-        dashArray: "",
-        fillOpacity: 0.7,
-      });
+      layer.setStyle(highlightedPointStyle);
       layer.bringToFront();
       this.hoverPoint = e.target.feature.properties;
     },

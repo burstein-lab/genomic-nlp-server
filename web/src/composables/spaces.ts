@@ -13,6 +13,21 @@ const spacesToCollection = (
   };
 };
 
+const selectedPointStyle = {
+  weight: 5,
+  color: "#222",
+  fillColor: "#111",
+  dashArray: "",
+  fillOpacity: 0.7,
+};
+
+const highlightedPointStyle = {
+  weight: 5,
+  color: "#666",
+  dashArray: "",
+  fillOpacity: 0.7,
+};
+
 const spaceToFeature = (
   space: Space,
   coords: Coords,
@@ -106,4 +121,10 @@ const searchSpaces = async (type: string, e: string[], k?: number) => {
 };
 
 export type { Coords, Space, Feature, FeatureCollection, LatLng };
-export { spacesToCollection, spaceToInfo, searchSpaces };
+export {
+  spacesToCollection,
+  spaceToInfo,
+  searchSpaces,
+  selectedPointStyle,
+  highlightedPointStyle,
+};
