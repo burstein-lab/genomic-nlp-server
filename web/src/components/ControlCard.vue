@@ -1,5 +1,11 @@
 <template>
-  <v-card width="500" style="opacity: 0.9">
+  <v-card
+    width="500"
+    max-height="100vh"
+    style="opacity: 0.9"
+    @wheel.stop
+    class="overflow-y-auto"
+  >
     <v-card-text>
       <v-row>
         <v-col cols="auto">
