@@ -170,7 +170,9 @@ def filter_by_neighbors(label):
 @app.route("/gene/get/<name>")
 def filter_by_gene(name):
     df = G2KO.dropna()
-    g2ko_spaces = df[df["name"].str.match(name)]
+    g2ko_spaces = df[
+        df["name"].str.match(name)
+    ]  # pylint: disable=unsubscriptable-object
     spaces = DF[DF["KO"].isin(g2ko_spaces["ko"])]
     return spaces_df_to_features(spaces)
 
