@@ -34,6 +34,12 @@
           >
             Reset
           </v-btn>
+          <v-btn
+            icon="mdi-help-circle-outline"
+            variant="text"
+            class="ms-2"
+            href="https://github.com/burstein-lab/genomic-nlp-server/wiki"
+          />
         </v-col>
       </v-row>
     </v-card-text>
