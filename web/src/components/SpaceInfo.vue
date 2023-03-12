@@ -1,17 +1,9 @@
 <template>
-  <div>
-    Word: {{ space.value.word }} <br />
-    KO: {{ space.value.ko }} <br />
-    Label: {{ space.value.label }} <br />
-    Product: {{ space.value.product }} <br />
-    Gene Name: {{ space.value.gene_name }} <br />
-    Significant: {{ space.value.significant }} <br />
-    Predicted Class: {{ space.value.predicted_class }} <br />
-  </div>
+  <div v-html="spaceToInfo(space)" />
 </template>
 
 <script lang="ts">
-import { Space } from "../composables/spaces";
+import { spaceToInfo } from "../composables/spaces";
 
 export default {
   name: "SpaceInfo",
@@ -19,6 +11,11 @@ export default {
   props: {
     space: {
       type: Object,
+    },
+  },
+  methods: {
+    spaceToInfo(space: any) {
+      return spaceToInfo(space);
     },
   },
 };

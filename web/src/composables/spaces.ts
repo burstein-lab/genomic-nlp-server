@@ -51,15 +51,22 @@ const spaceToFeature = (
 };
 
 const spaceToInfo = (point: Space): string => {
+  if (point.value.hypothetical) {
+    return `
+      Word: ${point.value.word}<br />
+      Predicted class: ${point.value.predicted_class} <br />
+      Trusted prediction: ${point.value.significant}<br />
+    `;
+  }
+
   return `
-          Word: ${point.value.word} <br />
-          KO: ${point.value.ko} <br />
-          Label: ${point.value.label} <br />
-          Product: ${point.value.product} <br />
-          Gene Name: ${point.value.gene_name} <br />
-          Significant: ${point.value.significant} <br />
-          Predicted Class: ${point.value.predicted_class} <br />
-          `;
+    Word: ${point.value.word}<br />
+    KO: ${point.value.ko}<br />
+    Label: ${point.value.label}<br />
+    Product: ${point.value.product}<br />
+    Gene name: ${point.value.gene_name}<br />
+    Functional category: ${point.value.predicted_class} <br />
+  `;
 };
 
 interface LatLng {
