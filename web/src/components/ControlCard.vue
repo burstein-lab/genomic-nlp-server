@@ -100,7 +100,12 @@
         <SpaceInfo :space="clickPoint.properties" />
         <v-btn-toggle color="primary" variant="outlined" v-model="plotToggle">
           <v-btn value="bar">Closest Neighbors</v-btn>
-          <v-btn value="scatter">Gene Predictions</v-btn>
+          <v-btn
+            :disabled="!clickPoint?.properties.value.hypothetical"
+            value="scatter"
+          >
+            <div>Gene Predictions</div>
+          </v-btn>
         </v-btn-toggle>
         <v-btn-group>
           <v-btn color="primary" @click="$emit('centerPoint')">Center</v-btn>
