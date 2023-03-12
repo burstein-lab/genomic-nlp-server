@@ -201,17 +201,6 @@ def plot_scatter(word):
                            'class', 'score']).sort_values(by='score', ascending=False).reset_index(drop=True)
 
     my_range = range(1, len(pred_df.index)+1)
-    # my_size = np.where(pred_df.index == 0, 80, 50)
-    # my_color=np.where(pred_df.index == 0, 'orange', 'skyblue')
-    # plt.vlines(x=my_range, ymin=0, ymax=pred_df['score'], color=my_color, alpha=0.4)
-    # sns.scatterplot(x=list(my_range),y=pred_df['score'].values, alpha=1,c=my_color, s=my_size)
-    # plt.yscale('log')
-
-    # plt.xticks(my_range, pred_df['class'])
-    # plt.title(f"Word: w, hypothetical: {word_data['hypothetical'].values[0]} Significant: {word_data['significant'].values[0]}", loc='left')
-    # plt.ylabel('Prediction Score')
-    # _ = plt.xticks(rotation=90)
-
     data = []
     my_range = list(my_range)
     for i, value in enumerate(pred_df['score'].values):

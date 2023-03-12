@@ -239,18 +239,31 @@ export default {
         this.scatterOptions = {
           scales: {
             x: {
+              title: {
+                display: true,
+                text: "Predicted functional category",
+              },
               ticks: {
-                // Include a dollar sign in the ticks
                 callback: (value: string, index: number, ticks: any[]) => {
                   return res.ticks[index];
+                },
+              },
+            },
+            y: {
+              title: {
+                display: true,
+                text: "Score",
+              },
+              ticks: {
+                callback: (value: number, index: number, ticks: any[]) => {
+                  if (value === 0) return "0";
+                  return "1e" + value;
                 },
               },
             },
           },
         };
         this.scatterData = {
-          // plt.yscale('log')
-          //plt.ylabel('Prediction Score')
           datasets: [
             {
               label: res.label,
