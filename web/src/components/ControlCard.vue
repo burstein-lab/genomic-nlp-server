@@ -110,11 +110,17 @@
         </v-btn-group>
         <BarChart
           v-if="plotToggle == 'bar' && clickPoint && barData"
+          class="mt-3"
           :chartData="barData"
-          :options="{ title: { display: false } }"
+          :options="{
+            title: { display: false },
+            scales: { y: { title: { display: true, text: 'Similarity' } } },
+            plugins: { legend: { display: false } },
+          }"
         />
         <ScatterChart
           v-if="plotToggle == 'scatter' && clickPoint && scatterData"
+          class="mt-3"
           :chartData="scatterData"
           :options="scatterOptions"
         />
