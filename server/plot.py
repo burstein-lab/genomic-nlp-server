@@ -12,11 +12,13 @@ GREY_OPACITY = int(0.3 * 255)
 
 
 def hex_to_rgb(value):
-    h = value.lstrip('#')
-    return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+    hex_value = value.lstrip('#')
+    return tuple(int(hex_value[i:i+2], 16) for i in (0, 2, 4))
 
 
-class NewPlotter:
+class Plotter:
+    """Plots data in png format as well as saving small enough chunks in json format"""
+
     def __init__(self, data_path, bins):
         self.data_path = data_path
         self.bins = bins
@@ -91,7 +93,7 @@ class NewPlotter:
                               "above threshold:", len(plot_df))
                     continue
 
-                with open(os.path.join(outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.json'), 'w') as dest:
+                with open(os.path.join(outdir, f"space_by_label_{i}_{len(x_lines) - 1 - j}.json"), "w", encoding="utf8") as dest:
                     dest.write(
                         simplejson.dumps(
                             {"features": df_to_features(
@@ -259,7 +261,7 @@ def calc_zoom_levels(zoom):
 
 
 def plot_everything(args):
-    new_plotter = NewPlotter(args.data, args.bins)
+    new_plotter = Plotter(args.data, args.bins)
     for zoom in range(args.min_zoom, max(args.min_zoom, args.max_zoom) + 1):
         outdir = os.path.join(args.outdir, str(zoom))
         os.makedirs(outdir, exist_ok=True)
