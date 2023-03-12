@@ -70,9 +70,9 @@ jobs:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: pipenv install --dev
-      - run: gsutil cp gs://gnlp-public-assets/data/model_data.pkl model_data.pkl
+      - run: gsutil cp gs://gnlp.bursteinlab.org/data/model_data.pkl model_data.pkl
       - run: pipenv run python server/plot.py --data model_data.pkl --outdir=web/src/assets/map --fmt png --max-zoom 7
-      - run: gsutil -m rsync -rd web/src/assets/map gs://gnlp-public-assets/map
+      - run: gsutil -m rsync -rd web/src/assets/map gs://gnlp.bursteinlab.org/map
 
   create-web:
     runs-on: ubuntu-latest
@@ -89,5 +89,5 @@ jobs:
           cache-dependency-path: web/yarn.lock
       - run: yarn --cwd web install
       - run: yarn --cwd web vite build
-      - run: gsutil cp web/dist/index.html gs://gnlp-public-assets/index.html
-      - run: gsutil -m rsync -rd web/dist/assets gs://gnlp-public-assets/assets
+      - run: gsutil cp web/dist/index.html gs://gnlp.bursteinlab.org/index.html
+      - run: gsutil -m rsync -rd web/dist/assets gs://gnlp.bursteinlab.org/assets
