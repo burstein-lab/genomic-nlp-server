@@ -51,7 +51,10 @@ if not os.path.isfile("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v"
             "gs://gnlp.bursteinlab.org/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy", f)
 
 DF = pd.read_pickle("model_data.pkl")
-LABEL_TO_WORD = pd.read_pickle("label_to_word.pkl")
+LABEL_TO_WORD = pd.DataFrame.from_dict(
+    pd.read_pickle("label_to_word.pkl").keys(),
+)
+LABEL_TO_WORD.columns = ["label"]
 MDL = w2v.Word2Vec.load(
     "gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v")
 
@@ -132,14 +135,11 @@ def filter_by_space(type_):
         case "gene":
             return jsonify(search_g2ko(filter_))
         case "label":
-            if filter_ == "":
-                return jsonify(list(LABEL_TO_WORD.keys())[:HEAD_LIMIT])
-
-            return jsonify(sorted(LABEL_TO_WORD[filter_]))
+            return jsonify(search(LABEL_TO_WORD, "label", filter_))
         case "space":
-            return jsonify(search("KO", filter_) + search("word", filter_))
+            return jsonify(search(DF, "KO", filter_) + search(DF, "word", filter_))
         case _:
-            return jsonify(search(type_, filter_))
+            return jsonify(search(DF, type_, filter_))
 
 
 @app.route("/space/get/<name>")
@@ -228,11 +228,11 @@ def search_g2ko(filter_: str):
     return sorted(list(set(result)))
 
 
-def search(column, filter_: str):
+def search(df, column, filter_: str):
     if column == "ko":
         column = "KO"
 
-    notna_column = DF[column].dropna()
+    notna_column = df[column].dropna()
     notna_column.sort_values(inplace=True)
     result = notna_column[notna_column.str.contains(
         filter_.replace(",", "|"), flags=re.IGNORECASE, na=False)].head(HEAD_LIMIT)
