@@ -19,7 +19,7 @@
       <l-tile-layer
         v-if="isMapVisible"
         ref="tileLayerRef"
-        :url="publicAssetsUrl + 'map/{z}/space_by_label_{x}_{y}.png'"
+        url="map/{z}/space_by_label_{x}_{y}.png"
         layer-type="base"
         name="OpenStreetMap"
         :max-zoom="maxZoom"
