@@ -200,7 +200,7 @@ export default {
     },
     async getFeatures(coords: Coords) {
       const rawRes = await fetch(
-        `${this.publicAssetsUrl}map/${coords.z}/space_by_label_${coords.x}_${coords.y}.json`
+        `map/${coords.z}/space_by_label_${coords.x}_${coords.y}.json`
       );
 
       if (rawRes.status == 404) return;
