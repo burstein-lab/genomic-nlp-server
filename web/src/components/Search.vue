@@ -7,6 +7,8 @@
     @update:modelValue="$emit('search', model)"
     :items="items"
     :multiple="multiple"
+    :chips="multiple"
+    :closable-chips="multiple"
     :loading="isLoading"
     hide-no-data
     hide-selected

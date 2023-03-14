@@ -29,6 +29,7 @@
       />
       <l-geo-json
         :geojson="searchCollection"
+        :key="zoom"
         :ref="'geoJsonSearchRef'"
         :options="getJsonOptions"
       />
@@ -114,7 +115,6 @@ export default {
     return {
       maxZoom: maxZoom,
       zoom: useZoom(),
-      publicAssetsUrl: import.meta.env.VITE_PUBLIC_URL,
       getJsonOptions: {
         onEachFeature: this.onEachFeature,
       },
