@@ -273,7 +273,7 @@ export default {
               },
               ticks: {
                 callback: (value: number, index: number, ticks: any[]) => {
-                  if (value === 0) return "0";
+                  if (value === 0) return "1";
                   return "1e" + value;
                 },
               },
