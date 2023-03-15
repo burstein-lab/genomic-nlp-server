@@ -102,12 +102,12 @@
         <SpaceInfo :space="hoverPoint" />
         Click point for more options
       </div>
-      <div v-else-if="clickPoint">
-        <SpaceInfo :space="clickPoint.properties" />
+      <div v-else-if="clickedCircle">
+        <SpaceInfo :space="clickedCircle.feature.properties" />
         <v-btn-toggle color="primary" variant="outlined" v-model="plotToggle">
           <v-btn value="bar">Closest Neighbors</v-btn>
           <v-btn
-            :disabled="!clickPoint?.properties.value.hypothetical"
+            :disabled="!clickedCircle.feature.properties.value.hypothetical"
             value="scatter"
           >
             <div>Gene Predictions</div>
@@ -120,7 +120,7 @@
           </v-btn>
         </v-btn-group>
         <BarChart
-          v-if="plotToggle == 'bar' && clickPoint && barData"
+          v-if="plotToggle == 'bar' && clickedCircle && barData"
           class="mt-3"
           :chartData="barData"
           :options="{
@@ -130,7 +130,7 @@
           }"
         />
         <ScatterChart
-          v-if="plotToggle == 'scatter' && clickPoint && scatterData"
+          v-if="plotToggle == 'scatter' && clickedCircle && scatterData"
           class="mt-3"
           :chartData="scatterData"
           :options="scatterOptions"
@@ -153,7 +153,7 @@ import Search from "./Search.vue";
 import ThemeToggle from "./ThemeToggle.vue";
 import SpaceInfo from "./SpaceInfo.vue";
 import DiamondSearch from "./DiamondSearch.vue";
-import { useHoverPoint, useClickPoint } from "../composables/states";
+import { useHoverPoint, useClickedCircle } from "../composables/states";
 import { searchSpaces } from "@/composables/spaces";
 
 import { Chart, registerables } from "chart.js";
@@ -179,7 +179,7 @@ export default {
       scatterData: null as Object | null,
       scatterOptions: null as Object | null,
       hoverPoint: useHoverPoint(),
-      clickPoint: useClickPoint(),
+      clickedCircle: useClickedCircle(),
       kNeighbors: 20,
       searchModes: [
         "Space",
@@ -197,7 +197,7 @@ export default {
   methods: {
     resetClickPoint() {
       this.$emit("resetClickPoint");
-      this.clickPoint = null;
+      this.clickedCircle = null;
     },
     async searchSpaces(type: string, e: string[], k?: number) {
       this.loading = true;
@@ -224,7 +224,7 @@ export default {
         this.searchSpaces("neighbors", this.neighbors, this.kNeighbors);
       }
     },
-    clickPoint(val) {
+    clickedCircle(val) {
       this.barData = null;
       this.scatterData = null;
       this.scatterOptions = null;
@@ -234,7 +234,7 @@ export default {
       if (val == "bar") {
         this.loading = true;
         const rawRes = await fetch(
-          `${this.apiUrl}/plot/bar/${this.clickPoint?.properties.value.word}`
+          `${this.apiUrl}/plot/bar/${this.clickedCircle?.feature.properties.value.word}`
         );
         const res = await rawRes.json();
         this.barData = {
@@ -250,7 +250,7 @@ export default {
       } else if (val == "scatter") {
         this.loading = true;
         const rawRes = await fetch(
-          `${this.apiUrl}/plot/scatter/${this.clickPoint?.properties.value.word}`
+          `${this.apiUrl}/plot/scatter/${this.clickedCircle?.feature.properties.value.word}`
         );
         const res = await rawRes.json();
         this.scatterOptions = {

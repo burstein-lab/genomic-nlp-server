@@ -75,12 +75,13 @@ import {
   LRectangle,
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useZoom, useHoverPoint, useClickPoint } from "@/composables/states";
+import { useZoom, useHoverPoint, useClickedCircle } from "@/composables/states";
 import ControlCard from "./ControlCard.vue";
 import {
   spacesToCollection,
   Coords,
   LatLng,
+  unselectedPointStyle,
   selectedPointStyle,
   highlightedPointStyle,
 } from "@/composables/spaces";
@@ -119,8 +120,7 @@ export default {
         onEachFeature: this.onEachFeature,
       },
       hoverPoint: useHoverPoint(),
-      clickPoint: useClickPoint(),
-      clickPointTarget: null,
+      clickedCircle: useClickedCircle(),
       isMapVisible: true,
       collections: collections,
       tileSize: 1024,
@@ -130,14 +130,18 @@ export default {
   },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
-    this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) =>
-      circleMarker(latlng, {
-        radius: this.zoom + 2,
-        fillColor: feature.properties.value.color, // TODO: border color by feature.properties.isSearch ? "#007800" : "#ff7800",
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 0.8,
-      });
+    this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) => {
+      if (
+        this.clickedCircle &&
+        this.clickedCircle.feature.properties.id === feature.properties.id
+      ) {
+        const result = circleMarker(latlng, selectedPointStyle(this.zoom + 2));
+        this.clickedCircle = result;
+        return result;
+      }
+
+      return circleMarker(latlng, unselectedPointStyle(this.zoom + 2, feature));
+    };
   },
   methods: {
     onSetMap(res) {
@@ -178,22 +182,21 @@ export default {
       return this.$refs[`geoJson${k}Ref`][0].leafletObject;
     },
     onResetClickPoint() {
-      if (!this.clickPointTarget) return;
+      if (!this.clickedCircle) return;
 
-      const e = this.clickPointTarget;
-      let obj;
-      if (e.target.feature.properties.isSearch) {
-        obj = this.$refs[`geoJsonSearchRef`].leafletObject;
+      let layer;
+      if (this.clickedCircle.feature.properties.isSearch) {
+        layer = this.$refs[`geoJsonSearchRef`].leafletObject;
       } else {
-        obj = this.geoJsonObj(
+        layer = this.geoJsonObj(
           this.coordsToString(
-            e.target.feature.properties.zoom,
-            e.target.feature.properties.tileX,
-            e.target.feature.properties.tileY
+            this.clickedCircle.feature.properties.zoom,
+            this.clickedCircle.feature.properties.tileX,
+            this.clickedCircle.feature.properties.tileY
           )
         );
       }
-      obj.resetStyle(e.target);
+      layer.resetStyle(this.clickedCircle);
     },
     onMapReady(self) {
       self.map = this.$refs.mapRef.leafletObject;
@@ -217,46 +220,40 @@ export default {
         mouseover: this.highlightFeature,
         mouseout: this.resetHighlight,
         click: (e) => {
-          let obj;
-          if (e.target.feature.properties.isSearch) {
-            obj = this.$refs[`geoJsonSearchRef`].leafletObject;
-          } else {
-            obj = this.geoJsonObj(
-              this.coordsToString(
-                e.target.feature.properties.zoom,
-                e.target.feature.properties.tileX,
-                e.target.feature.properties.tileY
-              )
-            );
+          if (!e.target) {
+            return;
           }
-          if (this.clickPointTarget) {
-            const e2 = this.clickPointTarget;
-            let obj2;
-            if (e2.target.feature.properties.isSearch) {
-              obj2 = this.$refs[`geoJsonSearchRef`].leafletObject;
+
+          if (this.clickedCircle) {
+            let layer;
+            if (this.clickedCircle.feature.properties.isSearch) {
+              layer = this.$refs[`geoJsonSearchRef`].leafletObject;
             } else {
-              obj2 = this.geoJsonObj(
+              layer = this.geoJsonObj(
                 this.coordsToString(
-                  e2.target.feature.properties.zoom,
-                  e2.target.feature.properties.tileX,
-                  e2.target.feature.properties.tileY
+                  this.clickedCircle.feature.properties.zoom,
+                  this.clickedCircle.feature.properties.tileX,
+                  this.clickedCircle.feature.properties.tileY
                 )
               );
             }
-            obj2.resetStyle(e2.target);
+            layer.resetStyle(this.clickedCircle);
+            this.clickedCircle.setStyle(
+              unselectedPointStyle(this.zoom + 2, this.clickedCircle.feature)
+            );
           }
-          this.clickPoint = e.target.feature;
-          this.clickPointTarget = e;
+          this.clickedCircle = e.target;
           this.hoverPoint = null;
           this.zoomToFeature(e.latlng, this.zoom);
-          e.target.setStyle(selectedPointStyle);
+          this.clickedCircle.setStyle(selectedPointStyle(this.zoom + 2));
         },
       });
     },
     highlightFeature(e) {
       if (
-        this.clickPoint &&
-        this.clickPoint.properties.id === e.target.feature.properties.id
+        this.clickedCircle &&
+        this.clickedCircle.feature.properties.id ===
+          e.target.feature.properties.id
       ) {
         return;
       }
@@ -267,16 +264,17 @@ export default {
     },
     resetHighlight(e) {
       if (
-        this.clickPoint &&
-        this.clickPoint.properties.id === e.target.feature.properties.id
+        this.clickedCircle &&
+        this.clickedCircle.feature.properties.id ===
+          e.target.feature.properties.id
       ) {
         return;
       }
-      let obj;
+      let layer;
       if (e.target.feature.properties.isSearch) {
-        obj = this.$refs[`geoJsonSearchRef`].leafletObject;
+        layer = this.$refs[`geoJsonSearchRef`].leafletObject;
       } else {
-        obj = this.geoJsonObj(
+        layer = this.geoJsonObj(
           this.coordsToString(
             e.target.feature.properties.zoom,
             e.target.feature.properties.tileX,
@@ -284,7 +282,7 @@ export default {
           )
         );
       }
-      obj.resetStyle(e.target);
+      layer.resetStyle(e.target);
       this.hoverPoint = null;
     },
     zoomToFeature(latlng: LatLng, zoom: number) {
@@ -299,8 +297,8 @@ export default {
     onCenterPoint() {
       this.zoomToFeature(
         {
-          lat: this.clickPoint.geometry.coordinates[1],
-          lng: this.clickPoint.geometry.coordinates[0],
+          lat: this.clickedCircle.feature.geometry.coordinates[1],
+          lng: this.clickedCircle.feature.geometry.coordinates[0],
         },
         this.zoom
       );

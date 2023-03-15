@@ -186,6 +186,7 @@ class Plotter:
 
 
 class SpaceFocus:
+    """Helper class to focus on a specific area of the space."""
     def __init__(self, data_path):
         self.data_path = data_path
         self.space_data = pd.read_pickle(data_path)
