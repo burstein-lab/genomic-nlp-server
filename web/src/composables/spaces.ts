@@ -21,10 +21,10 @@ const unselectedPointStyle = (zoom: number, feature: Feature) => ({
   fillOpacity: 0.8,
 });
 
-const selectedPointStyle = (zoom: number) => ({
+const selectedPointStyle = (zoom: number, feature: Feature) => ({
   weight: 5,
   color: "#222",
-  fillColor: "#111",
+  fillColor: feature.properties.value.color,
   dashArray: "",
   fillOpacity: 0.7,
 });

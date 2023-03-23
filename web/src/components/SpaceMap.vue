@@ -135,7 +135,10 @@ export default {
         this.clickedCircle &&
         this.clickedCircle.feature.properties.id === feature.properties.id
       ) {
-        const result = circleMarker(latlng, selectedPointStyle(this.zoom + 2));
+        const result = circleMarker(
+          latlng,
+          selectedPointStyle(this.zoom + 2, feature)
+        );
         this.clickedCircle = result;
         return result;
       }
@@ -245,7 +248,9 @@ export default {
           this.clickedCircle = e.target;
           this.hoverPoint = null;
           this.zoomToFeature(e.latlng, this.zoom);
-          this.clickedCircle.setStyle(selectedPointStyle(this.zoom + 2));
+          this.clickedCircle.setStyle(
+            selectedPointStyle(this.zoom + 2, feature)
+          );
         },
       });
     },
@@ -292,7 +297,9 @@ export default {
       return `${z}-${x}-${y}`;
     },
     onCancelClickPoint() {
-      this.resetHighlight;
+      this.clickedCircle.setStyle(
+        unselectedPointStyle(this.zoom + 2, this.clickedCircle.feature)
+      );
     },
     onCenterPoint() {
       this.zoomToFeature(
