@@ -3,7 +3,7 @@
 
 #### :globe_with_meridians: Visit the [GeNLP website](http://gnlp.bursteinlab.org/)
 
-The quick user guide is available at our [GitHub wiki]("../../wiki)
+The quick user guide is available at our [GitHub wiki](https://github.com/burstein-lab/genomic-nlp-server/wiki)
 
 ![](https://github.com/burstein-lab/genomic-nlp-server/blob/main/img/demo.gif)
 
