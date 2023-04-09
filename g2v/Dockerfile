@@ -5,6 +5,5 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 COPY app.py .
-COPY common.py .
 
 ENTRYPOINT ["gunicorn"  , "-b", "0.0.0.0:8080", "app:app"]
