@@ -19,8 +19,7 @@ def hex_to_rgb(value):
 class Plotter:
     """Plots data in png format as well as saving small enough chunks in json format"""
 
-    def __init__(self, data_path, bins):
-        self.data_path = data_path
+    def __init__(self, bins):
         self.bins = bins
         self.space_data = load_model_data()
         self.space_data["rgb_color"] = self.space_data.apply(
@@ -92,7 +91,8 @@ class Plotter:
                 with open(os.path.join(outdir, f"space_by_label_{i}_{len(x_lines) - 1 - j}.json"), "w", encoding="utf8") as dest:
                     dest.write(
                         simplejson.dumps(
-                            {"features": df_to_features(plot_df, self.model_data)},
+                            {"features": df_to_features(
+                                plot_df, self.model_data)},
                             ignore_nan=True,
                         ),
                     )
@@ -258,7 +258,7 @@ def calc_zoom_levels(zoom):
 
 
 def plot_everything(args):
-    new_plotter = Plotter(args.data, args.bins)
+    new_plotter = Plotter(args.bins)
     for zoom in range(args.min_zoom, max(args.min_zoom, args.max_zoom) + 1):
         outdir = os.path.join(args.outdir, str(zoom))
         os.makedirs(outdir, exist_ok=True)
