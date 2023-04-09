@@ -1,7 +1,6 @@
 <template>
   <div style="height: 100vh; width: 100vw">
     <l-map
-      v-debounce:500ms="scroll"
       id="mapRef"
       ref="mapRef"
       v-model="zoom"
@@ -13,7 +12,7 @@
         [-tileSize * 1.5, tileSize * 1.5],
       ]"
       :boundsViscosity="0.5"
-      :options="{ zoomControl: false }"
+      :options="{ zoomControl: false, wheelPxPerZoomLevel: 120 }"
       @ready="onMapReady(this)"
     >
       <l-control-zoom position="bottomright" />
@@ -58,7 +57,6 @@
 </template>
 
 <script lang="ts">
-import { vue3Debounce } from "vue-debounce";
 import {
   LMap,
   LIcon,
@@ -90,9 +88,6 @@ import {
 
 export default {
   name: "SpaceMap",
-  directives: {
-    debounce: vue3Debounce({ lock: true }),
-  },
   components: {
     LMap,
     LIcon,
