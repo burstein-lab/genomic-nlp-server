@@ -6,13 +6,6 @@ from flask_cors import CORS
 from google.cloud import storage
 
 
-if not os.path.isfile("words.dmnd"):
-    storage_client = storage.Client()
-    with open("words.dmnd", "wb") as f:
-        storage_client.download_blob_to_file(
-            "gs://gnlp.bursteinlab.org/data/diamond/words.dmnd", f)
-
-
 # instantiate the app
 app = Flask(__name__)
 app.config.from_object(__name__)

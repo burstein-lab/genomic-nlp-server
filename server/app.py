@@ -19,24 +19,6 @@ HEAD_LIMIT = 50
 MAX_ZOOM = 8
 ZOOM_TILE_SPLIT_FACTOR = 4
 
-if not os.path.isfile("model_data.pkl"):
-    storage_client = storage.Client(project="genomic-nlp")
-    with open("model_data.pkl", "wb") as f:
-        storage_client.download_blob_to_file(
-            "gs://gnlp.bursteinlab.org/data/model_data.pkl", f)
-
-if not os.path.isfile("gene_names_to_ko.pkl"):
-    storage_client = storage.Client(project="genomic-nlp")
-    with open("gene_names_to_ko.pkl", "wb") as f:
-        storage_client.download_blob_to_file(
-            "gs://gnlp.bursteinlab.org/data/gene_names_to_ko.pkl", f)
-
-if not os.path.isfile("label_to_word.pkl"):
-    storage_client = storage.Client(project="genomic-nlp")
-    with open("label_to_word.pkl", "wb") as f:
-        storage_client.download_blob_to_file(
-            "gs://gnlp.bursteinlab.org/data/label_to_word.pkl", f)
-
 MODEL_DATA = load_model_data()
 LABEL_TO_WORD = pd.DataFrame.from_dict(
     pd.read_pickle("label_to_word.pkl").keys(),

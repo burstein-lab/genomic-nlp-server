@@ -13,18 +13,6 @@ from common import load_model_data, spaces_df_to_features
 # configuration
 DEBUG = True
 
-if not os.path.isfile("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v"):
-    storage_client = storage.Client(project="genomic-nlp")
-    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", "wb") as f:
-        storage_client.download_blob_to_file(
-            "gs://gnlp.bursteinlab.org/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", f)
-    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy", "wb") as f:
-        storage_client.download_blob_to_file(
-            "gs://gnlp.bursteinlab.org/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy", f)
-    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy", "wb") as f:
-        storage_client.download_blob_to_file(
-            "gs://gnlp.bursteinlab.org/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy", f)
-
 MDL = w2v.Word2Vec.load(
     "gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v",
 )

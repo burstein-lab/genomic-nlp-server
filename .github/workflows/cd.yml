@@ -25,6 +25,7 @@ jobs:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      - run: gsutil cp gs://gnlp.bursteinlab.org/data/diamond/words.dmnd diamond/
       - run: docker build diamond -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond
       - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest
       - run: gcloud run deploy diamond --image=us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest --region us-central1
@@ -46,6 +47,10 @@ jobs:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      - run: gsutil cp gs://gnlp.bursteinlab.org/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v g2v/
+      - run: gsutil cp gs://gnlp.bursteinlab.org/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy g2v/
+      - run: gsutil cp gs://gnlp.bursteinlab.org/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy g2v/
+      - run: gsutil cp gs://gnlp.bursteinlab.org/data/model_data.pkl g2v/
       - run: cp server/common.py g2v/
       - run: docker build g2v -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/g2v
       - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/g2v:latest
@@ -70,6 +75,9 @@ jobs:
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: pipenv requirements > server/requirements.txt
       - run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      - run: gsutil cp gs://gnlp.bursteinlab.org/data/model_data.pkl server/
+      - run: gsutil cp gs://gnlp.bursteinlab.org/data/gene_names_to_ko.pkl server/
+      - run: gsutil cp gs://gnlp.bursteinlab.org/data/label_to_word.pkl server/
       - run: docker build server -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server
       - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest
       - run: gcloud run deploy gnlp-server --image=us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest --region us-central1
@@ -92,7 +100,7 @@ jobs:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: pipenv install --dev
-      - run: gsutil cp gs://gnlp.bursteinlab.org/data/model_data.pkl model_data.pkl
+      - run: gsutil cp gs://gnlp.bursteinlab.org/data/model_data.pkl server/
       - run: pipenv run python server/plot.py --outdir=web/src/assets/map --fmt png --max-zoom 7
       - run: gsutil -m rsync -rd web/src/assets/map gs://gnlp.bursteinlab.org/map
 
