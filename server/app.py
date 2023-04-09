@@ -64,7 +64,7 @@ def ping_pong():
 def spaces_df_to_features(spaces):
     return jsonify(
         {
-            "spaces": df_to_features(spaces, MODEL_DATA.y_min, MODEL_DATA.y_max, MODEL_DATA.x_min, MODEL_DATA.x_max),
+            "spaces": df_to_features(spaces, MODEL_DATA),
             "latlng": calc_center(spaces),
             "zoom": calc_zoom(spaces),
         },
