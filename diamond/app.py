@@ -1,9 +1,7 @@
-import os
 import subprocess
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from google.cloud import storage
 
 
 # instantiate the app

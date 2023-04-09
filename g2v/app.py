@@ -1,11 +1,9 @@
-import os
 import json
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from gensim.models import word2vec as w2v
 import pandas as pd
-from google.cloud import storage
 
 from common import ModelData, spaces_df_to_features
 

@@ -1,4 +1,3 @@
-import os
 import pickle
 import math
 import re
@@ -7,7 +6,6 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
-from google.cloud import storage
 
 from common import df_to_features, df_coord_to_latlng, ModelData, TILE_SIZE, spaces_df_to_features
 
