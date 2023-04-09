@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 from google.cloud import storage
 
-from common import df_to_features, df_coord_to_latlng, ModelData, TILE_SIZE
+from common import df_to_features, df_coord_to_latlng, ModelData, TILE_SIZE, spaces_df_to_features
 
 
 # configuration
@@ -41,16 +41,6 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 @app.route("/ping", methods=["GET"])
 def ping_pong():
     return jsonify("pong!")
-
-
-def spaces_df_to_features(spaces):
-    return jsonify(
-        {
-            "spaces": df_to_features(spaces, MODEL_DATA),
-            "latlng": calc_center(spaces),
-            "zoom": calc_zoom(spaces),
-        },
-    )
 
 
 def calc_center(spaces):

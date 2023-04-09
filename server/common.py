@@ -80,3 +80,14 @@ def df_coord_to_latlng(y_value, x_value, model_data: ModelData):
 
 def normalize(value, value_min, value_max):
     return (value - value_min) / (value_max - value_min)
+
+
+def spaces_df_to_features(spaces):
+    return jsonify(
+        {
+            "spaces": df_to_features(spaces, MODEL_DATA),
+            "latlng": calc_center(spaces),
+            "zoom": calc_zoom(spaces),
+        },
+    )
+
