@@ -1,0 +1,8 @@
+-i https://pypi.org/simple
+flask
+flask-cors
+gensim
+google-cloud-storage
+gunicorn
+pandas
+werkzeug

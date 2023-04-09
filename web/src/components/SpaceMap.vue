@@ -1,6 +1,7 @@
 <template>
   <div style="height: 100vh; width: 100vw">
     <l-map
+      v-debounce:500ms="scroll"
       id="mapRef"
       ref="mapRef"
       v-model="zoom"
@@ -57,6 +58,7 @@
 </template>
 
 <script lang="ts">
+import { vue3Debounce } from "vue-debounce";
 import {
   LMap,
   LIcon,
@@ -88,6 +90,9 @@ import {
 
 export default {
   name: "SpaceMap",
+  directives: {
+    debounce: vue3Debounce({ lock: true }),
+  },
   components: {
     LMap,
     LIcon,
@@ -222,36 +227,7 @@ export default {
       layer.on({
         mouseover: this.highlightFeature,
         mouseout: this.resetHighlight,
-        click: (e) => {
-          if (!e.target) {
-            return;
-          }
-
-          if (this.clickedCircle) {
-            let layer;
-            if (this.clickedCircle.feature.properties.isSearch) {
-              layer = this.$refs[`geoJsonSearchRef`].leafletObject;
-            } else {
-              layer = this.geoJsonObj(
-                this.coordsToString(
-                  this.clickedCircle.feature.properties.zoom,
-                  this.clickedCircle.feature.properties.tileX,
-                  this.clickedCircle.feature.properties.tileY
-                )
-              );
-            }
-            layer.resetStyle(this.clickedCircle);
-            this.clickedCircle.setStyle(
-              unselectedPointStyle(this.zoom + 2, this.clickedCircle.feature)
-            );
-          }
-          this.clickedCircle = e.target;
-          this.hoverPoint = null;
-          this.zoomToFeature(e.latlng, this.zoom);
-          this.clickedCircle.setStyle(
-            selectedPointStyle(this.zoom + 2, feature)
-          );
-        },
+        click: this.onClickPoint,
       });
     },
     highlightFeature(e) {
@@ -308,6 +284,36 @@ export default {
           lng: this.clickedCircle.feature.geometry.coordinates[0],
         },
         this.zoom
+      );
+    },
+    onClickPoint(e) {
+      if (!e.target) {
+        return;
+      }
+
+      if (this.clickedCircle) {
+        let layer;
+        if (this.clickedCircle.feature.properties.isSearch) {
+          layer = this.$refs[`geoJsonSearchRef`].leafletObject;
+        } else {
+          layer = this.geoJsonObj(
+            this.coordsToString(
+              this.clickedCircle.feature.properties.zoom,
+              this.clickedCircle.feature.properties.tileX,
+              this.clickedCircle.feature.properties.tileY
+            )
+          );
+        }
+        layer.resetStyle(this.clickedCircle);
+        this.clickedCircle.setStyle(
+          unselectedPointStyle(this.zoom + 2, this.clickedCircle.feature)
+        );
+      }
+      this.clickedCircle = e.target;
+      this.hoverPoint = null;
+      this.zoomToFeature(e.latlng, this.zoom);
+      this.clickedCircle.setStyle(
+        selectedPointStyle(this.zoom + 2, this.clickedCircle.feature)
       );
     },
   },

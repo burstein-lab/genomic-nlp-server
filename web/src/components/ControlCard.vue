@@ -234,7 +234,9 @@ export default {
       if (val == "bar") {
         this.loading = true;
         const rawRes = await fetch(
-          `${this.apiUrl}/plot/bar/${this.clickedCircle?.feature.properties.value.word}`
+          `${import.meta.env.VITE_G2V_URL}/plot/bar/${
+            this.clickedCircle?.feature.properties.value.word
+          }`
         );
         const res = await rawRes.json();
         this.barData = {

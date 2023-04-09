@@ -28,6 +28,27 @@ jobs:
       - run: docker build diamond -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond
       - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest
       - run: gcloud run deploy diamond --image=us-central1-docker.pkg.dev/genomic-nlp/cloudrun/diamond:latest --region us-central1
+  deploy-g2v:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - uses: google-github-actions/setup-gcloud@v0
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install pipenv
+      - uses: actions/cache@v3
+        with:
+          path: ~/.local/share/virtualenvs
+          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+      - run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      - run: docker build g2v -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/g2v
+      - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/g2v:latest
+      - run: gcloud run deploy g2v --image=us-central1-docker.pkg.dev/genomic-nlp/cloudrun/g2v:latest --region us-central1
   # TODO: update running instance and remove old images.
   deploy-server:
     runs-on: ubuntu-latest
