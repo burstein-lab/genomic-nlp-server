@@ -124,13 +124,19 @@ interface Feature {
   };
 }
 
-const searchSpaces = async (type: string, e: string[], k?: number) => {
+const searchSpaces = async (type: string, e: string[]) => {
   const url = new URL(
     `${import.meta.env.VITE_SERVER_URL}/${type}/get/${e.toString()}`
   );
-  if (type === "neighbors" && k) {
-    url.searchParams.append("k", k.toString());
-  }
+  const rawRes = await fetch(url.href);
+  return await rawRes.json();
+};
+
+const searchNeighbors = async (type: string, e: string[], k: number) => {
+  const url = new URL(
+    `${import.meta.env.VITE_G2V_URL}/neighbors/get/${e.toString()}`
+  );
+  url.searchParams.append("k", k.toString());
   const rawRes = await fetch(url.href);
   return await rawRes.json();
 };
@@ -140,6 +146,7 @@ export {
   spacesToCollection,
   spaceToInfo,
   searchSpaces,
+  searchNeighbors,
   unselectedPointStyle,
   selectedPointStyle,
   highlightedPointStyle,

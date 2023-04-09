@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 
 
@@ -64,3 +66,38 @@ def df_coord_to_latlng(y_value, x_value, y_min, y_max, x_min, x_max):
 
 def normalize(value, value_min, value_max):
     return (value - value_min) / (value_max - value_min)
+
+
+class ModelData:
+    def __init__(self):
+        self.df = pd.read_pickle(
+            "model_data.pkl",
+            usecols=[
+                "x",
+                "y",
+                "word",
+                "KO",
+                "label",
+                "product",
+                "gene_name",
+                "significant",
+                "predicted_class",
+                "color",
+                "hypothetical",
+            ],
+        )
+        self.x_max = self.df.x.max()
+        self.y_max = self.df.y.max()
+        self.x_min = self.df.x.min()
+        self.y_min = self.df.y.min()
+
+
+def load_model_data():
+    from google.cloud import storage
+    if not os.path.isfile("model_data.pkl"):
+        storage_client = storage.Client(project="genomic-nlp")
+        with open("model_data.pkl", "wb") as f:
+            storage_client.download_blob_to_file(
+                "gs://gnlp.bursteinlab.org/data/model_data.pkl", f)
+
+    return ModelData()

@@ -1,6 +1,5 @@
 import os
 import pickle
-import json
 import math
 import re
 
@@ -10,7 +9,7 @@ import pandas as pd
 import numpy as np
 from google.cloud import storage
 
-from common import df_to_features, df_coord_to_latlng, TILE_SIZE
+from common import df_to_features, df_coord_to_latlng, load_model_data, TILE_SIZE
 
 
 # configuration
@@ -38,19 +37,7 @@ if not os.path.isfile("label_to_word.pkl"):
         storage_client.download_blob_to_file(
             "gs://gnlp.bursteinlab.org/data/label_to_word.pkl", f)
 
-if not os.path.isfile("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v"):
-    storage_client = storage.Client(project="genomic-nlp")
-    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", "wb") as f:
-        storage_client.download_blob_to_file(
-            "gs://gnlp.bursteinlab.org/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v", f)
-    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy", "wb") as f:
-        storage_client.download_blob_to_file(
-            "gs://gnlp.bursteinlab.org/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy", f)
-    with open("gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy", "wb") as f:
-        storage_client.download_blob_to_file(
-            "gs://gnlp.bursteinlab.org/data/embeddings/gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy", f)
-
-DF = pd.read_pickle("model_data.pkl")
+MODEL_DATA = load_model_data()
 LABEL_TO_WORD = pd.DataFrame.from_dict(
     pd.read_pickle("label_to_word.pkl").keys(),
 )
@@ -58,8 +45,6 @@ LABEL_TO_WORD.columns = ["label"]
 
 with open("gene_names_to_ko.pkl", "rb") as o:
     G2KO = pd.DataFrame(pickle.load(o).items(), columns=["name", "ko"])
-
-X_MAX, Y_MAX, X_MIN, Y_MIN = DF.x.max(), DF.y.max(), DF.x.min(), DF.y.min()
 
 
 # instantiate the app
@@ -79,7 +64,7 @@ def ping_pong():
 def spaces_df_to_features(spaces):
     return jsonify(
         {
-            "spaces": df_to_features(spaces, Y_MIN, Y_MAX, X_MIN, X_MAX),
+            "spaces": df_to_features(spaces, MODEL_DATA.y_min, MODEL_DATA.y_max, MODEL_DATA.x_min, MODEL_DATA.x_max),
             "latlng": calc_center(spaces),
             "zoom": calc_zoom(spaces),
         },
@@ -106,18 +91,18 @@ def calc_zoom(spaces):
     min_y, min_x = df_coord_to_latlng(
         spaces.y.min(),
         spaces.x.min(),
-        Y_MIN,
-        Y_MAX,
-        X_MIN,
-        X_MAX,
+        MODEL_DATA.y_min,
+        MODEL_DATA.y_max,
+        MODEL_DATA.x_min,
+        MODEL_DATA.x_max,
     )
     max_y, max_x = df_coord_to_latlng(
         spaces.y.max(),
         spaces.x.max(),
-        Y_MIN,
-        Y_MAX,
-        X_MIN,
-        X_MAX,
+        MODEL_DATA.y_min,
+        MODEL_DATA.y_max,
+        MODEL_DATA.x_min,
+        MODEL_DATA.x_max,
     )
     print(max_y, min_y, max_x, min_x)
     gap = max(max_y - min_y, max_x - min_x)
@@ -136,34 +121,26 @@ def filter_by_space(type_):
         case "label":
             return jsonify(search(LABEL_TO_WORD, "label", filter_))
         case "space":
-            return jsonify(search(DF, "KO", filter_) + search(DF, "word", filter_))
+            return jsonify(search(MODEL_DATA.df, "KO", filter_) + search(MODEL_DATA.df, "word", filter_))
         case _:
-            return jsonify(search(DF, type_, filter_))
+            return jsonify(search(MODEL_DATA.df, type_, filter_))
 
 
 @app.route("/space/get/<name>")
 def space_get(name):
     spaces = []
     if name.lower().startswith("ko") and "." not in name:
-        spaces = DF[DF["KO"].str.match(name)]
+        spaces = MODEL_DATA.df[MODEL_DATA.df["KO"].str.match(name)]
 
     else:
-        spaces = DF[DF["word"].str.match(name)]
+        spaces = MODEL_DATA.df[MODEL_DATA.df["word"].str.match(name)]
 
     return spaces_df_to_features(spaces)
 
 
 @app.route("/label/get/<label>")
 def filter_by_label(label):
-    return spaces_df_to_features(DF[DF["label"] == label])
-
-
-@app.route("/neighbors/get/<label>")
-def filter_by_neighbors(label):
-    topn = json.loads(request.args.get("k"))
-    top_k = [similar for similar, _ in MDL.wv.most_similar(label, topn=topn)]
-    df = DF[DF["word"].isin(top_k)]
-    return spaces_df_to_features(df)
+    return spaces_df_to_features(MODEL_DATA.df[MODEL_DATA.df["label"] == label])
 
 
 @app.route("/gene/get/<name>")
@@ -171,32 +148,19 @@ def filter_by_gene(name):
     df = G2KO.dropna()
     # pylint: disable=unsubscriptable-object
     g2ko_spaces = df[df["name"].str.match(name)]
-    spaces = DF[DF["KO"].isin(g2ko_spaces["ko"])]
+    spaces = MODEL_DATA.df[MODEL_DATA.df["KO"].isin(g2ko_spaces["ko"])]
     return spaces_df_to_features(spaces)
 
 
 @app.route("/word/get/<label>")
 def filter_by_word(label):
-    notna_df = DF.dropna(subset=["word"])
+    notna_df = MODEL_DATA.df.dropna(subset=["word"])
     return spaces_df_to_features(notna_df[notna_df["word"].str.match(label.replace(",", "|"))])
-
-
-@app.route("/plot/bar/<word>")
-def plot_bar(word):
-    top_k_df = pd.DataFrame(MDL.wv.most_similar(
-        word, topn=10), columns=["word", "distance"])
-
-    return jsonify(
-        {
-            "x": top_k_df["word"].tolist(),
-            "y": top_k_df["distance"].tolist(),
-        }
-    )
 
 
 @app.route("/plot/scatter/<word>")
 def plot_scatter(word):
-    word_data = DF[DF['word'] == word]
+    word_data = MODEL_DATA.df[MODEL_DATA.df['word'] == word]
     pred_df = pd.DataFrame(word_data['prediction_summary'].values[0].items(), columns=[
                            'class', 'score']).sort_values(by='score', ascending=False).reset_index(drop=True)
 

@@ -1,10 +1,13 @@
 import os
+import json
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from gensim.models import word2vec as w2v
 import pandas as pd
 from google.cloud import storage
+
+from common import load_model_data, spaces_df_to_features
 
 
 # configuration
@@ -27,12 +30,23 @@ MDL = w2v.Word2Vec.load(
 )
 
 
+MODEL_DATA = load_model_data()
+
+
 # instantiate the app
 app = Flask(__name__)
 app.config.from_object(__name__)
 
 # enable CORS
 CORS(app, resources={r"/*": {"origins": "*"}})
+
+
+@app.route("/neighbors/get/<label>")
+def filter_by_neighbors(label):
+    topn = json.loads(request.args.get("k"))
+    top_k = [similar for similar, _ in MDL.wv.most_similar(label, topn=topn)]
+    df = MODEL_DATA.df[MODEL_DATA.df["word"].isin(top_k)]
+    return spaces_df_to_features(df)
 
 
 @app.route("/plot/bar/<word>")

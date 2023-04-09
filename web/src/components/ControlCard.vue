@@ -155,7 +155,7 @@ import ThemeToggle from "./ThemeToggle.vue";
 import SpaceInfo from "./SpaceInfo.vue";
 import DiamondSearch from "./DiamondSearch.vue";
 import { useHoverPoint, useClickedCircle } from "../composables/states";
-import { searchSpaces } from "@/composables/spaces";
+import { searchSpaces, searchNeighbors } from "@/composables/spaces";
 
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
@@ -200,9 +200,14 @@ export default {
       this.$emit("resetClickPoint");
       this.clickedCircle = null;
     },
-    async searchSpaces(type: string, e: string[], k?: number) {
+    async searchNeighbors(type: string, e: string[], k?: number) {
       this.loading = true;
-      this.$emit("setMap", await searchSpaces(type, e, k));
+      this.$emit("setMap", await searchNeighbors(type, e, k));
+      this.loading = false;
+    },
+    async searchSpaces(type: string, e: string[]) {
+      this.loading = true;
+      this.$emit("setMap", await searchSpaces(type, e));
       this.loading = false;
     },
   },
@@ -222,7 +227,7 @@ export default {
         this.kNeighbors = 100;
       }
       if (this.neighbors !== null) {
-        this.searchSpaces("neighbors", this.neighbors, this.kNeighbors);
+        this.searchNeighbors("neighbors", this.neighbors, this.kNeighbors);
       }
     },
     clickedCircle(val) {

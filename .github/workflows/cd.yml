@@ -46,6 +46,7 @@ jobs:
           path: ~/.local/share/virtualenvs
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      - run: cp server/common.py g2v/
       - run: docker build g2v -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/g2v
       - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/g2v:latest
       - run: gcloud run deploy g2v --image=us-central1-docker.pkg.dev/genomic-nlp/cloudrun/g2v:latest --region us-central1
