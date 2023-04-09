@@ -211,11 +211,6 @@ export default {
       this.loading = false;
     },
   },
-  async beforeMount() {
-    // ping servers to avoid cold starts.
-    fetch(new URL(`${import.meta.env.VITE_DIAMOND_URL}`).href);
-    fetch(new URL(this.apiUrl).href);
-  },
   watch: {
     searchMode(val: string) {
       this.kNeighbors = 20;

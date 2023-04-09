@@ -1,3 +1,4 @@
+from flask import jsonify
 import pandas as pd
 
 
@@ -78,6 +79,38 @@ def df_coord_to_latlng(y_value, x_value, model_data: ModelData):
 
 def normalize(value, value_min, value_max):
     return (value - value_min) / (value_max - value_min)
+
+
+def calc_zoom(spaces):
+    min_y, min_x = df_coord_to_latlng(
+        spaces.y.min(),
+        spaces.x.min(),
+        MODEL_DATA,
+    )
+    max_y, max_x = df_coord_to_latlng(
+        spaces.y.max(),
+        spaces.x.max(),
+        MODEL_DATA,
+    )
+    print(max_y, min_y, max_x, min_x)
+    gap = max(max_y - min_y, max_x - min_x)
+    if gap == 0 or np.isnan(gap):
+        return MAX_ZOOM
+
+    return min(math.floor(math.log2(TILE_SIZE) - math.log2(gap)), MAX_ZOOM)
+
+
+def calc_middle_value(column):
+    return (column.max() + column.min()) / 2.0
+
+
+def calc_center(spaces):
+    lat, lng = df_coord_to_latlng(
+        calc_middle_value(spaces.y),
+        calc_middle_value(spaces.x),
+        MODEL_DATA,
+    )
+    return {"lat": lat, "lng": lng}
 
 
 def spaces_df_to_features(spaces):

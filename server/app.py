@@ -41,38 +41,6 @@ def ping_pong():
     return jsonify("pong!")
 
 
-def calc_center(spaces):
-    lat, lng = df_coord_to_latlng(
-        calc_middle_value(spaces.y),
-        calc_middle_value(spaces.x),
-        MODEL_DATA,
-    )
-    return {"lat": lat, "lng": lng}
-
-
-def calc_middle_value(column):
-    return (column.max() + column.min()) / 2.0
-
-
-def calc_zoom(spaces):
-    min_y, min_x = df_coord_to_latlng(
-        spaces.y.min(),
-        spaces.x.min(),
-        MODEL_DATA,
-    )
-    max_y, max_x = df_coord_to_latlng(
-        spaces.y.max(),
-        spaces.x.max(),
-        MODEL_DATA,
-    )
-    print(max_y, min_y, max_x, min_x)
-    gap = max(max_y - min_y, max_x - min_x)
-    if gap == 0 or np.isnan(gap):
-        return MAX_ZOOM
-
-    return min(math.floor(math.log2(TILE_SIZE) - math.log2(gap)), MAX_ZOOM)
-
-
 @app.route("/<type_>/search")
 def filter_by_space(type_):
     filter_ = request.args.get("filter")
