@@ -44,7 +44,7 @@ LPAIARTTMNDGALLMNAKEAGPDDVMQILRKAF
         sequence = request.json["sequence"]
 
     result = subprocess.run(
-        "diamond blastp -d words.dmnd --outfmt 6 qseqid stitle evalue pident --max-target-seqs 1 --evalue 1e-4 --memory-limit 4",
+        "diamond blastp -d words.dmnd --outfmt 6 qseqid stitle evalue pident --max-target-seqs 1 --evalue 1e-4",
         shell=True,
         input=sequence,
         capture_output=True,
