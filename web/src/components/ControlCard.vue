@@ -38,6 +38,7 @@
             icon="mdi-help-circle-outline"
             variant="text"
             class="ms-2"
+            target="_blank"
             href="https://github.com/burstein-lab/genomic-nlp-server/wiki"
           />
         </v-col>
