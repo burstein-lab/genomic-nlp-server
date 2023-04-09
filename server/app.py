@@ -6,7 +6,6 @@ import re
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from gensim.models import word2vec as w2v
 import pandas as pd
 import numpy as np
 from google.cloud import storage
@@ -56,8 +55,6 @@ LABEL_TO_WORD = pd.DataFrame.from_dict(
     pd.read_pickle("label_to_word.pkl").keys(),
 )
 LABEL_TO_WORD.columns = ["label"]
-MDL = w2v.Word2Vec.load(
-    "gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v")
 
 with open("gene_names_to_ko.pkl", "rb") as o:
     G2KO = pd.DataFrame(pickle.load(o).items(), columns=["name", "ko"])
