@@ -10,19 +10,6 @@ class ModelData:
     def __init__(self):
         self.df = pd.read_pickle(
             "model_data.pkl",
-            usecols=[
-                "x",
-                "y",
-                "word",
-                "KO",
-                "label",
-                "product",
-                "gene_name",
-                "significant",
-                "predicted_class",
-                "color",
-                "hypothetical",
-            ],
         )
         self.x_max = self.df.x.max()
         self.y_max = self.df.y.max()
