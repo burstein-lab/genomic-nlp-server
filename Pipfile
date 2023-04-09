@@ -10,7 +10,6 @@ flask = "*"
 flask-cors = "*"
 gunicorn = "*"
 werkzeug = "*"
-google-cloud-storage = "*"
 
 [dev-packages]
 matplotlib = "*"

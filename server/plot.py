@@ -5,7 +5,7 @@ import simplejson
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from common import load_model_data, TILE_SIZE, df_to_features
+from common import ModelData, TILE_SIZE, df_to_features
 
 GREY_HEX = "#808080"
 GREY_OPACITY = int(0.3 * 255)
@@ -21,7 +21,7 @@ class Plotter:
 
     def __init__(self, bins):
         self.bins = bins
-        self.model_data.df = load_model_data()
+        self.model_data = ModelData()
         self.model_data.df["rgb_color"] = self.model_data.df.apply(
             lambda row: hex_to_rgb(row.color), axis=1,
         )

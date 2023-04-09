@@ -17,17 +17,6 @@ class ModelData:
         self.y_min = self.df.y.min()
 
 
-def load_model_data():
-    from google.cloud import storage
-    if not os.path.isfile("model_data.pkl"):
-        storage_client = storage.Client(project="genomic-nlp")
-        with open("model_data.pkl", "wb") as f:
-            storage_client.download_blob_to_file(
-                "gs://gnlp.bursteinlab.org/data/model_data.pkl", f)
-
-    return ModelData()
-
-
 class Point:
     """Defines a point coordinations and its value in space
     """

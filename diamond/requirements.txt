@@ -1,6 +1,5 @@
 -i https://pypi.org/simple
 flask
 flask-cors
-google-cloud-storage
 gunicorn
 werkzeug

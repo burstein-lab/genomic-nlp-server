@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 from google.cloud import storage
 
-from common import df_to_features, df_coord_to_latlng, load_model_data, TILE_SIZE
+from common import df_to_features, df_coord_to_latlng, ModelData, TILE_SIZE
 
 
 # configuration
@@ -19,7 +19,7 @@ HEAD_LIMIT = 50
 MAX_ZOOM = 8
 ZOOM_TILE_SPLIT_FACTOR = 4
 
-MODEL_DATA = load_model_data()
+MODEL_DATA = ModelData()
 LABEL_TO_WORD = pd.DataFrame.from_dict(
     pd.read_pickle("label_to_word.pkl").keys(),
 )

@@ -7,7 +7,7 @@ from gensim.models import word2vec as w2v
 import pandas as pd
 from google.cloud import storage
 
-from common import load_model_data, spaces_df_to_features
+from common import ModelData, spaces_df_to_features
 
 
 # configuration
@@ -18,7 +18,7 @@ MDL = w2v.Word2Vec.load(
 )
 
 
-MODEL_DATA = load_model_data()
+MODEL_DATA = ModelData()
 
 
 # instantiate the app

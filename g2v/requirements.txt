@@ -2,7 +2,6 @@
 flask
 flask-cors
 gensim
-google-cloud-storage
 gunicorn
 pandas
 werkzeug
