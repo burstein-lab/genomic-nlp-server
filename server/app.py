@@ -8,6 +8,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from gensim.models import word2vec as w2v
 import pandas as pd
+import numpy as np
 from google.cloud import storage
 
 from common import df_to_features, df_coord_to_latlng, TILE_SIZE
@@ -121,8 +122,9 @@ def calc_zoom(spaces):
         X_MIN,
         X_MAX,
     )
+    print(max_y, min_y, max_x, min_x)
     gap = max(max_y - min_y, max_x - min_x)
-    if gap == 0:
+    if gap == 0 or np.isnan(gap):
         return MAX_ZOOM
 
     return min(math.floor(math.log2(TILE_SIZE) - math.log2(gap)), MAX_ZOOM)
