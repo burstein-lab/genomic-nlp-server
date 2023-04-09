@@ -75,10 +75,7 @@ def calc_center(spaces):
     lat, lng = df_coord_to_latlng(
         calc_middle_value(spaces.y),
         calc_middle_value(spaces.x),
-        Y_MIN,
-        Y_MAX,
-        X_MIN,
-        X_MAX,
+        MODEL_DATA,
     )
     return {"lat": lat, "lng": lng}
 
@@ -91,18 +88,12 @@ def calc_zoom(spaces):
     min_y, min_x = df_coord_to_latlng(
         spaces.y.min(),
         spaces.x.min(),
-        MODEL_DATA.y_min,
-        MODEL_DATA.y_max,
-        MODEL_DATA.x_min,
-        MODEL_DATA.x_max,
+        MODEL_DATA,
     )
     max_y, max_x = df_coord_to_latlng(
         spaces.y.max(),
         spaces.x.max(),
-        MODEL_DATA.y_min,
-        MODEL_DATA.y_max,
-        MODEL_DATA.x_min,
-        MODEL_DATA.x_max,
+        MODEL_DATA,
     )
     print(max_y, min_y, max_x, min_x)
     gap = max(max_y - min_y, max_x - min_x)

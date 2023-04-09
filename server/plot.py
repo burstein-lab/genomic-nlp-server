@@ -5,7 +5,7 @@ import simplejson
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from common import TILE_SIZE, df_to_features
+from common import load_model_data, TILE_SIZE, df_to_features
 
 GREY_HEX = "#808080"
 GREY_OPACITY = int(0.3 * 255)
@@ -22,7 +22,7 @@ class Plotter:
     def __init__(self, data_path, bins):
         self.data_path = data_path
         self.bins = bins
-        self.space_data = pd.read_pickle(data_path)
+        self.space_data = load_model_data()
         self.space_data["rgb_color"] = self.space_data.apply(
             lambda row: hex_to_rgb(row.color), axis=1,
         )
@@ -36,10 +36,6 @@ class Plotter:
             ascending=True,
             inplace=True,
         )
-        self.max_x = self.space_data.x.max()
-        self.min_x = self.space_data.x.min()
-        self.max_y = self.space_data.y.max()
-        self.min_y = self.space_data.y.min()
 
     @staticmethod
     def normalize_to_standard(value, value_min, value_max):
@@ -52,23 +48,23 @@ class Plotter:
     def _focus(self, x_range, y_range):
         x_range_min = self.normalize_from_standard(
             x_range[0],
-            self.min_x,
-            self.max_x,
+            self.model_data.x_min,
+            self.model_data.x_max,
         )
         x_range_max = self.normalize_from_standard(
             x_range[1],
-            self.min_x,
-            self.max_x,
+            self.model_data.x_min,
+            self.model_data.x_max,
         )
         y_range_min = self.normalize_from_standard(
             y_range[0],
-            self.min_y,
-            self.max_y,
+            self.model_data.y_min,
+            self.model_data.y_max,
         )
         y_range_max = self.normalize_from_standard(
             y_range[1],
-            self.min_y,
-            self.max_y,
+            self.model_data.y_min,
+            self.model_data.y_max,
         )
         return x_range_min, x_range_max, y_range_min, y_range_max
 
@@ -96,8 +92,7 @@ class Plotter:
                 with open(os.path.join(outdir, f"space_by_label_{i}_{len(x_lines) - 1 - j}.json"), "w", encoding="utf8") as dest:
                     dest.write(
                         simplejson.dumps(
-                            {"features": df_to_features(
-                                plot_df, self.min_y, self.max_y, self.min_x, self.max_x)},
+                            {"features": df_to_features(plot_df, self.model_data)},
                             ignore_nan=True,
                         ),
                     )
@@ -111,9 +106,9 @@ class Plotter:
         uncropped_size = TILE_SIZE * (2 ** zoom)
         df = df.copy()
         df['plot_x'] = df.apply(lambda row: round(
-            uncropped_size * self.normalize_to_standard(row['x'], self.min_x, self.max_x)), axis=1)
+            uncropped_size * self.normalize_to_standard(row['x'], self.model_data.x_min, self.model_data.x_max)), axis=1)
         df['plot_y'] = df.apply(lambda row: round(
-            uncropped_size * self.normalize_to_standard(row['y'], self.min_y, self.max_y)), axis=1)
+            uncropped_size * self.normalize_to_standard(row['y'], self.model_data.y_min, self.model_data.y_max)), axis=1)
         for i, x_lines in enumerate(zoom_levels):
             for j, zoom_ranges in enumerate(x_lines):
                 plt.clf()
@@ -187,6 +182,7 @@ class Plotter:
 
 class SpaceFocus:
     """Helper class to focus on a specific area of the space."""
+
     def __init__(self, data_path):
         self.data_path = data_path
         self.space_data = pd.read_pickle(data_path)
@@ -286,8 +282,6 @@ def plot_everything(args):
 
 if __name__ == "__main__":
     argparse = argparse.ArgumentParser()
-    argparse.add_argument('--data', required=True, type=str,
-                          help='path to the gene space dataset')
     argparse.add_argument('--outdir', default='../src/assets/', type=str,
                           help='output dir for img to be saved [default[/src/assest]')
     argparse.add_argument('--min-zoom', default=0, type=int)
