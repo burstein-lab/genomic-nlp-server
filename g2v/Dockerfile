@@ -7,6 +7,7 @@ RUN pip install -r requirements.txt
 COPY gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v .
 COPY gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.trainables.syn1neg.npy .
 COPY gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v.wv.vectors.npy .
+COPY model_data.pkl .
 COPY common.py .
 COPY app.py .
 
