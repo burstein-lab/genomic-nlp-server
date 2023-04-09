@@ -21,16 +21,16 @@ class Plotter:
 
     def __init__(self, bins):
         self.bins = bins
-        self.space_data = load_model_data()
-        self.space_data["rgb_color"] = self.space_data.apply(
+        self.model_data.df = load_model_data()
+        self.model_data.df["rgb_color"] = self.model_data.df.apply(
             lambda row: hex_to_rgb(row.color), axis=1,
         )
         # in order to plot grey circles first.
-        self.space_data["order"] = self.space_data.apply(
+        self.model_data.df["order"] = self.model_data.df.apply(
             lambda row: 0 if row.color == GREY_HEX else 1, axis=1,
         )
 
-        self.space_data.sort_values(
+        self.model_data.df.sort_values(
             by=["order"],
             ascending=True,
             inplace=True,
@@ -68,7 +68,7 @@ class Plotter:
         return x_range_min, x_range_max, y_range_min, y_range_max
 
     def plot_jsons(self, outdir: str, zoom: int, threshold: int) -> pd.DataFrame:
-        df = self.space_data.copy()
+        df = self.model_data.df.copy()
         zoom_levels = calc_zoom_levels(zoom)
         for i, x_lines in enumerate(zoom_levels):
             for j, zoom_ranges in enumerate(x_lines):
@@ -185,11 +185,11 @@ class SpaceFocus:
 
     def __init__(self, data_path):
         self.data_path = data_path
-        self.space_data = pd.read_pickle(data_path)
+        self.model_data.df = pd.read_pickle(data_path)
 
     def focus(self, x_range, y_range):
         try:
-            result = self.space_data
+            result = self.model_data.df
             x_min = result.x.min()
             y_min = result.y.min()
             x_max = result.x.max()
