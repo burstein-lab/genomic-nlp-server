@@ -1,8 +1,11 @@
+import math
+
 from flask import jsonify
 import pandas as pd
 
 
 TILE_SIZE = 1024
+MAX_ZOOM = 8
 
 
 class ModelData:
@@ -81,16 +84,16 @@ def normalize(value, value_min, value_max):
     return (value - value_min) / (value_max - value_min)
 
 
-def calc_zoom(spaces):
+def calc_zoom(spaces, model_data: ModelData):
     min_y, min_x = df_coord_to_latlng(
         spaces.y.min(),
         spaces.x.min(),
-        MODEL_DATA,
+        model_data,
     )
     max_y, max_x = df_coord_to_latlng(
         spaces.y.max(),
         spaces.x.max(),
-        MODEL_DATA,
+        model_data,
     )
     print(max_y, min_y, max_x, min_x)
     gap = max(max_y - min_y, max_x - min_x)
@@ -104,21 +107,20 @@ def calc_middle_value(column):
     return (column.max() + column.min()) / 2.0
 
 
-def calc_center(spaces):
+def calc_center(spaces, model_data: ModelData):
     lat, lng = df_coord_to_latlng(
         calc_middle_value(spaces.y),
         calc_middle_value(spaces.x),
-        MODEL_DATA,
+        model_data,
     )
     return {"lat": lat, "lng": lng}
 
 
-def spaces_df_to_features(spaces):
+def spaces_df_to_features(spaces, model_data: ModelData):
     return jsonify(
         {
-            "spaces": df_to_features(spaces, MODEL_DATA),
-            "latlng": calc_center(spaces),
-            "zoom": calc_zoom(spaces),
+            "spaces": df_to_features(spaces, model_data),
+            "latlng": calc_center(spaces, model_data),
+            "zoom": calc_zoom(spaces, model_data),
         },
     )
-

@@ -5,16 +5,14 @@ import re
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
-import numpy as np
 
-from common import df_to_features, df_coord_to_latlng, ModelData, TILE_SIZE, spaces_df_to_features
+from common import ModelData, spaces_df_to_features
 
 
 # configuration
 DEBUG = True
 
 HEAD_LIMIT = 50
-MAX_ZOOM = 8
 ZOOM_TILE_SPLIT_FACTOR = 4
 
 MODEL_DATA = ModelData()
@@ -64,12 +62,12 @@ def space_get(name):
     else:
         spaces = MODEL_DATA.df[MODEL_DATA.df["word"].str.match(name)]
 
-    return spaces_df_to_features(spaces)
+    return spaces_df_to_features(spaces, MODEL_DATA)
 
 
 @app.route("/label/get/<label>")
 def filter_by_label(label):
-    return spaces_df_to_features(MODEL_DATA.df[MODEL_DATA.df["label"] == label])
+    return spaces_df_to_features(MODEL_DATA.df[MODEL_DATA.df["label"] == label], MODEL_DATA)
 
 
 @app.route("/gene/get/<name>")
@@ -78,13 +76,13 @@ def filter_by_gene(name):
     # pylint: disable=unsubscriptable-object
     g2ko_spaces = df[df["name"].str.match(name)]
     spaces = MODEL_DATA.df[MODEL_DATA.df["KO"].isin(g2ko_spaces["ko"])]
-    return spaces_df_to_features(spaces)
+    return spaces_df_to_features(spaces, MODEL_DATA)
 
 
 @app.route("/word/get/<label>")
 def filter_by_word(label):
     notna_df = MODEL_DATA.df.dropna(subset=["word"])
-    return spaces_df_to_features(notna_df[notna_df["word"].str.match(label.replace(",", "|"))])
+    return spaces_df_to_features(notna_df[notna_df["word"].str.match(label.replace(",", "|"))], MODEL_DATA)
 
 
 @app.route("/plot/scatter/<word>")

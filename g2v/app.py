@@ -32,7 +32,7 @@ def filter_by_neighbors(label):
     topn = json.loads(request.args.get("k"))
     top_k = [similar for similar, _ in MDL.wv.most_similar(label, topn=topn)]
     df = MODEL_DATA.df[MODEL_DATA.df["word"].isin(top_k)]
-    return spaces_df_to_features(df)
+    return spaces_df_to_features(df, MODEL_DATA)
 
 
 @app.route("/plot/bar/<word>")
