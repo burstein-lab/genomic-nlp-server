@@ -13,7 +13,6 @@ from common import ModelData, spaces_df_to_features
 DEBUG = True
 
 HEAD_LIMIT = 50
-ZOOM_TILE_SPLIT_FACTOR = 4
 
 MODEL_DATA = ModelData()
 LABEL_TO_WORD = pd.DataFrame.from_dict(
