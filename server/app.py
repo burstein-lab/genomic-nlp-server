@@ -9,9 +9,6 @@ import pandas as pd
 from common import ModelData, spaces_df_to_features
 
 
-# configuration
-DEBUG = True
-
 HEAD_LIMIT = 50
 
 MODEL_DATA = ModelData()
@@ -30,12 +27,6 @@ app.config.from_object(__name__)
 
 # enable CORS
 CORS(app, resources={r"/*": {"origins": "*"}})
-
-
-# sanity check route
-@app.route("/ping", methods=["GET"])
-def ping_pong():
-    return jsonify("pong!")
 
 
 @app.route("/<type_>/search")

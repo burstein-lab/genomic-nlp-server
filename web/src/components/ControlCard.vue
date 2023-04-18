@@ -25,6 +25,7 @@
           <v-btn
             @click="
               {
+                shouldShowMap = true;
                 $emit('setMapVisibility', true);
                 $emit('setMap', null);
                 resetClickPoint();

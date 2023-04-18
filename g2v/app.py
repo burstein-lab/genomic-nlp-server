@@ -8,9 +8,6 @@ import pandas as pd
 from common import ModelData, spaces_df_to_features
 
 
-# configuration
-DEBUG = True
-
 MDL = w2v.Word2Vec.load(
     "gene2vec_w5_v300_tf24_annotation_extended_2021-10-03.w2v",
 )
