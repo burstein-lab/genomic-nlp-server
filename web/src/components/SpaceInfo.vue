@@ -15,7 +15,10 @@ export default {
   },
   methods: {
     spaceToInfo(space: any) {
-      return spaceToInfo(space);
+      const infoMap = spaceToInfo(space);
+      return Array.from(infoMap, ([key, value]) => `${key}: ${value}`).join(
+        "<br />"
+      );
     },
   },
 };

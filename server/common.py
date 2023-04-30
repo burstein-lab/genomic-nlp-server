@@ -43,38 +43,48 @@ class Point:
         }
 
 
-def df_to_features(df, model_data: ModelData):
+def df_to_features(df, model_data: ModelData, additonal_columns: list[str] = None):
     features = []
     if df is None:
         return features
 
-    for row in df.itertuples():
-        y_coord, x_coord = df_coord_to_latlng(
-            row.y,
-            row.x,
-            model_data,
-        )
-        features.append(
-            Point(
-                row.Index,
-                x_coord,
-                y_coord,
-                {
-                    "name": f"{x_coord},{y_coord}",
-                    "word": row.word,
-                    "ko": row.KO,
-                    "label": row.label,
-                    "product": row.product if not pd.isnull(row.product) else None,
-                    "gene_name": row.gene_name,
-                    "significant": row.significant,
-                    "predicted_class": row.predicted_class,
-                    "color": row.color,  # hex color
-                    "hypothetical": row.hypothetical,
-                },
-            ).todict(),
-        )
+    result = df.apply(
+        lambda row: row_to_feature(model_data, row, additonal_columns),
+        axis=1,
+    )
+    return result.tolist()
 
-    return features
+
+def row_to_feature(model_data: ModelData, row, additonal_columns: list[str] = None):
+    y_coord, x_coord = df_coord_to_latlng(
+        row.y,
+        row.x,
+        model_data,
+    )
+    data = {
+        "name": f"{x_coord},{y_coord}",
+        "word": row.word,
+        "ko": row.KO if not pd.isnull(row.KO) else None,
+        "label": row.label if not pd.isnull(row.label) else None,
+        "product": row["product"] if not pd.isnull(row["product"]) else None,
+        "gene_name": row.gene_name if not pd.isnull(row.gene_name) else None,
+        "significant": row.significant if not pd.isnull(row.significant) else None,
+        "predicted_class": row.predicted_class if not pd.isnull(row.predicted_class) else None,
+        # hex color
+        "color": row.color if not pd.isnull(row.color) else None,
+        "hypothetical": row.hypothetical if not pd.isnull(row.hypothetical) else None,
+    }
+
+    if additonal_columns is not None:
+        for column in additonal_columns:
+            data[column] = row[column]
+
+    return Point(
+        row.word,
+        x_coord,
+        y_coord,
+        data,
+    ).todict()
 
 
 def df_coord_to_latlng(y_value, x_value, model_data: ModelData):
@@ -96,7 +106,6 @@ def calc_zoom(spaces, model_data: ModelData):
         spaces.x.max(),
         model_data,
     )
-    print(max_y, min_y, max_x, min_x)
     gap = max(max_y - min_y, max_x - min_x)
     if gap == 0 or np.isnan(gap):
         return MAX_ZOOM
@@ -117,10 +126,10 @@ def calc_center(spaces, model_data: ModelData):
     return {"lat": lat, "lng": lng}
 
 
-def spaces_df_to_features(spaces, model_data: ModelData):
+def spaces_df_to_features(spaces, model_data: ModelData, additional_columns: list[str] = None):
     return jsonify(
         {
-            "spaces": df_to_features(spaces, model_data),
+            "spaces": df_to_features(spaces, model_data, additional_columns),
             "latlng": calc_center(spaces, model_data),
             "zoom": calc_zoom(spaces, model_data),
         },

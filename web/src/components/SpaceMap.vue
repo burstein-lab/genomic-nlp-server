@@ -78,6 +78,7 @@ import "leaflet/dist/leaflet.css";
 import { useZoom, useHoverPoint, useClickedCircle } from "@/composables/states";
 import ControlCard from "./ControlCard.vue";
 import {
+  SpacesResponse,
   spacesToCollection,
   Coords,
   LatLng,
@@ -147,7 +148,7 @@ export default {
     };
   },
   methods: {
-    onSetMap(res) {
+    onSetMap(res: SpacesResponse) {
       if (!res) {
         this.searchCollection = { type: "FeatureCollection", features: [] };
         return;

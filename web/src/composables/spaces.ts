@@ -58,28 +58,37 @@ const spaceToFeature = (
   };
 };
 
-const spaceToInfo = (point: Space): string => {
+const spaceToInfo = (point: Space): Map<string, string> => {
+  let entries: Object;
   if (point.value.hypothetical) {
-    return `
-      Word: ${point.value.word}<br />
-      Predicted class: ${point.value.predicted_class} <br />
-      Trusted prediction: ${point.value.significant}<br />
-    `;
+    entries = {
+      Word: point.value.word,
+      "Predicted class": point.value.predicted_class,
+      "Trusted prediction": point.value.significant,
+    };
+  } else {
+    entries = {
+      Word: point.value.word,
+      KO: point.value.ko,
+      Label: point.value.label,
+      Product: point.value.product,
+      "Gene name": point.value.gene_name,
+      "Functional category": point.value.predicted_class,
+    };
   }
 
-  return `
-    Word: ${point.value.word}<br />
-    KO: ${point.value.ko}<br />
-    Label: ${point.value.label}<br />
-    Product: ${point.value.product}<br />
-    Gene name: ${point.value.gene_name}<br />
-    Functional category: ${point.value.predicted_class} <br />
-  `;
+  return new Map(Object.entries(entries));
 };
 
 interface LatLng {
   lat: number;
   lng: number;
+}
+
+interface SpacesResponse {
+  spaces: Space[];
+  latlng: LatLng;
+  zoom: Number;
 }
 
 interface Space {
@@ -93,7 +102,9 @@ interface Space {
     product: string;
     gene_name: string;
     significant: string;
+    hypothetical: boolean;
     predicted_class: string;
+    distance: string;
   };
 }
 
@@ -141,7 +152,14 @@ const searchNeighbors = async (type: string, e: string[], k: number) => {
   return await rawRes.json();
 };
 
-export type { Coords, Space, Feature, FeatureCollection, LatLng };
+export type {
+  Coords,
+  Space,
+  Feature,
+  FeatureCollection,
+  LatLng,
+  SpacesResponse,
+};
 export {
   spacesToCollection,
   spaceToInfo,

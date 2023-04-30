@@ -34,15 +34,13 @@ def filter_by_neighbors(label):
 
 @app.route("/plot/bar/<word>")
 def plot_bar(word):
-    top_k_df = pd.DataFrame(MDL.wv.most_similar(
-        word, topn=10), columns=["word", "distance"])
-
-    return jsonify(
-        {
-            "x": top_k_df["word"].tolist(),
-            "y": top_k_df["distance"].tolist(),
-        }
+    top_k_df = pd.DataFrame(
+        MDL.wv.most_similar(word, topn=10),
+        columns=["word", "distance"],
     )
+
+    df = pd.merge(top_k_df, MODEL_DATA.df, on="word")
+    return spaces_df_to_features(df, MODEL_DATA, additional_columns=["distance"])
 
 
 if __name__ == "__main__":

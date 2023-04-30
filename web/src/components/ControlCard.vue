@@ -124,11 +124,19 @@
         <BarChart
           v-if="plotToggle == 'bar' && clickedCircle && barData"
           class="mt-3"
-          :chartData="barData"
+          :chartData="barDataToPlotData(barData)"
           :options="{
-            title: { display: false },
-            scales: { y: { title: { display: true, text: 'Similarity' } } },
-            plugins: { legend: { display: false } },
+            title:{ display: false },
+            scales: { y: { title: { display: true, text:'Similarity' } } },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  title: () => null,
+                  footer: (items: any) => barHover(items[0]),
+                },
+              },
+            },
           }"
         />
         <ScatterChart
@@ -155,10 +163,11 @@ import Search from "./Search.vue";
 import ThemeToggle from "./ThemeToggle.vue";
 import SpaceInfo from "./SpaceInfo.vue";
 import DiamondSearch from "./DiamondSearch.vue";
-import { useHoverPoint, useClickedCircle } from "../composables/states";
+import { useHoverPoint, useClickedCircle } from "@/composables/states";
+import { spaceToInfo, Space, SpacesReponse } from "@/composables/spaces";
 import { searchSpaces, searchNeighbors } from "@/composables/spaces";
 
-import { Chart, registerables } from "chart.js";
+import { Chart, registerables, TooltipItem } from "chart.js";
 Chart.register(...registerables);
 
 export default {
@@ -175,7 +184,7 @@ export default {
     return {
       searchMode: "",
       neighbors: null as string[] | null,
-      barData: null as Object | null,
+      barData: null as SpacesReponse | null,
       loading: false,
       plotToggle: "",
       scatterData: null as Object | null,
@@ -197,6 +206,27 @@ export default {
   },
   emits: ["centerPoint", "resetClickPoint", "setMap", "setMapVisibility"],
   methods: {
+    barDataToPlotData(barData: SpacesReponse) {
+      const x: string[] = [];
+      const y: Number[] = [];
+      barData.spaces.forEach((space: Space) => {
+        x.push(space.value.word);
+        y.push(space.value.distance);
+      });
+      return {
+        labels: x,
+        datasets: [
+          {
+            data: y,
+            backgroundColor: "#da4ca4",
+          },
+        ],
+      };
+    },
+    barHover(item: any) {
+      const infoMap = spaceToInfo(this.barData.spaces[item.dataIndex]);
+      return Array.from(infoMap, ([key, value]) => `${key}: ${value}`);
+    },
     resetClickPoint() {
       this.$emit("resetClickPoint");
       this.clickedCircle = null;
@@ -233,7 +263,7 @@ export default {
       this.plotToggle = "";
     },
     async plotToggle(val) {
-      if (val == "bar") {
+      if (val == "bar" && !this.barData) {
         this.loading = true;
         const rawRes = await fetch(
           `${import.meta.env.VITE_G2V_URL}/plot/bar/${
@@ -241,17 +271,9 @@ export default {
           }`
         );
         const res = await rawRes.json();
-        this.barData = {
-          labels: res.x,
-          datasets: [
-            {
-              data: res.y,
-              backgroundColor: "#da4ca4",
-            },
-          ],
-        };
+        this.barData = res;
         this.loading = false;
-      } else if (val == "scatter") {
+      } else if (val == "scatter" && !this.scatterData) {
         this.loading = true;
         const rawRes = await fetch(
           `${this.apiUrl}/plot/scatter/${this.clickedCircle?.feature.properties.value.word}`
