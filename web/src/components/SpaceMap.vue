@@ -3,16 +3,18 @@
     <l-map
       id="mapRef"
       ref="mapRef"
-      v-model="zoom"
       v-model:zoom="zoom"
       crs="Simple"
-      :center="[-(tileSize / 2), tileSize / 2]"
+      :bounds="[-(tileSize / 2), tileSize / 2]"
       :maxBounds="[
         [tileSize * 0.5, -tileSize * 0.5],
         [-tileSize * 1.5, tileSize * 1.5],
       ]"
       :boundsViscosity="0.5"
-      :options="{ zoomControl: false, wheelPxPerZoomLevel: 120 }"
+      :options="{
+        zoomControl: false,
+        wheelPxPerZoomLevel: 120,
+      }"
       @ready="onMapReady(this)"
     >
       <l-control-zoom position="bottomright" />
@@ -75,7 +77,7 @@ import {
   LRectangle,
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useZoom, useHoverPoint, useClickedCircle } from "@/composables/states";
+import { useHoverPoint, useClickedCircle } from "@/composables/states";
 import ControlCard from "./ControlCard.vue";
 import {
   SpacesResponse,
@@ -116,7 +118,7 @@ export default {
 
     return {
       maxZoom: maxZoom,
-      zoom: useZoom(),
+      zoom: 0,
       getJsonOptions: {
         onEachFeature: this.onEachFeature,
       },
@@ -204,6 +206,13 @@ export default {
     },
     onMapReady(self) {
       self.map = this.$refs.mapRef.leafletObject;
+      self.map.setView(
+        {
+          lat: -self.tileSize / 2,
+          lng: self.tileSize / 2,
+        },
+        0
+      );
     },
     async getFeatures(coords: Coords) {
       const rawRes = await fetch(
