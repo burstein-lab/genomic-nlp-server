@@ -35,16 +35,13 @@
         :ref="'geoJsonSearchRef'"
         :options="getJsonOptions"
       />
-      <div v-for="[k, v] in collections" :key="k">
-        <l-geo-json
-          v-for="[k2, v2] in v"
-          v-if="k == zoom"
-          :key="k2"
-          :ref="'geoJson' + k2 + 'Ref'"
-          :geojson="v2"
-          :options="getJsonOptions"
-        />
-      </div>
+      <l-geo-json
+        v-for="[k, v] in collections"
+        :key="k"
+        :ref="'geoJson' + k + 'Ref'"
+        :geojson="v"
+        :options="getJsonOptions"
+      />
       <l-control ref="controlRef" position="topleft">
         <ControlCard
           @cancelClickPoint="onCancelClickPoint"
@@ -112,10 +109,6 @@ export default {
   data() {
     const maxZoom = Number(import.meta.env.VITE_MAX_ZOOM);
     const collections = new Map();
-    for (let i = 0; i <= maxZoom; i++) {
-      collections.set(i, new Map());
-    }
-
     return {
       maxZoom: maxZoom,
       zoom: 0,
@@ -173,13 +166,19 @@ export default {
       self.tileLayer = this.$refs.tileLayerRef.leafletObject;
       // https://leafletjs.com/reference.html#tilelayer
       self.tileLayer.on("tileunload", async (event) => {
-        self.collections
-          .get(event.coords.z)
-          .delete(
+        const unload = () => {
+          const existed = self.collections.delete(
             self.coordsToString(event.coords.z, event.coords.x, event.coords.y)
           );
+
+          if (!existed) {
+            setTimeout(unload, 300);
+          }
+        };
+
+        unload();
       });
-      self.tileLayer.on("tileloadstart", async (event) => {
+      self.tileLayer.on("tileload", async (event) => {
         await self.getFeatures(event.coords);
       });
     },
@@ -219,13 +218,15 @@ export default {
         `map/${coords.z}/space_by_label_${coords.x}_${coords.y}.json`
       );
 
-      if (rawRes.status == 404) return;
+      let features = [];
+      if (rawRes.status !== 404) {
+        const res = await rawRes.json();
+        features = res["features"];
+      }
 
-      const res = await rawRes.json();
-      const zCollection = this.collections.get(coords.z);
-      zCollection.set(
+      this.collections.set(
         this.coordsToString(coords.z, coords.x, coords.y),
-        spacesToCollection(res["features"], coords, false)
+        spacesToCollection(features, coords, false)
       );
     },
     onEachFeature(feature, layer) {
