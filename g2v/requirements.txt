@@ -1,7 +1,0 @@
--i https://pypi.org/simple
-flask
-flask-cors
-gensim
-gunicorn
-pandas
-werkzeug

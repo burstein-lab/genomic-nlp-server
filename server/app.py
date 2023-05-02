@@ -104,6 +104,26 @@ def plot_scatter(word):
     )
 
 
+@app.route("/neighbors/get/<word>")
+def neighbors(word):
+    additional_columns = []
+    if request.args.get("with_distance") == "true":
+        additional_columns.append("distance")
+
+    top_k_df = pd.read_csv(
+        f'https://storage.googleapis.com/gnlp.bursteinlab.org/knn/{word}.txt',
+        names=["word", "distance"],
+        delimiter=" ",
+    )
+
+    k = len(top_k_df)
+    if request.args.get("k") != None:
+        k = int(request.args.get("k"))
+
+    df = pd.merge(top_k_df.nlargest(k, "distance"), MODEL_DATA.df, on="word")
+    return spaces_df_to_features(df, MODEL_DATA, additional_columns)
+
+
 def search_g2ko(filter_: str):
     notna_column = G2KO["name"].dropna()
     result = notna_column[notna_column.str.contains(

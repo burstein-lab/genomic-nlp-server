@@ -76,14 +76,12 @@
           type="word"
           multiple
         />
-        <div v-if="searchMode === 'Neighbors'">
-          <Search
-            @search="(e: string[]) => {neighbors=e; searchSpaces('neighbors', e, kNeighbors)}"
-            label="Word"
-            type="word"
-          />
-          <v-text-field v-model="kNeighbors" label="K" type="number" />
-        </div>
+        <Search
+          v-if="searchMode === 'Neighbors'"
+          @search="(e: string[]) => searchSpaces('neighbors', e)"
+          label="Word"
+          type="word"
+        />
         <Search
           v-if="searchMode === 'Gene'"
           @search="(e: string[]) => searchSpaces('gene', e)"
@@ -165,7 +163,7 @@ import SpaceInfo from "./SpaceInfo.vue";
 import DiamondSearch from "./DiamondSearch.vue";
 import { useHoverPoint, useClickedCircle } from "@/composables/states";
 import { spaceToInfo, Space, SpacesReponse } from "@/composables/spaces";
-import { searchSpaces, searchNeighbors } from "@/composables/spaces";
+import { searchSpaces } from "@/composables/spaces";
 
 import { Chart, registerables, TooltipItem } from "chart.js";
 Chart.register(...registerables);
@@ -191,7 +189,6 @@ export default {
       scatterOptions: null as Object | null,
       hoverPoint: useHoverPoint(),
       clickedCircle: useClickedCircle(),
-      kNeighbors: 20,
       searchModes: [
         "Space",
         "Label",
@@ -231,11 +228,6 @@ export default {
       this.$emit("resetClickPoint");
       this.clickedCircle = null;
     },
-    async searchNeighbors(type: string, e: string[], k?: number) {
-      this.loading = true;
-      this.$emit("setMap", await searchNeighbors(type, e, k));
-      this.loading = false;
-    },
     async searchSpaces(type: string, e: string[]) {
       this.loading = true;
       this.$emit("setMap", await searchSpaces(type, e));
@@ -243,19 +235,6 @@ export default {
     },
   },
   watch: {
-    searchMode(val: string) {
-      this.kNeighbors = 20;
-    },
-    async kNeighbors(val: number) {
-      if (val < 1) {
-        this.kNeighbors = 1;
-      } else if (val > 100) {
-        this.kNeighbors = 100;
-      }
-      if (this.neighbors !== null) {
-        this.searchNeighbors("neighbors", this.neighbors, this.kNeighbors);
-      }
-    },
     clickedCircle(val) {
       this.barData = null;
       this.scatterData = null;
@@ -266,9 +245,9 @@ export default {
       if (val == "bar" && !this.barData) {
         this.loading = true;
         const rawRes = await fetch(
-          `${import.meta.env.VITE_G2V_URL}/plot/bar/${
+          `${import.meta.env.VITE_SERVER_URL}/neighbors/get/${
             this.clickedCircle?.feature.properties.value.word
-          }`
+          }?with_distance=true&k=10`
         );
         const res = await rawRes.json();
         this.barData = res;

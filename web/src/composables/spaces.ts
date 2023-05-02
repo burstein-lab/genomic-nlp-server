@@ -145,7 +145,7 @@ const searchSpaces = async (type: string, e: string[]) => {
 
 const searchNeighbors = async (type: string, e: string[], k: number) => {
   const url = new URL(
-    `${import.meta.env.VITE_G2V_URL}/neighbors/get/${e.toString()}`
+    `${import.meta.env.VITE_SERVER_URL}/neighbors/get/${e.toString()}`
   );
   url.searchParams.append("k", k.toString());
   const rawRes = await fetch(url.href);
