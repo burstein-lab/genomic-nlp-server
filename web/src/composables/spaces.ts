@@ -135,9 +135,10 @@ interface Feature {
   };
 }
 
-const searchSpaces = async (type: string, e: string[]) => {
+const searchSpaces = async (type: string, e: string[], signal) => {
   const url = new URL(
-    `${import.meta.env.VITE_SERVER_URL}/${type}/get/${e.toString()}`
+    `${import.meta.env.VITE_SERVER_URL}/${type}/get/${e.toString()}`,
+    { signal }
   );
   const rawRes = await fetch(url.href);
   return await rawRes.json();

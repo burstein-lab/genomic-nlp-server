@@ -25,10 +25,10 @@
           <v-btn
             @click="
               {
+                resetClickPoint();
                 shouldShowMap = true;
                 $emit('setMapVisibility', true);
                 $emit('setMap', null);
-                resetClickPoint();
                 searchMode = '';
               }
             "
@@ -105,12 +105,14 @@
       <div v-else-if="clickedCircle">
         <SpaceInfo :space="clickedCircle.feature.properties" />
         <v-btn-toggle color="primary" variant="outlined" v-model="plotToggle">
-          <v-btn value="bar">Closest Neighbors</v-btn>
+          <v-btn value="bar" :disabled="loading"> Closest Neighbors </v-btn>
           <v-btn
-            :disabled="!clickedCircle.feature.properties.value.hypothetical"
             value="scatter"
+            :disabled="
+              loading || !clickedCircle.feature.properties.value.hypothetical
+            "
           >
-            <div>Gene Predictions</div>
+            Gene Predictions
           </v-btn>
         </v-btn-toggle>
         <v-btn-group>
@@ -179,10 +181,12 @@ export default {
     DiamondSearch,
   },
   data: () => {
+    const controller = new AbortController();
     return {
       searchMode: "",
       neighbors: null as string[] | null,
       barData: null as SpacesReponse | null,
+      controller: controller,
       loading: false,
       plotToggle: "",
       scatterData: null as Object | null,
@@ -198,7 +202,6 @@ export default {
         "Sequence",
       ],
       shouldShowMap: true,
-      apiUrl: import.meta.env.VITE_SERVER_URL,
     };
   },
   emits: ["centerPoint", "resetClickPoint", "setMap", "setMapVisibility"],
@@ -230,12 +233,15 @@ export default {
     },
     async searchSpaces(type: string, e: string[]) {
       this.loading = true;
-      this.$emit("setMap", await searchSpaces(type, e));
+      this.$emit("setMap", await searchSpaces(type, e, this.controller.signal));
       this.loading = false;
     },
   },
   watch: {
     clickedCircle(val) {
+      this.controller.abort();
+      this.controller = new AbortController();
+      this.loading = false;
       this.barData = null;
       this.scatterData = null;
       this.scatterOptions = null;
@@ -247,7 +253,8 @@ export default {
         const rawRes = await fetch(
           `${import.meta.env.VITE_SERVER_URL}/neighbors/get/${
             this.clickedCircle?.feature.properties.value.word
-          }?with_distance=true&k=10`
+          }?with_distance=true&k=10`,
+          { signal: this.controller.signal }
         );
         const res = await rawRes.json();
         this.barData = res;
@@ -255,7 +262,8 @@ export default {
       } else if (val == "scatter" && !this.scatterData) {
         this.loading = true;
         const rawRes = await fetch(
-          `${this.apiUrl}/plot/scatter/${this.clickedCircle?.feature.properties.value.word}`
+          `${import.meta.env.VITE_SERVER_URL}/plot/scatter/${this.clickedCircle?.feature.properties.value.word}`,
+          { signal: this.controller.signal }
         );
         const res = await rawRes.json();
         this.scatterOptions = {
