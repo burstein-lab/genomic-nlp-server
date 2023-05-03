@@ -9,7 +9,7 @@ import pandas as pd
 from common import ModelData, spaces_df_to_features
 
 
-HEAD_LIMIT = 50
+PAGE_SIZE = 20
 
 MODEL_DATA = ModelData()
 LABEL_TO_WORD = pd.DataFrame.from_dict(
@@ -31,16 +31,10 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 @app.route("/<type_>/search")
 def filter_by_space(type_):
+    page = int(request.args.get("page"))
     filter_ = request.args.get("filter")
-    match type_:
-        case "gene":
-            return jsonify(search_g2ko(filter_))
-        case "label":
-            return jsonify(search(LABEL_TO_WORD, "label", filter_))
-        case "space":
-            return jsonify(search(MODEL_DATA.df, "KO", filter_) + search(MODEL_DATA.df, "word", filter_))
-        case _:
-            return jsonify(search(MODEL_DATA.df, type_, filter_))
+    result = sorted(set(_filter_by_space(type_, filter_)))
+    return jsonify(result[(page - 1) * PAGE_SIZE:page * PAGE_SIZE])
 
 
 @app.route("/space/get/<name>")
@@ -124,24 +118,32 @@ def neighbors(word):
     return spaces_df_to_features(df, MODEL_DATA, additional_columns)
 
 
-def search_g2ko(filter_: str):
-    notna_column = G2KO["name"].dropna()
-    result = notna_column[notna_column.str.contains(
-        filter_.replace(",", "|"), flags=re.IGNORECASE, na=False)].head(HEAD_LIMIT)
+def _filter_by_space(type_, filter_):
+    match type_:
+        case "gene":
+            return _search(G2KO, "name", filter_)
+        case "label":
+            return _search(LABEL_TO_WORD, "label", filter_)
+        case "space":
+            return _search(MODEL_DATA.df, "KO", filter_) + _search(MODEL_DATA.df, "word", filter_)
+        case _:
+            if type_ == "ko":
+                type_ = "KO"
 
-    return sorted(list(set(result)))
+            return _search(MODEL_DATA.df, type_, filter_)
 
 
-def search(df, column, filter_: str):
-    if column == "ko":
-        column = "KO"
-
+def _search(df, column, filter_: str) -> list[str]:
     notna_column = df[column].dropna()
-    notna_column.sort_values(inplace=True)
-    result = notna_column[notna_column.str.contains(
-        filter_.replace(",", "|"), flags=re.IGNORECASE, na=False)].head(HEAD_LIMIT)
+    result = notna_column[
+        notna_column.str.contains(
+            filter_.replace(",", "|"),
+            flags=re.IGNORECASE,
+            na=False,
+        )
+    ]
 
-    return sorted(list(set(result)))
+    return list(result)
 
 
 if __name__ == "__main__":
