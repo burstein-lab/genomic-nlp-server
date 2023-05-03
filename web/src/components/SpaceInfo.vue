@@ -1,5 +1,12 @@
 <template>
-  <div v-html="spaceToInfo(space)" />
+  <v-list lines="one">
+    <v-list-item
+      v-for="[k, v] in spaceToInfo(space)"
+      :key="k"
+      :subtitle="k"
+      :title="v ? v : 'N/A'"
+    ></v-list-item>
+  </v-list>
 </template>
 
 <script lang="ts">
@@ -15,10 +22,7 @@ export default {
   },
   methods: {
     spaceToInfo(space: any) {
-      const infoMap = spaceToInfo(space);
-      return Array.from(infoMap, ([key, value]) => `${key}: ${value}`).join(
-        "<br />"
-      );
+      return spaceToInfo(space);
     },
   },
 };
