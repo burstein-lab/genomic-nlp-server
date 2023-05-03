@@ -4,7 +4,7 @@
       v-for="[k, v] in spaceToInfo(space)"
       :key="k"
       :subtitle="k"
-      :title="v ? v : 'N/A'"
+      :title="v ? v.toString() : 'N/A'"
     ></v-list-item>
   </v-list>
 </template>
