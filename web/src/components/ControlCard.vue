@@ -100,27 +100,56 @@
     <v-card-text>
       <div v-if="hoverPoint">
         <SpaceInfo :space="hoverPoint" />
-        Click point for more options
+        Click point for actions
       </div>
       <div v-else-if="clickedCircle">
         <SpaceInfo :space="clickedCircle.feature.properties" />
-        <v-btn-toggle color="primary" variant="outlined" v-model="plotToggle">
-          <v-btn value="bar" :disabled="loading"> Closest Neighbors </v-btn>
-          <v-btn
-            value="scatter"
-            :disabled="
-              loading || !clickedCircle.feature.properties.value.hypothetical
-            "
-          >
-            Gene Predictions
-          </v-btn>
-        </v-btn-toggle>
-        <v-btn-group>
-          <v-btn color="primary" @click="$emit('centerPoint')">Center</v-btn>
-          <v-btn color="grey" icon dark @click="resetClickPoint">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-btn-group>
+        <v-container class="text-center">
+          <v-row justify="center" no-gutters>
+            <v-col cols="1">
+              <v-btn-group density="comfortable">
+                <v-btn
+                  color="primary"
+                  icon
+                  density="comfortable"
+                  @click="$emit('centerPoint')"
+                >
+                  <v-icon>mdi-target</v-icon>
+                </v-btn>
+              </v-btn-group>
+            </v-col>
+            <v-col cols="10">
+              <v-btn-toggle
+                color="primary"
+                variant="outlined"
+                v-model="plotToggle"
+                density="comfortable"
+                size="small"
+              >
+                <v-btn value="bar" :disabled="loading" density="comfortable">
+                  Neighbors
+                </v-btn>
+                <v-btn
+                  value="scatter"
+                  :disabled="
+                    loading ||
+                    !clickedCircle.feature.properties.value.hypothetical
+                  "
+                  density="comfortable"
+                >
+                  Gene Predictions
+                </v-btn>
+              </v-btn-toggle>
+            </v-col>
+            <v-col cols="1">
+              <v-btn-group density="comfortable">
+                <v-btn color="grey" icon dark @click="resetClickPoint">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </v-btn-group>
+            </v-col>
+          </v-row>
+        </v-container>
         <BarChart
           v-if="plotToggle == 'bar' && clickedCircle && barData"
           class="mt-3"
