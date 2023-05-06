@@ -50,50 +50,25 @@
       <v-select
         color="primary"
         v-model="searchMode"
-        :items="searchModes"
+        :items="[...Object.keys(searchModeToType), 'Sequence']"
         label="Search Mode"
       />
     </v-card-text>
     <div v-if="searchMode">
       <v-divider class="mx-4 mb-4" />
       <v-card-text>
-        <Search
-          v-if="searchMode === 'Space'"
-          @search="(e: string[]) => searchSpaces('space', e)"
-          label="Space"
-          type="space"
+        <DiamondSearch
+          v-if="searchMode === 'Sequence'"
+          @setMap="(e) => $emit('setMap', e)"
+          @setLoading="(e: boolean) => loading = e"
         />
         <Search
-          v-if="searchMode === 'Label'"
-          @search="(e: string[]) => searchSpaces('label', e)"
-          label="Label"
-          type="label"
+          v-else
+          :key="searchMode"
+          :label="searchModeToType[searchMode].label"
+          :type="searchModeToType[searchMode].type"
+          @search="(e: string[]) => searchSpaces(searchModeToType[searchMode].emit, e)"
         />
-        <Search
-          v-if="searchMode === 'KO / Hypo'"
-          @search="(e: string[]) => searchSpaces('word', e)"
-          label="KO / Hypo"
-          type="word"
-          multiple
-        />
-        <Search
-          v-if="searchMode === 'Neighbors'"
-          @search="(e: string[]) => searchSpaces('neighbors', e)"
-          label="Word"
-          type="word"
-        />
-        <Search
-          v-if="searchMode === 'Gene'"
-          @search="(e: string[]) => searchSpaces('gene', e)"
-          label="Gene"
-          type="gene"
-        />
-        <div v-if="searchMode === 'Sequence'">
-          <DiamondSearch
-            @setMap="(e) => $emit('setMap', e)"
-            @setLoading="(e: boolean) => loading = e"
-          />
-        </div>
       </v-card-text>
     </div>
     <v-divider class="mx-4" />
@@ -168,7 +143,6 @@
 </template>
 
 <script lang="ts">
-import { ScatterChart } from "vue-chart-3";
 import Search from "./Search.vue";
 import ThemeToggle from "./ThemeToggle.vue";
 import SpaceInfo from "./SpaceInfo.vue";
@@ -176,13 +150,24 @@ import DiamondSearch from "./DiamondSearch.vue";
 import NeighborsPlot from "./NeighborsPlot.vue";
 import PredictionPlot from "./PredictionPlot.vue";
 import { useHoverPoint, useClickedCircle } from "@/composables/states";
-import {
-  spaceToInfo,
-  Space,
-  SpacesReponse,
-  ScatterData,
-} from "@/composables/spaces";
+import { SpacesReponse, ScatterData } from "@/composables/spaces";
 import { searchSpaces } from "@/composables/spaces";
+
+interface SearchMode {
+  label: string;
+  type: string;
+  emit: string;
+}
+
+const searchMode = (
+  label: string,
+  type?: string,
+  emit?: string
+): SearchMode => ({
+  label,
+  type: type ? type : label.toLowerCase(),
+  emit: emit ? emit : label.toLowerCase(),
+});
 
 export default {
   name: "ControlCard",
@@ -198,6 +183,13 @@ export default {
     const controller = new AbortController();
     return {
       searchMode: "",
+      searchModeToType: {
+        Space: searchMode("Space"),
+        Label: searchMode("Label"),
+        "KO / Hypo": searchMode("KO / Hypo", "word", "word"),
+        Neighbors: searchMode("Word", "word", "neighbors"),
+        Gene: searchMode("Gene"),
+      } as { [key: string]: SearchMode },
       neighbors: null as string[] | null,
       barData: null as SpacesReponse | null,
       controller: controller,
@@ -206,14 +198,6 @@ export default {
       scatterData: null as ScatterData | null,
       hoverPoint: useHoverPoint(),
       clickedCircle: useClickedCircle(),
-      searchModes: [
-        "Space",
-        "Label",
-        "KO / Hypo",
-        "Neighbors",
-        "Gene",
-        "Sequence",
-      ],
       shouldShowMap: true,
     };
   },
