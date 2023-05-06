@@ -83,6 +83,7 @@ import {
   LatLng,
   unselectedPointStyle,
   selectedPointStyle,
+  Feature,
   highlightedPointStyle,
 } from "@/composables/spaces";
 
@@ -131,15 +132,12 @@ export default {
         this.clickedCircle &&
         this.clickedCircle.feature.properties.id === feature.properties.id
       ) {
-        const result = circleMarker(
-          latlng,
-          selectedPointStyle(this.zoom + 2, feature)
-        );
+        const result = circleMarker(latlng, selectedPointStyle(feature));
         this.clickedCircle = result;
         return result;
       }
 
-      return circleMarker(latlng, unselectedPointStyle(this.zoom + 2, feature));
+      return circleMarker(latlng, unselectedPointStyle(feature));
     };
   },
   methods: {
@@ -188,20 +186,9 @@ export default {
     },
     onResetClickPoint() {
       if (!this.clickedCircle) return;
-
-      let layer;
-      if (this.clickedCircle.feature.properties.isSearch) {
-        layer = this.$refs[`geoJsonSearchRef`].leafletObject;
-      } else {
-        layer = this.geoJsonObj(
-          this.coordsToString(
-            this.clickedCircle.feature.properties.zoom,
-            this.clickedCircle.feature.properties.tileX,
-            this.clickedCircle.feature.properties.tileY
-          )
-        );
-      }
-      layer.resetStyle(this.clickedCircle);
+      this.clickedCircle.setStyle(
+        unselectedPointStyle(this.clickedCircle.feature)
+      );
     },
     onMapReady(self) {
       self.map = this.$refs.mapRef.leafletObject;
@@ -231,46 +218,57 @@ export default {
     },
     onEachFeature(feature, layer) {
       layer.on({
-        mouseover: this.highlightFeature,
-        mouseout: this.resetHighlight,
-        click: this.onClickPoint,
+        mouseover: () => {
+          this.highlightFeature(layer, feature);
+        },
+        mouseout: () => {
+          this.resetHighlight(layer, feature);
+        },
+        click: () => {
+          this.onClickPoint(layer, feature);
+        },
       });
     },
-    highlightFeature(e) {
+    highlightFeature(layer, feature) {
       if (
         this.clickedCircle &&
-        this.clickedCircle.feature.properties.id ===
-          e.target.feature.properties.id
+        this.clickedCircle.feature.properties.id === feature.properties.id
       ) {
         return;
       }
-      const layer = e.target;
       layer.setStyle(highlightedPointStyle);
-      layer.bringToFront();
-      this.hoverPoint = e.target.feature.properties;
+      // TODO: layer.bringToFront();
+      this.hoverPoint = feature.properties;
     },
-    resetHighlight(e) {
+    resetHighlight(layer, feature) {
       if (
         this.clickedCircle &&
-        this.clickedCircle.feature.properties.id ===
-          e.target.feature.properties.id
+        this.clickedCircle.feature.properties.id === feature.properties.id
       ) {
         return;
       }
-      let layer;
-      if (e.target.feature.properties.isSearch) {
-        layer = this.$refs[`geoJsonSearchRef`].leafletObject;
-      } else {
-        layer = this.geoJsonObj(
-          this.coordsToString(
-            e.target.feature.properties.zoom,
-            e.target.feature.properties.tileX,
-            e.target.feature.properties.tileY
-          )
+      layer.setStyle(unselectedPointStyle(feature));
+      this.hoverPoint = null;
+    },
+    onClickPoint(layer, feature: Feature) {
+      if (this.clickedCircle) {
+        this.clickedCircle.setStyle(
+          unselectedPointStyle(this.clickedCircle.feature)
         );
       }
-      layer.resetStyle(e.target);
+
+      this.clickedCircle = layer;
       this.hoverPoint = null;
+      this.zoomToFeature(
+        {
+          lat: feature.geometry.coordinates[1],
+          lng: feature.geometry.coordinates[0],
+        },
+        this.zoom
+      );
+      this.clickedCircle.setStyle(
+        selectedPointStyle(this.clickedCircle.feature)
+      );
     },
     zoomToFeature(latlng: LatLng, zoom: number) {
       this.map.setView(latlng, zoom);
@@ -280,7 +278,7 @@ export default {
     },
     onCancelClickPoint() {
       this.clickedCircle.setStyle(
-        unselectedPointStyle(this.zoom + 2, this.clickedCircle.feature)
+        unselectedPointStyle(this.clickedCircle.feature)
       );
     },
     onCenterPoint() {
@@ -290,36 +288,6 @@ export default {
           lng: this.clickedCircle.feature.geometry.coordinates[0],
         },
         this.zoom
-      );
-    },
-    onClickPoint(e) {
-      if (!e.target) {
-        return;
-      }
-
-      if (this.clickedCircle) {
-        let layer;
-        if (this.clickedCircle.feature.properties.isSearch) {
-          layer = this.$refs[`geoJsonSearchRef`].leafletObject;
-        } else {
-          layer = this.geoJsonObj(
-            this.coordsToString(
-              this.clickedCircle.feature.properties.zoom,
-              this.clickedCircle.feature.properties.tileX,
-              this.clickedCircle.feature.properties.tileY
-            )
-          );
-        }
-        layer.resetStyle(this.clickedCircle);
-        this.clickedCircle.setStyle(
-          unselectedPointStyle(this.zoom + 2, this.clickedCircle.feature)
-        );
-      }
-      this.clickedCircle = e.target;
-      this.hoverPoint = null;
-      this.zoomToFeature(e.latlng, this.zoom);
-      this.clickedCircle.setStyle(
-        selectedPointStyle(this.zoom + 2, this.clickedCircle.feature)
       );
     },
   },

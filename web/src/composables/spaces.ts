@@ -13,15 +13,16 @@ const spacesToCollection = (
   };
 };
 
-const unselectedPointStyle = (zoom: number, feature: Feature) => ({
-  radius: zoom + 2,
+const unselectedPointStyle = (feature: Feature) => ({
+  radius: feature.properties.zoom + 2,
+  color: "#666",
   fillColor: feature.properties.value.color, // TODO: border color by feature.properties.isSearch ? "#007800" : "#ff7800",
   weight: 1,
   opacity: 1,
   fillOpacity: 0.8,
 });
 
-const selectedPointStyle = (zoom: number, feature: Feature) => ({
+const selectedPointStyle = (feature: Feature) => ({
   weight: 5,
   color: "#222",
   fillColor: feature.properties.value.color,
