@@ -137,11 +137,11 @@ interface Feature {
 }
 
 const searchSpaces = async (type: string, e: string[], signal) => {
+  console.log(`${import.meta.env.VITE_SERVER_URL}/${type}/get/${e.toString()}`);
   const url = new URL(
-    `${import.meta.env.VITE_SERVER_URL}/${type}/get/${e.toString()}`,
-    { signal }
+    `${import.meta.env.VITE_SERVER_URL}/${type}/get/${e.toString()}`
   );
-  const rawRes = await fetch(url.href);
+  const rawRes = await fetch(url.href, { signal });
   return await rawRes.json();
 };
 

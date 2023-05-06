@@ -15,7 +15,7 @@
         zoomControl: false,
         wheelPxPerZoomLevel: 120,
       }"
-      @ready="onMapReady(this)"
+      @ready="onMapReady()"
     >
       <l-control-zoom position="bottomright" />
       <l-tile-layer
@@ -27,12 +27,12 @@
         :max-zoom="maxZoom"
         :min-zoom="0"
         :tileSize="tileSize"
-        @ready="onTileLayerReady(this)"
+        @ready="onTileLayerReady()"
       />
       <l-geo-json
         :geojson="searchCollection"
         :key="zoom"
-        :ref="'geoJsonSearchRef'"
+        ref="geoJsonSearchRef"
         :options="getJsonOptions"
       />
       <l-geo-json
@@ -109,7 +109,7 @@ export default {
   },
   data() {
     const maxZoom = Number(import.meta.env.VITE_MAX_ZOOM);
-    const collections = new Map();
+    const collections = new Map<string, any[]>();
     return {
       maxZoom: maxZoom,
       zoom: 0,
@@ -121,7 +121,7 @@ export default {
       isMapVisible: true,
       collections: collections,
       tileSize: 1024,
-      searchCollection: { type: "FeatureCollection", features: [] },
+      searchCollection: spacesToCollection([], { z: 0, x: 0, y: 0 }, true),
       map: null,
     };
   },
@@ -143,7 +143,11 @@ export default {
   methods: {
     onSetMap(res: SpacesResponse) {
       if (!res) {
-        this.searchCollection = { type: "FeatureCollection", features: [] };
+        this.searchCollection = spacesToCollection(
+          [],
+          { z: 0, x: 0, y: 0 },
+          true
+        );
         return;
       }
 
@@ -157,27 +161,20 @@ export default {
         },
         true
       );
-      this.zoomToFeature(res.latlng, res.zoom);
+      this.map.setView(res.latlng, res.zoom);
     },
-    onTileLayerReady(self) {
-      // this != component instance on ready event from some reason...
-      self.tileLayer = this.$refs.tileLayerRef.leafletObject;
-      // https://leafletjs.com/reference.html#tilelayer
-      self.tileLayer.on("tileunload", async (event) => {
-        const unload = () => {
-          const existed = self.collections.delete(
-            self.coordsToString(event.coords.z, event.coords.x, event.coords.y)
-          );
-
-          if (!existed) {
-            setTimeout(unload, 300);
-          }
-        };
-
-        unload();
+    onTileLayerReady() {
+      const tileLayer = this.$refs.tileLayerRef.leafletObject;
+      tileLayer.on("tileunload", async (event) => {
+        // Trigger cleanup.
+        this.collections.set(
+          this.coordsToString(event.coords.z, event.coords.x, event.coords.y),
+          spacesToCollection([], { z: 0, x: 0, y: 0 }, true)
+        );
       });
-      self.tileLayer.on("tileload", async (event) => {
-        await self.getFeatures(event.coords);
+      tileLayer.on("tileloadstart", async (event) => {
+        // this != component instance on ready event from some reason...
+        await this.getFeatures(event.coords);
       });
     },
     geoJsonObj(k: string) {
@@ -190,17 +187,18 @@ export default {
         unselectedPointStyle(this.clickedCircle.feature)
       );
     },
-    onMapReady(self) {
-      self.map = this.$refs.mapRef.leafletObject;
-      self.map.setView(
+    onMapReady() {
+      this.map = this.$refs.mapRef.leafletObject;
+      this.map.setView(
         {
-          lat: -self.tileSize / 2,
-          lng: self.tileSize / 2,
+          lat: -this.tileSize / 2,
+          lng: this.tileSize / 2,
         },
         0
       );
     },
     async getFeatures(coords: Coords) {
+      const id = this.coordsToString(coords.z, coords.x, coords.y);
       const rawRes = await fetch(
         `map/${coords.z}/space_by_label_${coords.x}_${coords.y}.json`
       );
@@ -211,14 +209,30 @@ export default {
         features = res["features"];
       }
 
-      this.collections.set(
-        this.coordsToString(coords.z, coords.x, coords.y),
-        spacesToCollection(features, coords, false)
-      );
+      this.collections.set(id, spacesToCollection(features, coords, false));
+
+      const cleanup = () => {
+        if (!this.collections.has(id)) return;
+
+        if (
+          this.zoom.toString() !== id.split("-")[0] ||
+          this.collections.get(id)?.length === 0
+        ) {
+          this.geoJsonObj(id)?.clearLayers();
+          this.collections.delete(id);
+          return;
+        }
+
+        setTimeout(cleanup, 1000);
+      };
+
+      setTimeout(cleanup, 3000);
     },
-    onEachFeature(feature, layer) {
+    // layer is the circle marker
+    onEachFeature(feature: Feature, layer) {
       layer.on({
         mouseover: () => {
+          console.log("mouseover", feature.properties.zoom);
           this.highlightFeature(layer, feature);
         },
         mouseout: () => {
@@ -237,7 +251,6 @@ export default {
         return;
       }
       layer.setStyle(highlightedPointStyle);
-      // TODO: layer.bringToFront();
       this.hoverPoint = feature.properties;
     },
     resetHighlight(layer, feature) {
@@ -259,19 +272,10 @@ export default {
 
       this.clickedCircle = layer;
       this.hoverPoint = null;
-      this.zoomToFeature(
-        {
-          lat: feature.geometry.coordinates[1],
-          lng: feature.geometry.coordinates[0],
-        },
-        this.zoom
-      );
+      this.onCenterPoint();
       this.clickedCircle.setStyle(
         selectedPointStyle(this.clickedCircle.feature)
       );
-    },
-    zoomToFeature(latlng: LatLng, zoom: number) {
-      this.map.setView(latlng, zoom);
     },
     coordsToString(z: number, x: number, y: number) {
       return `${z}-${x}-${y}`;
@@ -282,7 +286,7 @@ export default {
       );
     },
     onCenterPoint() {
-      this.zoomToFeature(
+      this.map.setView(
         {
           lat: this.clickedCircle.feature.geometry.coordinates[1],
           lng: this.clickedCircle.feature.geometry.coordinates[0],
