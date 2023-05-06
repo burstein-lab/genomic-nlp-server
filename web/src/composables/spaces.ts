@@ -1,12 +1,15 @@
 const spacesToCollection = (
-  spaces: Space[],
-  coords: Coords,
-  isSearch: boolean
+  spaces?: Space[],
+  coords?: Coords,
+  isSearch?: boolean
 ): FeatureCollection => {
   const features: Feature[] = [];
-  for (var i = 0; i < spaces.length; i++) {
-    features.push(spaceToFeature(spaces[i], coords, isSearch));
+  if (spaces !== undefined && coords !== undefined && isSearch !== undefined) {
+    for (var i = 0; i < spaces.length; i++) {
+      features.push(spaceToFeature(spaces[i], coords, isSearch));
+    }
   }
+
   return {
     type: "FeatureCollection",
     features: features,
@@ -136,6 +139,12 @@ interface Feature {
   };
 }
 
+interface ScatterData {
+  label: string;
+  data: { x: number; y: number }[];
+  ticks: string[];
+}
+
 const searchSpaces = async (type: string, e: string[], signal) => {
   console.log(`${import.meta.env.VITE_SERVER_URL}/${type}/get/${e.toString()}`);
   const url = new URL(
@@ -152,6 +161,7 @@ export type {
   FeatureCollection,
   LatLng,
   SpacesResponse,
+  ScatterData,
 };
 export {
   spacesToCollection,

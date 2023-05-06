@@ -116,19 +116,20 @@ export default {
       zoom: 0,
       getJsonOptions: {
         onEachFeature: this.onEachFeature,
+        pointToLayer: (feature: Feature, latlng: LatLng) => {},
       },
       hoverPoint: useHoverPoint(),
       clickedCircle: useClickedCircle(),
       isMapVisible: true,
       collections: collections,
       tileSize: 1024,
-      searchCollection: spacesToCollection([], { z: 0, x: 0, y: 0 }, true),
-      map: null,
+      searchCollection: spacesToCollection(),
+      map: null as LMap | null,
     };
   },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
-    this.getJsonOptions.pointToLayer = (feature, latlng: LatLng) => {
+    this.getJsonOptions.pointToLayer = (feature: Feature, latlng: LatLng) => {
       if (
         this.clickedCircle &&
         this.clickedCircle.feature.properties.id === feature.properties.id
@@ -144,11 +145,7 @@ export default {
   methods: {
     async onSetMap(res: SpacesResponse) {
       if (!res) {
-        this.searchCollection = spacesToCollection(
-          [],
-          { z: 0, x: 0, y: 0 },
-          true
-        );
+        this.searchCollection = spacesToCollection();
         return;
       }
 
@@ -168,16 +165,15 @@ export default {
     },
     onTileLayerReady() {
       const tileLayer = this.$refs.tileLayerRef.leafletObject;
-      tileLayer.on("tileunload", async (event) => {
+      tileLayer.on("tileunload", async ({ coords }: { coords: Coords }) => {
         // Trigger cleanup.
         this.collections.set(
-          this.coordsToString(event.coords.z, event.coords.x, event.coords.y),
-          spacesToCollection([], { z: 0, x: 0, y: 0 }, true)
+          this.coordsToString(coords.z, coords.x, coords.y),
+          spacesToCollection()
         );
       });
-      tileLayer.on("tileloadstart", async (event) => {
-        // this != component instance on ready event from some reason...
-        await this.getFeatures(event.coords);
+      tileLayer.on("tileloadstart", async ({ coords }: { coords: Coords }) => {
+        await this.getFeatures(coords);
       });
     },
     geoJsonObj(k: string) {
@@ -208,7 +204,7 @@ export default {
 
       let features = [];
       if (rawRes.status !== 404) {
-        const res = await rawRes.json();
+        const res = (await rawRes.json()) as SpacesResponse;
         features = res["features"];
       }
 
@@ -235,7 +231,6 @@ export default {
     onEachFeature(feature: Feature, layer) {
       layer.on({
         mouseover: () => {
-          console.log("mouseover", feature.properties.zoom);
           this.highlightFeature(layer, feature);
         },
         mouseout: () => {
@@ -246,7 +241,7 @@ export default {
         },
       });
     },
-    highlightFeature(layer, feature) {
+    highlightFeature(layer, feature: Feature) {
       if (
         this.clickedCircle &&
         this.clickedCircle.feature.properties.id === feature.properties.id
@@ -256,7 +251,7 @@ export default {
       layer.setStyle(highlightedPointStyle);
       this.hoverPoint = feature.properties;
     },
-    resetHighlight(layer, feature) {
+    resetHighlight(layer, feature: Feature) {
       if (
         this.clickedCircle &&
         this.clickedCircle.feature.properties.id === feature.properties.id
@@ -289,7 +284,7 @@ export default {
       );
     },
     onCenterPoint() {
-      this.map.setView(
+      this.map?.setView(
         {
           lat: this.clickedCircle.feature.geometry.coordinates[1],
           lng: this.clickedCircle.feature.geometry.coordinates[0],

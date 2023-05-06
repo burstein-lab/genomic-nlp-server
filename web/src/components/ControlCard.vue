@@ -150,29 +150,10 @@
             </v-col>
           </v-row>
         </v-container>
-        <BarChart
-          v-if="plotToggle == 'bar' && clickedCircle && barData"
-          class="mt-3"
-          :chartData="barDataToPlotData(barData)"
-          :options="{
-            title:{ display: false },
-            scales: { y: { title: { display: true, text:'Similarity' } } },
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  title: () => null,
-                  footer: (items: any) => barHover(items[0]),
-                },
-              },
-            },
-          }"
-        />
-        <ScatterChart
-          v-if="plotToggle == 'scatter' && clickedCircle && scatterData"
-          class="mt-3"
-          :chartData="scatterData"
-          :options="scatterOptions"
+        <NeighborsPlot v-if="plotToggle == 'bar' && barData" :data="barData" />
+        <PredictionPlot
+          v-else-if="plotToggle == 'scatter' && scatterData"
+          :data="scatterData"
         />
       </div>
       <div v-else>
@@ -187,24 +168,28 @@
 </template>
 
 <script lang="ts">
-import { BarChart, ScatterChart } from "vue-chart-3";
+import { ScatterChart } from "vue-chart-3";
 import Search from "./Search.vue";
 import ThemeToggle from "./ThemeToggle.vue";
 import SpaceInfo from "./SpaceInfo.vue";
 import DiamondSearch from "./DiamondSearch.vue";
+import NeighborsPlot from "./NeighborsPlot.vue";
+import PredictionPlot from "./PredictionPlot.vue";
 import { useHoverPoint, useClickedCircle } from "@/composables/states";
-import { spaceToInfo, Space, SpacesReponse } from "@/composables/spaces";
+import {
+  spaceToInfo,
+  Space,
+  SpacesReponse,
+  ScatterData,
+} from "@/composables/spaces";
 import { searchSpaces } from "@/composables/spaces";
-
-import { Chart, registerables, TooltipItem } from "chart.js";
-Chart.register(...registerables);
 
 export default {
   name: "ControlCard",
   components: {
+    NeighborsPlot,
+    PredictionPlot,
     Search,
-    BarChart,
-    ScatterChart,
     ThemeToggle,
     SpaceInfo,
     DiamondSearch,
@@ -218,8 +203,7 @@ export default {
       controller: controller,
       loading: false,
       plotToggle: "",
-      scatterData: null as Object | null,
-      scatterOptions: null as Object | null,
+      scatterData: null as ScatterData | null,
       hoverPoint: useHoverPoint(),
       clickedCircle: useClickedCircle(),
       searchModes: [
@@ -235,27 +219,6 @@ export default {
   },
   emits: ["centerPoint", "resetClickPoint", "setMap", "setMapVisibility"],
   methods: {
-    barDataToPlotData(barData: SpacesReponse) {
-      const x: string[] = [];
-      const y: Number[] = [];
-      barData.spaces.forEach((space: Space) => {
-        x.push(space.value.word);
-        y.push(space.value.distance);
-      });
-      return {
-        labels: x,
-        datasets: [
-          {
-            data: y,
-            backgroundColor: "#da4ca4",
-          },
-        ],
-      };
-    },
-    barHover(item: any) {
-      const infoMap = spaceToInfo(this.barData.spaces[item.dataIndex]);
-      return Array.from(infoMap, ([key, value]) => `${key}: ${value}`);
-    },
     resetClickPoint() {
       this.$emit("resetClickPoint");
       this.clickedCircle = null;
@@ -273,7 +236,6 @@ export default {
       this.loading = false;
       this.barData = null;
       this.scatterData = null;
-      this.scatterOptions = null;
       this.plotToggle = "";
     },
     async plotToggle(val) {
@@ -291,46 +253,13 @@ export default {
       } else if (val == "scatter" && !this.scatterData) {
         this.loading = true;
         const rawRes = await fetch(
-          `${import.meta.env.VITE_SERVER_URL}/plot/scatter/${this.clickedCircle?.feature.properties.value.word}`,
+          `${import.meta.env.VITE_SERVER_URL}/plot/scatter/${
+            this.clickedCircle?.feature.properties.value.word
+          }`,
           { signal: this.controller.signal }
         );
         const res = await rawRes.json();
-        this.scatterOptions = {
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: "Predicted functional category",
-              },
-              ticks: {
-                callback: (value: string, index: number, ticks: any[]) => {
-                  return res.ticks[index];
-                },
-              },
-            },
-            y: {
-              title: {
-                display: true,
-                text: "Score",
-              },
-              ticks: {
-                callback: (value: number, index: number, ticks: any[]) => {
-                  if (value === 0) return "1";
-                  return "1e" + value;
-                },
-              },
-            },
-          },
-        };
-        this.scatterData = {
-          datasets: [
-            {
-              label: res.label,
-              data: res.data,
-              backgroundColor: "#da4ca4",
-            },
-          ],
-        };
+        this.scatterData = res;
         this.loading = false;
       }
     },
