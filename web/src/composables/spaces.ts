@@ -145,15 +145,6 @@ const searchSpaces = async (type: string, e: string[], signal) => {
   return await rawRes.json();
 };
 
-const searchNeighbors = async (type: string, e: string[], k: number) => {
-  const url = new URL(
-    `${import.meta.env.VITE_SERVER_URL}/neighbors/get/${e.toString()}`
-  );
-  url.searchParams.append("k", k.toString());
-  const rawRes = await fetch(url.href);
-  return await rawRes.json();
-};
-
 export type {
   Coords,
   Space,
@@ -166,7 +157,6 @@ export {
   spacesToCollection,
   spaceToInfo,
   searchSpaces,
-  searchNeighbors,
   unselectedPointStyle,
   selectedPointStyle,
   highlightedPointStyle,

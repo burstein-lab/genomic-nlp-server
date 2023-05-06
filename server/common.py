@@ -6,7 +6,7 @@ import pandas as pd
 
 
 TILE_SIZE = 1024
-MAX_ZOOM = 8
+MAX_ZOOM = 7
 
 
 class ModelData:

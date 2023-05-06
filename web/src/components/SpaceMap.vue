@@ -11,6 +11,7 @@
         [-tileSize * 1.5, tileSize * 1.5],
       ]"
       :boundsViscosity="0.5"
+      :max-zoom="maxZoom"
       :options="{
         zoomControl: false,
         wheelPxPerZoomLevel: 120,
@@ -141,7 +142,7 @@ export default {
     };
   },
   methods: {
-    onSetMap(res: SpacesResponse) {
+    async onSetMap(res: SpacesResponse) {
       if (!res) {
         this.searchCollection = spacesToCollection(
           [],
@@ -161,7 +162,9 @@ export default {
         },
         true
       );
-      this.map.setView(res.latlng, res.zoom);
+      // When both zoom and latlng change, using setView alone results in zoom change without latlng.
+      await this.map.setZoom(res.zoom);
+      await this.map.setView(res.latlng, res.zoom);
     },
     onTileLayerReady() {
       const tileLayer = this.$refs.tileLayerRef.leafletObject;
