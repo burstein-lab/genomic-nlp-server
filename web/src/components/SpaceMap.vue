@@ -49,7 +49,7 @@
           @resetClickPoint="onResetClickPoint"
           @centerPoint="onCenterPoint"
           @setMap="onSetMap"
-          @setMapVisibility="(shouldShowMap) => (isMapVisible = shouldShowMap)"
+          @setHideMap="(shouldHideMap) => (isMapVisible = !shouldHideMap)"
         />
       </l-control>
     </l-map>

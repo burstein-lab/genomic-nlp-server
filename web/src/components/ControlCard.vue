@@ -13,21 +13,21 @@
         </v-col>
         <v-col cols="auto">
           <v-switch
-            v-model="shouldShowMap"
-            @update:modelValue="$emit('setMapVisibility', shouldShowMap)"
+            v-model="shouldHideMap"
+            @update:modelValue="$emit('setHideMap', shouldHideMap)"
             color="primary"
-            label="Show Map"
+            label="Hide Map"
             hide-details
+            inset
           />
         </v-col>
-        <v-col></v-col>
         <v-col class="my-auto" cols="auto">
           <v-btn
             @click="
               {
                 resetClickPoint();
-                shouldShowMap = true;
-                $emit('setMapVisibility', true);
+                shouldHideMap = false;
+                $emit('setHideMap', false);
                 $emit('setMap', null);
                 searchMode = '';
               }
@@ -198,10 +198,10 @@ export default {
       scatterData: null as ScatterData | null,
       hoverPoint: useHoverPoint(),
       clickedCircle: useClickedCircle(),
-      shouldShowMap: true,
+      shouldHideMap: false,
     };
   },
-  emits: ["centerPoint", "resetClickPoint", "setMap", "setMapVisibility"],
+  emits: ["centerPoint", "resetClickPoint", "setMap", "setHideMap"],
   methods: {
     resetClickPoint() {
       this.$emit("resetClickPoint");
