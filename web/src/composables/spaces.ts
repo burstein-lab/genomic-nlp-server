@@ -105,7 +105,7 @@ interface Space {
     label: string;
     product: string;
     gene_name: string;
-    significant: string;
+    significant: boolean;
     hypothetical: boolean;
     predicted_class: string;
     distance: string;

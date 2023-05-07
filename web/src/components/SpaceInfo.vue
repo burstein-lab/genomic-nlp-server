@@ -4,13 +4,13 @@
       v-for="[k, v] in spaceToInfo(space)"
       :key="k"
       :subtitle="k"
-      :title="v ? v.toString() : 'N/A'"
+      :title="v !== undefined ? v.toString() : 'N/A'"
     ></v-list-item>
   </v-list>
 </template>
 
 <script lang="ts">
-import { spaceToInfo } from "../composables/spaces";
+import { spaceToInfo } from "@/composables/spaces";
 
 export default {
   name: "SpaceInfo",
