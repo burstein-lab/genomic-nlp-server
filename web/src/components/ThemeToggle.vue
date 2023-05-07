@@ -1,7 +1,11 @@
 <template>
-  <v-btn icon color="primary" @click="toggleTheme">
-    <v-icon>mdi-theme-light-dark</v-icon>
-  </v-btn>
+  <v-switch
+    @update:modelValue="toggleTheme"
+    color="primary"
+    inset
+    label="Light Theme"
+    hide-details
+  />
 </template>
 
 <script lang="ts">
