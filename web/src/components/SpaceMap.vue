@@ -32,7 +32,7 @@
       />
       <l-geo-json
         :geojson="searchCollection"
-        :key="zoom"
+        :key="`${zoom}-${theme.global.current.dark}`"
         ref="geoJsonSearchRef"
         :options="getJsonOptions"
       />
@@ -75,6 +75,7 @@ import {
   LRectangle,
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
+import { useTheme } from "vuetify";
 import { useHoverPoint, useClickedCircle } from "@/composables/states";
 import ControlCard from "./ControlCard.vue";
 import {
@@ -82,8 +83,8 @@ import {
   spacesToCollection,
   Coords,
   LatLng,
-  unselectedPointStyle,
-  selectedPointStyle,
+  pointStyle,
+  clickedPointStyle,
   Feature,
   highlightedPointStyle,
 } from "@/composables/spaces";
@@ -109,13 +110,16 @@ export default {
     ControlCard,
   },
   data() {
+    const theme = useTheme();
+    console.log(theme.global.current.value.dark);
     const maxZoom = Number(import.meta.env.VITE_MAX_ZOOM);
     const collections = new Map<string, any[]>();
     return {
+      theme: theme,
       maxZoom: maxZoom,
       zoom: 0,
       getJsonOptions: {
-        onEachFeature: this.onEachFeature,
+        onEachFeature: (feature: Feature, layer: any) => {},
         pointToLayer: (feature: Feature, latlng: LatLng) => {},
       },
       hoverPoint: useHoverPoint(),
@@ -129,17 +133,24 @@ export default {
   },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
+    this.getJsonOptions.onEachFeature = this.onEachFeature;
     this.getJsonOptions.pointToLayer = (feature: Feature, latlng: LatLng) => {
       if (
         this.clickedCircle &&
         this.clickedCircle.feature.properties.id === feature.properties.id
       ) {
-        const result = circleMarker(latlng, selectedPointStyle(feature));
+        const result = circleMarker(
+          latlng,
+          clickedPointStyle(feature, this.zoom, this.theme.global.current.dark)
+        );
         this.clickedCircle = result;
         return result;
       }
 
-      return circleMarker(latlng, unselectedPointStyle(feature));
+      return circleMarker(
+        latlng,
+        pointStyle(feature, this.zoom, this.theme.global.current.dark)
+      );
     };
   },
   methods: {
@@ -183,7 +194,7 @@ export default {
     onResetClickPoint() {
       if (!this.clickedCircle) return;
       this.clickedCircle.setStyle(
-        unselectedPointStyle(this.clickedCircle.feature)
+        pointStyle(this.clickedCircle.feature, this.theme.global.current.dark)
       );
     },
     onMapReady() {
@@ -248,7 +259,14 @@ export default {
       ) {
         return;
       }
-      layer.setStyle(highlightedPointStyle);
+      layer.setStyle(
+        highlightedPointStyle(
+          feature,
+          this.zoom,
+          this.theme.global.current.dark
+        )
+      );
+      layer.bringToFront();
       this.hoverPoint = feature.properties;
     },
     resetHighlight(layer, feature: Feature) {
@@ -258,13 +276,19 @@ export default {
       ) {
         return;
       }
-      layer.setStyle(unselectedPointStyle(feature));
+      layer.setStyle(
+        pointStyle(feature, this.zoom, this.theme.global.current.dark)
+      );
       this.hoverPoint = null;
     },
     onClickPoint(layer, feature: Feature) {
       if (this.clickedCircle) {
         this.clickedCircle.setStyle(
-          unselectedPointStyle(this.clickedCircle.feature)
+          pointStyle(
+            this.clickedCircle.feature,
+            this.zoom,
+            this.theme.global.current.dark
+          )
         );
       }
 
@@ -272,7 +296,11 @@ export default {
       this.hoverPoint = null;
       this.onCenterPoint();
       this.clickedCircle.setStyle(
-        selectedPointStyle(this.clickedCircle.feature)
+        clickedPointStyle(
+          this.clickedCircle.feature,
+          this.zoom,
+          this.theme.global.current.dark
+        )
       );
     },
     coordsToString(z: number, x: number, y: number) {
@@ -280,7 +308,11 @@ export default {
     },
     onCancelClickPoint() {
       this.clickedCircle.setStyle(
-        unselectedPointStyle(this.clickedCircle.feature)
+        pointStyle(
+          this.clickedCircle.feature,
+          this.zoom,
+          this.theme.global.current.dark
+        )
       );
     },
     onCenterPoint() {

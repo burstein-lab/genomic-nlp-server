@@ -16,28 +16,40 @@ const spacesToCollection = (
   };
 };
 
-const unselectedPointStyle = (feature: Feature) => ({
-  radius: feature.properties.zoom + 2,
-  color: "#666",
-  fillColor: feature.properties.value.color, // TODO: border color by feature.properties.isSearch ? "#007800" : "#ff7800",
-  weight: 1,
-  opacity: 1,
-  fillOpacity: 0.8,
-});
+const pointStyle = (feature: Feature, zoom: number, isDarkTheme: boolean) => {
+  return {
+    radius: zoom + 2,
+    color: feature.properties.isSearch
+      ? isDarkTheme
+        ? "#FFFFFF"
+        : "#000000"
+      : "#666",
+    fillColor: feature.properties.value.color,
+    weight: 1,
+    opacity: 1,
+    fillOpacity: 0.7,
+  };
+};
 
-const selectedPointStyle = (feature: Feature) => ({
-  weight: 5,
-  color: "#222",
-  fillColor: feature.properties.value.color,
-  dashArray: "",
-  fillOpacity: 0.7,
-});
+const highlightedPointStyle = (
+  feature: Feature,
+  zoom: number,
+  isDarkTheme: boolean
+) => {
+  const res = pointStyle(feature, zoom, isDarkTheme);
+  res.radius += 2;
+  res.weight += 2;
+  res.color = isDarkTheme ? "#FFFFFF" : "#000000";
+  return res;
+};
 
-const highlightedPointStyle = {
-  weight: 5,
-  color: "#666",
-  dashArray: "",
-  fillOpacity: 0.7,
+const clickedPointStyle = (
+  feature: Feature,
+  zoom: number,
+  isDarkTheme: boolean
+) => {
+  const res = highlightedPointStyle(feature, zoom, isDarkTheme);
+  return res;
 };
 
 const spaceToFeature = (
@@ -167,7 +179,7 @@ export {
   spacesToCollection,
   spaceToInfo,
   searchSpaces,
-  unselectedPointStyle,
-  selectedPointStyle,
+  pointStyle,
+  clickedPointStyle,
   highlightedPointStyle,
 };
