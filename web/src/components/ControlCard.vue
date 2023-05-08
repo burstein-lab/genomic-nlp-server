@@ -81,16 +81,20 @@
           <v-container class="text-center pt-1 pb-0">
             <v-row justify="center" no-gutters>
               <v-col cols="1">
-                <v-btn-group density="comfortable">
-                  <v-btn
-                    color="info"
-                    icon
-                    density="comfortable"
-                    @click="$emit('centerPoint')"
-                  >
-                    <v-icon>mdi-target</v-icon>
-                  </v-btn>
-                </v-btn-group>
+                <v-tooltip text="Move to point" location="bottom">
+                  <template v-slot:activator="{ props }">
+                    <v-btn-group density="comfortable" v-bind="props">
+                      <v-btn
+                        color="info"
+                        icon
+                        density="comfortable"
+                        @click="$emit('centerPoint')"
+                      >
+                        <v-icon>mdi-target</v-icon>
+                      </v-btn>
+                    </v-btn-group>
+                  </template>
+                </v-tooltip>
               </v-col>
               <v-col cols="10">
                 <v-btn-toggle
