@@ -1,21 +1,33 @@
 <template>
-  <div>
-    <v-textarea
-      v-model="sequence"
-      filled
-      auto-grow
-      label="Search by sequence"
-      rows="4"
-      row-height="30"
-      shaped
-      append-icon="mdi-send"
-      @click:append="onSequenceSearch(sequence)"
-    />
-    <v-file-input show-size v-model="sequenceFile" label="From file" />
-    <v-btn v-if="downloadableDiamondResult" @click="downloadDiamondResult">
-      Download diamond result
-    </v-btn>
-  </div>
+  <v-radio-group inline v-model="fromSequence" hide-details class="py-1">
+    <v-radio label="Text" :value="true"></v-radio>
+    <v-radio label="File" :value="false"></v-radio>
+  </v-radio-group>
+  <v-textarea
+    v-if="fromSequence"
+    v-model="sequence"
+    filled
+    auto-grow
+    label="Search by sequence"
+    rows="3"
+    row-height="30"
+    shaped
+    append-icon="mdi-send"
+    @click:append="onSequenceSearch(sequence)"
+    density="comfortable"
+    hide-details
+  />
+  <v-file-input
+    v-else
+    show-size
+    density="comfortable"
+    v-model="sequenceFile"
+    label="Upload file"
+    hide-details
+  />
+  <v-btn v-if="downloadableDiamondResult" @click="downloadDiamondResult">
+    Download diamond result
+  </v-btn>
 </template>
 
 <script lang="ts">
@@ -25,6 +37,7 @@ export default {
   name: "DiamondSearch",
   data: () => {
     return {
+      fromSequence: true,
       loading: false,
       plotToggle: "",
       scatterData: null as Object | null,

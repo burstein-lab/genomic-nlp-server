@@ -1,10 +1,9 @@
 <template>
   <v-autocomplete
-    color="primary"
-    v-model="model"
+    color="info"
     v-debounce:300ms="onInputChange"
     debounce-events="update:searchValue"
-    @update:modelValue="$emit('search', model)"
+    @update:modelValue="onChoose"
     :items="items"
     :multiple="multiple"
     :chips="multiple"
@@ -15,6 +14,7 @@
     hide-details
     :label="label"
     placeholder="Start typing to search"
+    density="comfortable"
   >
     <template v-slot:append-item>
       <div v-if="!done" v-intersect="onIntersect" class="ps-4 pt-4 pb-2">
@@ -79,6 +79,12 @@ export default {
       this.done = res.length === 0;
       this.items = [...this.items, ...res];
       this.isLoading = false;
+    },
+    async onChoose(val: any) {
+      this.isLoading = false;
+      this.controller.abort();
+      this.controller = new AbortController();
+      this.$emit("search", val);
     },
     async fetchItems() {
       const rawRes = await fetch(

@@ -7,137 +7,140 @@
     class="overflow-y-auto"
   >
     <v-card-text>
-      <v-row>
-        <v-col cols="auto">
-          <ThemeToggle />
-        </v-col>
-        <v-col cols="auto">
-          <v-switch
-            v-model="shouldHideMap"
-            @update:modelValue="$emit('setHideMap', shouldHideMap)"
-            color="primary"
-            label="Hide Map"
-            hide-details
-            inset
+      <v-container class="pa-0">
+        <v-row>
+          <v-col class="py-1" cols="auto">
+            <ThemeToggle />
+          </v-col>
+          <v-col class="py-1" cols="auto">
+            <v-switch
+              v-model="shouldHideMap"
+              @update:modelValue="$emit('setHideMap', shouldHideMap)"
+              color="info"
+              label="Hide Map"
+              hide-details
+              inset
+              density="comfortable"
+            />
+          </v-col>
+          <v-col class="py-1 my-auto" cols="auto">
+            <v-btn
+              @click="
+                {
+                  resetClickPoint();
+                  shouldHideMap = false;
+                  $emit('setHideMap', false);
+                  $emit('setMap', null);
+                  searchMode = '';
+                }
+              "
+              color="info"
+            >
+              Reset
+            </v-btn>
+            <v-btn
+              icon="mdi-help-circle-outline"
+              color="info"
+              variant="text"
+              class="ms-2"
+              target="_blank"
+              href="https://github.com/burstein-lab/genomic-nlp-server/wiki"
+            />
+          </v-col>
+        </v-row>
+        <v-divider class="mx-4 my-4" />
+        <v-select
+          color="info"
+          v-model="searchMode"
+          :items="[...Object.keys(searchModeToType), 'Sequence']"
+          label="Search Mode"
+          density="comfortable"
+          hide-details
+        />
+        <div v-if="searchMode">
+          <DiamondSearch
+            v-if="searchMode === 'Sequence'"
+            @setMap="(e) => $emit('setMap', e)"
+            @setLoading="(e: boolean) => loading = e"
           />
-        </v-col>
-        <v-col class="my-auto" cols="auto">
-          <v-btn
-            @click="
-              {
-                resetClickPoint();
-                shouldHideMap = false;
-                $emit('setHideMap', false);
-                $emit('setMap', null);
-                searchMode = '';
-              }
-            "
-          >
-            Reset
-          </v-btn>
-          <v-btn
-            icon="mdi-help-circle-outline"
-            variant="text"
-            class="ms-2"
-            target="_blank"
-            href="https://github.com/burstein-lab/genomic-nlp-server/wiki"
+          <Search
+            v-else
+            :key="searchMode"
+            :label="searchModeToType[searchMode].label"
+            :type="searchModeToType[searchMode].type"
+            @search="(e: string[]) => searchSpaces(searchModeToType[searchMode].emit, e)"
           />
-        </v-col>
-      </v-row>
-    </v-card-text>
-    <v-divider class="mx-4 mb-4" />
-    <v-card-text>
-      <v-select
-        color="primary"
-        v-model="searchMode"
-        :items="[...Object.keys(searchModeToType), 'Sequence']"
-        label="Search Mode"
-      />
-    </v-card-text>
-    <div v-if="searchMode">
-      <v-divider class="mx-4 mb-4" />
-      <v-card-text>
-        <DiamondSearch
-          v-if="searchMode === 'Sequence'"
-          @setMap="(e) => $emit('setMap', e)"
-          @setLoading="(e: boolean) => loading = e"
-        />
-        <Search
-          v-else
-          :key="searchMode"
-          :label="searchModeToType[searchMode].label"
-          :type="searchModeToType[searchMode].type"
-          @search="(e: string[]) => searchSpaces(searchModeToType[searchMode].emit, e)"
-        />
-      </v-card-text>
-    </div>
-    <v-divider class="mx-4" />
-    <v-card-text>
-      <div v-if="hoverPoint">
-        <SpaceInfo :space="hoverPoint" />
-        Click point for actions
-      </div>
-      <div v-else-if="clickedCircle">
-        <SpaceInfo :space="clickedCircle.feature.properties" />
-        <v-container class="text-center">
-          <v-row justify="center" no-gutters>
-            <v-col cols="1">
-              <v-btn-group density="comfortable">
-                <v-btn
-                  color="primary"
-                  icon
+        </div>
+        <v-divider class="mx-4 mt-4" />
+        <div v-if="hoverPoint">
+          <SpaceInfo :space="hoverPoint" />
+          Click point for actions
+        </div>
+        <div v-else-if="clickedCircle">
+          <SpaceInfo :space="clickedCircle.feature.properties" />
+          <v-container class="text-center pt-1 pb-0">
+            <v-row justify="center" no-gutters>
+              <v-col cols="1">
+                <v-btn-group density="comfortable">
+                  <v-btn
+                    color="info"
+                    icon
+                    density="comfortable"
+                    @click="$emit('centerPoint')"
+                  >
+                    <v-icon>mdi-target</v-icon>
+                  </v-btn>
+                </v-btn-group>
+              </v-col>
+              <v-col cols="10">
+                <v-btn-toggle
+                  color="info"
+                  variant="outlined"
+                  v-model="plotToggle"
                   density="comfortable"
-                  @click="$emit('centerPoint')"
+                  size="small"
                 >
-                  <v-icon>mdi-target</v-icon>
-                </v-btn>
-              </v-btn-group>
-            </v-col>
-            <v-col cols="10">
-              <v-btn-toggle
-                color="primary"
-                variant="outlined"
-                v-model="plotToggle"
-                density="comfortable"
-                size="small"
-              >
-                <v-btn value="bar" :disabled="loading" density="comfortable">
-                  Neighbors
-                </v-btn>
-                <v-btn
-                  value="scatter"
-                  :disabled="
-                    loading ||
-                    !clickedCircle.feature.properties.value.hypothetical
-                  "
-                  density="comfortable"
-                >
-                  Gene Predictions
-                </v-btn>
-              </v-btn-toggle>
-            </v-col>
-            <v-col cols="1">
-              <v-btn-group density="comfortable">
-                <v-btn color="grey" icon dark @click="resetClickPoint">
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-              </v-btn-group>
-            </v-col>
-          </v-row>
-        </v-container>
-        <NeighborsPlot v-if="plotToggle == 'bar' && barData" :data="barData" />
-        <PredictionPlot
-          v-else-if="plotToggle == 'scatter' && scatterData"
-          :data="scatterData"
-        />
-      </div>
-      <div v-else>
-        Search to explore the model and hover a point to view extra options
-      </div>
-      <div v-if="loading">
-        Getting data...
-        <v-progress-linear indeterminate color="primary" rounded />
-      </div>
+                  <v-btn value="bar" :disabled="loading" density="comfortable">
+                    Neighbors
+                  </v-btn>
+                  <v-btn
+                    value="scatter"
+                    :disabled="
+                      loading ||
+                      !clickedCircle.feature.properties.value.hypothetical
+                    "
+                    density="comfortable"
+                  >
+                    Gene Predictions
+                  </v-btn>
+                </v-btn-toggle>
+              </v-col>
+              <v-col cols="1">
+                <v-btn-group density="comfortable">
+                  <v-btn color="grey" icon dark @click="resetClickPoint">
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
+                </v-btn-group>
+              </v-col>
+            </v-row>
+          </v-container>
+          <NeighborsPlot
+            v-if="plotToggle == 'bar' && barData"
+            :data="barData"
+          />
+          <PredictionPlot
+            v-else-if="plotToggle == 'scatter' && scatterData"
+            :data="scatterData"
+          />
+        </div>
+        <div v-else class="pt-2">
+          Search to explore the model and hover a point to view extra options
+        </div>
+        <div v-if="loading" class="pt-2">
+          Getting data...
+          <v-progress-linear indeterminate color="info" rounded />
+        </div>
+      </v-container>
     </v-card-text>
   </v-card>
 </template>

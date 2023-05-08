@@ -45,7 +45,6 @@
       />
       <l-control ref="controlRef" position="topleft">
         <ControlCard
-          @cancelClickPoint="onCancelClickPoint"
           @resetClickPoint="onResetClickPoint"
           @centerPoint="onCenterPoint"
           @setMap="onSetMap"
@@ -194,7 +193,11 @@ export default {
     onResetClickPoint() {
       if (!this.clickedCircle) return;
       this.clickedCircle.setStyle(
-        pointStyle(this.clickedCircle.feature, this.theme.global.current.dark)
+        pointStyle(
+          this.clickedCircle.feature,
+          this.zoom,
+          this.theme.global.current.dark
+        )
       );
     },
     onMapReady() {
@@ -305,15 +308,6 @@ export default {
     },
     coordsToString(z: number, x: number, y: number) {
       return `${z}-${x}-${y}`;
-    },
-    onCancelClickPoint() {
-      this.clickedCircle.setStyle(
-        pointStyle(
-          this.clickedCircle.feature,
-          this.zoom,
-          this.theme.global.current.dark
-        )
-      );
     },
     onCenterPoint() {
       this.map?.setView(

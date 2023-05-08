@@ -1,10 +1,11 @@
 <template>
   <v-switch
     @update:modelValue="toggleTheme"
-    color="primary"
+    color="info"
     inset
     label="Light Theme"
     hide-details
+    density="comfortable"
   />
 </template>
 
