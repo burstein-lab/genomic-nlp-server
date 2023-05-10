@@ -34,17 +34,28 @@ We will use the predicted gene idetifier: `hypo.clst.15503442` to explore `Prote
 
 ### Explore prediction
 Go to the search bar and select *KO\Hypo* mode, in the search bat type the identifier name (it should auto-complete).<br>
-The highlighted dot on the space markes `hypo.clst.15503442`. The panel will show the following information:
+The highlighted dot on the space markes `hypo.clst.15503442`. By zooming in to the cluster in which this dot reside we can inspect interactivaly inspcet the nrighboring genes, most of them are related to the CRISPR-Cas system.
+Fon in depth analyzis, click on the dot to open a panel that will show the following information:
 - Gene Prediction
 - Trusted prediction
 - Neighbors
 - Gene prediction
-<br>
+
 #### Gene prediction
 The predicted class is *Prokaryotic Defense System* and the prediction is *reliable* (trusted prediction is True).<br>
 By clicking on `GENE PREDICTIONS` a panel will open showing all scores recived by the model for the different classes. Here, the 
 *Prokaryotic Defense System* prediction was unequivocal, with a score closed to 1 (possible scores are between 0 to 1).<br>
 
 #### Analyzing neighbors
+By clicking on the `NEIGHBORS` tab a bar plot will be opened with the closest 10 neighbors in the space.
+The neighbors are:
+1. Five Cas proteins, including Cas3, Csc1, Csc2 and two variants on Csc3.
+2. Five Hypothetical proteins, all with a trusted prediction of "Prokaryotic Defense System".
+
+This streghthens the confidance that this protein is related to Defense mechanisms, and more specifically to Subtype I-D in which Csc proteins are dominant.  
+
+Hovering on a specific bar will show extended information on each gene.
+*_note_*: distances were calculated on a high dimensional space, thus elemets might not seem to be close in the 2D space map.<br>
+
 
 
