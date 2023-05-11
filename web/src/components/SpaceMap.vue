@@ -31,20 +31,16 @@
         @ready="onTileLayerReady()"
       />
       <l-geo-json
-        :geojson="searchCollection"
-        :key="`${zoom}-${theme.global.current.dark}`"
-        ref="geoJsonSearchRef"
-        :options="getJsonOptions"
-      />
-      <l-geo-json
         v-for="[k, v] in collections"
-        :key="k"
-        :ref="'geoJson' + k + 'Ref'"
+        :key="`geoJson-${k}-${zoom}-${theme.global.current.dark}`"
+        :ref="`geoJson-${k}-Ref`"
         :geojson="v"
-        :options="getJsonOptions"
+        :options="geoJsonOptions"
       />
       <l-control ref="controlRef" position="topleft">
         <ControlCard
+          :hoveredFeature="hoveredFeature"
+          :clickedFeature="clickedLayer?.feature"
           @resetClickPoint="onResetClickPoint"
           @centerPoint="onCenterPoint"
           @setMap="onSetMap"
@@ -75,7 +71,6 @@ import {
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTheme } from "vuetify";
-import { useHoverPoint, useClickedCircle } from "@/composables/states";
 import ControlCard from "./ControlCard.vue";
 import {
   SpacesResponse,
@@ -110,39 +105,41 @@ export default {
   },
   data() {
     const theme = useTheme();
-    console.log(theme.global.current.value.dark);
     const maxZoom = Number(import.meta.env.VITE_MAX_ZOOM);
     const collections = new Map<string, any[]>();
     return {
       theme: theme,
       maxZoom: maxZoom,
       zoom: 0,
-      getJsonOptions: {
+      geoJsonOptions: {
         onEachFeature: (feature: Feature, layer: any) => {},
         pointToLayer: (feature: Feature, latlng: LatLng) => {},
       },
-      hoverPoint: useHoverPoint(),
-      clickedCircle: useClickedCircle(),
+      hoveredFeature: null as Feature | null,
+      clickedLayer: null as Feature | null,
       isMapVisible: true,
       collections: collections,
       tileSize: 1024,
-      searchCollection: spacesToCollection(),
       map: null as LMap | null,
+      searchCollectionKey: "search",
     };
   },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
-    this.getJsonOptions.onEachFeature = this.onEachFeature;
-    this.getJsonOptions.pointToLayer = (feature: Feature, latlng: LatLng) => {
+    this.geoJsonOptions.onEachFeature = this.onEachFeature;
+    this.geoJsonOptions.pointToLayer = (feature: Feature, latlng: LatLng) => {
+      if (this.zoom !== feature.properties.coords.z) {
+        return;
+      }
+
       if (
-        this.clickedCircle &&
-        this.clickedCircle.feature.properties.id === feature.properties.id
+        this.clickedLayer?.feature?.properties?.id === feature.properties.id
       ) {
         const result = circleMarker(
           latlng,
           clickedPointStyle(feature, this.zoom, this.theme.global.current.dark)
         );
-        this.clickedCircle = result;
+        this.clickedLayer = result;
         return result;
       }
 
@@ -155,19 +152,22 @@ export default {
   methods: {
     async onSetMap(res: SpacesResponse) {
       if (!res) {
-        this.searchCollection = spacesToCollection();
+        this.collections.set(this.searchCollectionKey, spacesToCollection());
         return;
       }
 
       this.zoom = res.zoom;
-      this.searchCollection = spacesToCollection(
-        res.spaces,
-        {
-          z: res.zoom,
-          x: res.latlng.lng,
-          y: res.latlng.lat,
-        },
-        true
+      this.collections.set(
+        this.searchCollectionKey,
+        spacesToCollection(
+          res.spaces,
+          {
+            z: res.zoom,
+            x: res.latlng.lng,
+            y: res.latlng.lat,
+          },
+          true
+        )
       );
       // When both zoom and latlng change, using setView alone results in zoom change without latlng.
       await this.map.setZoom(res.zoom);
@@ -176,11 +176,8 @@ export default {
     onTileLayerReady() {
       const tileLayer = this.$refs.tileLayerRef.leafletObject;
       tileLayer.on("tileunload", async ({ coords }: { coords: Coords }) => {
-        // Trigger cleanup.
-        this.collections.set(
-          this.coordsToString(coords.z, coords.x, coords.y),
-          spacesToCollection()
-        );
+        // Either trigger cleanup, or create a set without consequences.
+        this.collections.set(this.collectionID(coords), spacesToCollection());
       });
       tileLayer.on("tileloadstart", async ({ coords }: { coords: Coords }) => {
         await this.getFeatures(coords);
@@ -188,13 +185,13 @@ export default {
     },
     geoJsonObj(k: string) {
       // When using v-for, ref is a list.
-      return this.$refs[`geoJson${k}Ref`][0].leafletObject;
+      const obj = this.$refs[`geoJson-${k}-Ref`];
+      if (obj) return obj[0].leafletObject;
     },
     onResetClickPoint() {
-      if (!this.clickedCircle) return;
-      this.clickedCircle.setStyle(
+      this.clickedLayer?.setStyle(
         pointStyle(
-          this.clickedCircle.feature,
+          this.clickedLayer.feature,
           this.zoom,
           this.theme.global.current.dark
         )
@@ -210,33 +207,32 @@ export default {
         0
       );
     },
+    collectionID(coords: Coords): string {
+      return `${coords.z}-${coords.x}-${coords.y}`;
+    },
     async getFeatures(coords: Coords) {
-      const id = this.coordsToString(coords.z, coords.x, coords.y);
+      const id = this.collectionID(coords);
       const rawRes = await fetch(
         `map/${coords.z}/space_by_label_${coords.x}_${coords.y}.json`
       );
 
-      let features = [];
-      if (rawRes.status !== 404) {
-        const res = (await rawRes.json()) as SpacesResponse;
-        features = res["features"];
-      }
+      if (rawRes.status === 404) return;
 
-      this.collections.set(id, spacesToCollection(features, coords, false));
+      const res = (await rawRes.json()) as SpacesResponse;
+      this.collections.set(
+        id,
+        spacesToCollection(res["features"], coords, false)
+      );
 
       const cleanup = () => {
         if (!this.collections.has(id)) return;
 
-        if (
-          this.zoom.toString() !== id.split("-")[0] ||
-          this.collections.get(id)?.length === 0
-        ) {
-          this.geoJsonObj(id)?.clearLayers();
+        if (this.zoom !== coords.z || this.collections.get(id)?.length === 0) {
           this.collections.delete(id);
           return;
         }
 
-        setTimeout(cleanup, 1000);
+        setTimeout(cleanup, 3000);
       };
 
       setTimeout(cleanup, 3000);
@@ -257,8 +253,8 @@ export default {
     },
     highlightFeature(layer, feature: Feature) {
       if (
-        this.clickedCircle &&
-        this.clickedCircle.feature.properties.id === feature.properties.id
+        this.clickedLayer &&
+        this.clickedLayer.feature.properties.id === feature.properties.id
       ) {
         return;
       }
@@ -270,50 +266,47 @@ export default {
         )
       );
       layer.bringToFront();
-      this.hoverPoint = feature.properties;
+      this.hoveredFeature = feature;
     },
     resetHighlight(layer, feature: Feature) {
       if (
-        this.clickedCircle &&
-        this.clickedCircle.feature.properties.id === feature.properties.id
+        this.clickedLayer &&
+        this.clickedLayer.feature.properties.id === feature.properties.id
       ) {
         return;
       }
       layer.setStyle(
         pointStyle(feature, this.zoom, this.theme.global.current.dark)
       );
-      this.hoverPoint = null;
+      this.hoveredFeature = null;
     },
     onClickPoint(layer, feature: Feature) {
-      if (this.clickedCircle) {
-        this.clickedCircle.setStyle(
+      if (this.clickedLayer) {
+        this.clickedLayer.setStyle(
           pointStyle(
-            this.clickedCircle.feature,
+            this.clickedLayer.feature,
             this.zoom,
             this.theme.global.current.dark
           )
         );
       }
 
-      this.clickedCircle = layer;
-      this.hoverPoint = null;
+      this.clickedLayer = layer;
+      this.hoveredFeature = null;
       this.onCenterPoint();
-      this.clickedCircle.setStyle(
+      this.clickedLayer.setStyle(
         clickedPointStyle(
-          this.clickedCircle.feature,
+          this.clickedLayer.feature,
           this.zoom,
           this.theme.global.current.dark
         )
       );
     },
-    coordsToString(z: number, x: number, y: number) {
-      return `${z}-${x}-${y}`;
-    },
     onCenterPoint() {
       this.map?.setView(
         {
-          lat: this.clickedCircle.feature.geometry.coordinates[1],
-          lng: this.clickedCircle.feature.geometry.coordinates[0],
+          lat: this.clickedLayer.feature.geometry.coordinates[1],
+          lng: this.clickedLayer.feature.geometry.coordinates[0],
         },
         this.zoom
       );

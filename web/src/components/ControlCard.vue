@@ -72,12 +72,12 @@
           />
         </div>
         <v-divider class="mx-4 mt-4" />
-        <div v-if="hoverPoint">
-          <SpaceInfo :space="hoverPoint" />
+        <div v-if="hoveredFeature">
+          <FeatureInfo :feature="hoveredFeature" />
           Click point for actions
         </div>
-        <div v-else-if="clickedCircle">
-          <SpaceInfo :space="clickedCircle.feature.properties" />
+        <div v-else-if="clickedFeature">
+          <FeatureInfo :feature="clickedFeature" />
           <v-container class="text-center pt-1 pb-0">
             <v-row justify="center" no-gutters>
               <v-col cols="1">
@@ -110,8 +110,7 @@
                   <v-btn
                     value="scatter"
                     :disabled="
-                      loading ||
-                      !clickedCircle.feature.properties.value.hypothetical
+                      loading || !clickedFeature.properties.value.hypothetical
                     "
                     density="comfortable"
                   >
@@ -152,13 +151,12 @@
 <script lang="ts">
 import Search from "./Search.vue";
 import ThemeToggle from "./ThemeToggle.vue";
-import SpaceInfo from "./SpaceInfo.vue";
+import FeatureInfo from "./FeatureInfo.vue";
 import DiamondSearch from "./DiamondSearch.vue";
 import NeighborsPlot from "./NeighborsPlot.vue";
 import PredictionPlot from "./PredictionPlot.vue";
-import { useHoverPoint, useClickedCircle } from "@/composables/states";
 import { SpacesReponse, ScatterData } from "@/composables/spaces";
-import { searchSpaces } from "@/composables/spaces";
+import { searchSpaces, Feature } from "@/composables/spaces";
 
 interface SearchMode {
   label: string;
@@ -183,8 +181,16 @@ export default {
     PredictionPlot,
     Search,
     ThemeToggle,
-    SpaceInfo,
+    FeatureInfo,
     DiamondSearch,
+  },
+  props: {
+    hoveredFeature: {
+      type: Object as () => Feature | null,
+    },
+    clickedFeature: {
+      type: Object as () => Feature | null,
+    },
   },
   data: () => {
     const controller = new AbortController();
@@ -203,8 +209,6 @@ export default {
       loading: false,
       plotToggle: "",
       scatterData: null as ScatterData | null,
-      hoverPoint: useHoverPoint(),
-      clickedCircle: useClickedCircle(),
       shouldHideMap: false,
     };
   },
@@ -212,7 +216,6 @@ export default {
   methods: {
     resetClickPoint() {
       this.$emit("resetClickPoint");
-      this.clickedCircle = null;
     },
     async searchSpaces(type: string, e: string[]) {
       this.loading = true;
@@ -221,7 +224,7 @@ export default {
     },
   },
   watch: {
-    clickedCircle(val) {
+    clickedFeature(val) {
       this.controller.abort();
       this.controller = new AbortController();
       this.loading = false;
@@ -234,7 +237,7 @@ export default {
         this.loading = true;
         const rawRes = await fetch(
           `${import.meta.env.VITE_SERVER_URL}/neighbors/get/${
-            this.clickedCircle?.feature.properties.value.word
+            this.clickedFeature.properties.value.word
           }?with_distance=true&k=10`,
           { signal: this.controller.signal }
         );
@@ -245,7 +248,7 @@ export default {
         this.loading = true;
         const rawRes = await fetch(
           `${import.meta.env.VITE_SERVER_URL}/plot/scatter/${
-            this.clickedCircle?.feature.properties.value.word
+            this.clickedFeature.properties.value.word
           }`,
           { signal: this.controller.signal }
         );

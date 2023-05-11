@@ -61,9 +61,7 @@ const spaceToFeature = (
     type: "Feature",
     properties: {
       id: space.id,
-      zoom: coords.z,
-      tileX: coords.x,
-      tileY: coords.y,
+      coords: coords,
       isSearch: isSearch,
       value: space.value,
     },
@@ -74,22 +72,22 @@ const spaceToFeature = (
   };
 };
 
-const spaceToInfo = (point: Space): Map<string, string> => {
+const spaceToInfo = (point: SpaceValue): Map<string, string> => {
   let entries: Object;
-  if (point.value.hypothetical) {
+  if (point.hypothetical) {
     entries = {
-      Word: point.value.word,
-      "Predicted class": point.value.predicted_class,
-      "Trusted prediction": point.value.significant,
+      Word: point.word,
+      "Predicted class": point.predicted_class,
+      "Trusted prediction": point.significant,
     };
   } else {
     entries = {
-      Word: point.value.word,
-      KO: point.value.ko,
-      Label: point.value.label,
-      Product: point.value.product,
-      "Gene name": point.value.gene_name,
-      "Functional category": point.value.predicted_class,
+      Word: point.word,
+      KO: point.ko,
+      Label: point.label,
+      Product: point.product,
+      "Gene name": point.gene_name,
+      "Functional category": point.predicted_class,
     };
   }
 
@@ -107,21 +105,23 @@ interface SpacesResponse {
   zoom: Number;
 }
 
+interface SpaceValue {
+  word: string;
+  ko: string;
+  label: string;
+  product: string;
+  gene_name: string;
+  significant: boolean;
+  hypothetical: boolean;
+  predicted_class: string;
+  distance: string;
+}
+
 interface Space {
   id: string;
   x: number;
   y: number;
-  value: {
-    word: string;
-    ko: string;
-    label: string;
-    product: string;
-    gene_name: string;
-    significant: boolean;
-    hypothetical: boolean;
-    predicted_class: string;
-    distance: string;
-  };
+  value: SpaceValue;
 }
 
 interface Coords {
@@ -139,11 +139,9 @@ interface Feature {
   type: "Feature";
   properties: {
     id: string;
-    zoom: number;
-    tileX: number;
-    tileY: number;
+    coords: Coords;
     isSearch: boolean;
-    value: Object;
+    value: SpaceValue;
   };
   geometry: {
     type: string;

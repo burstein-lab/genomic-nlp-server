@@ -22,7 +22,7 @@ export default {
   },
   methods: {
     hover(item: any) {
-      const infoMap = spaceToInfo(this.data.spaces[item.dataIndex]);
+      const infoMap = spaceToInfo(this.data.spaces[item.dataIndex].value);
       return Array.from(infoMap, ([key, value]) => `${key}: ${value}`);
     },
     options() {
