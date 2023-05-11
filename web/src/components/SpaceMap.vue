@@ -196,6 +196,7 @@ export default {
           this.theme.global.current.dark
         )
       );
+      this.clickedLayer = null;
     },
     onMapReady() {
       this.map = this.$refs.mapRef.leafletObject;
