@@ -31,6 +31,15 @@
         @ready="onTileLayerReady()"
       />
       <l-geo-json
+        v-if="clickedFeature"
+        :key="`geoJson-clickerFeature-${zoom}-${theme.global.current.dark}`"
+        :geojson="{
+          type: 'FeatureCollection',
+          features: [clickedFeature],
+        }"
+        :options="geoJsonClickedOptions"
+      />
+      <l-geo-json
         v-for="[k, v] in collections"
         :key="`geoJson-${k}-${zoom}-${theme.global.current.dark}`"
         :ref="`geoJson-${k}-Ref`"
@@ -40,7 +49,7 @@
       <l-control ref="controlRef" position="topleft">
         <ControlCard
           :hoveredFeature="hoveredFeature"
-          :clickedFeature="clickedLayer?.feature"
+          :clickedFeature="clickedFeature"
           @resetClickPoint="onResetClickPoint"
           @centerPoint="onCenterPoint"
           @setMap="onSetMap"
@@ -73,6 +82,7 @@ import "leaflet/dist/leaflet.css";
 import { useTheme } from "vuetify";
 import ControlCard from "./ControlCard.vue";
 import {
+  FeatureCollection,
   SpacesResponse,
   spacesToCollection,
   Coords,
@@ -106,7 +116,7 @@ export default {
   data() {
     const theme = useTheme();
     const maxZoom = Number(import.meta.env.VITE_MAX_ZOOM);
-    const collections = new Map<string, any[]>();
+    const collections = new Map<string, FeatureCollection>();
     return {
       theme: theme,
       maxZoom: maxZoom,
@@ -115,38 +125,46 @@ export default {
         onEachFeature: (feature: Feature, layer: any) => {},
         pointToLayer: (feature: Feature, latlng: LatLng) => {},
       },
+      geoJsonClickedOptions: {
+        pointToLayer: (feature: Feature, latlng: LatLng) => {},
+      },
       hoveredFeature: null as Feature | null,
-      clickedLayer: null as Feature | null,
+      clickedFeature: null as Feature | null,
       isMapVisible: true,
       collections: collections,
       tileSize: 1024,
       map: null as LMap | null,
       searchCollectionKey: "search",
+      circleMarker: (latlng: LatLng, layer: Object): LCircleMarker => {},
+      clickedLayer: null as LCircleMarker | null,
     };
   },
   async beforeMount() {
     const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
+    this.circleMarker = circleMarker;
     this.geoJsonOptions.onEachFeature = this.onEachFeature;
     this.geoJsonOptions.pointToLayer = (feature: Feature, latlng: LatLng) => {
-      if (this.zoom !== feature.properties.coords.z) {
-        return;
+      if (this.clickedFeature?.properties?.id === feature.properties.id) {
+        this.clickedFeature = feature;
+        return null;
       }
 
-      if (
-        this.clickedLayer?.feature?.properties?.id === feature.properties.id
-      ) {
-        const result = circleMarker(
-          latlng,
-          clickedPointStyle(feature, this.zoom, this.theme.global.current.dark)
-        );
-        this.clickedLayer = result;
-        return result;
-      }
+      if (this.zoom !== feature.properties.coords.z) return null;
 
       return circleMarker(
         latlng,
         pointStyle(feature, this.zoom, this.theme.global.current.dark)
       );
+    };
+    this.geoJsonClickedOptions.pointToLayer = (
+      feature: Feature,
+      latlng: LatLng
+    ) => {
+      this.clickedLayer = circleMarker(
+        latlng,
+        clickedPointStyle(feature, this.zoom, this.theme.global.current.dark)
+      );
+      return this.clickedLayer;
     };
   },
   methods: {
@@ -177,7 +195,7 @@ export default {
       const tileLayer = this.$refs.tileLayerRef.leafletObject;
       tileLayer.on("tileunload", async ({ coords }: { coords: Coords }) => {
         // Either trigger cleanup, or create a set without consequences.
-        this.collections.set(this.collectionID(coords), spacesToCollection());
+        // this.collections.set(this.collectionID(coords), spacesToCollection());
       });
       tileLayer.on("tileloadstart", async ({ coords }: { coords: Coords }) => {
         await this.getFeatures(coords);
@@ -189,14 +207,7 @@ export default {
       if (obj) return obj[0].leafletObject;
     },
     onResetClickPoint() {
-      this.clickedLayer?.setStyle(
-        pointStyle(
-          this.clickedLayer.feature,
-          this.zoom,
-          this.theme.global.current.dark
-        )
-      );
-      this.clickedLayer = null;
+      this.clickedFeature = null;
     },
     onMapReady() {
       this.map = this.$refs.mapRef.leafletObject;
@@ -253,12 +264,6 @@ export default {
       });
     },
     highlightFeature(layer, feature: Feature) {
-      if (
-        this.clickedLayer &&
-        this.clickedLayer.feature.properties.id === feature.properties.id
-      ) {
-        return;
-      }
       layer.setStyle(
         highlightedPointStyle(
           feature,
@@ -270,44 +275,48 @@ export default {
       this.hoveredFeature = feature;
     },
     resetHighlight(layer, feature: Feature) {
-      if (
-        this.clickedLayer &&
-        this.clickedLayer.feature.properties.id === feature.properties.id
-      ) {
-        return;
-      }
       layer.setStyle(
         pointStyle(feature, this.zoom, this.theme.global.current.dark)
       );
       this.hoveredFeature = null;
+      this.clickedLayer?.bringToFront();
     },
     onClickPoint(layer, feature: Feature) {
-      if (this.clickedLayer) {
-        this.clickedLayer.setStyle(
+      if (this.clickedFeature) {
+        const id = this.clickedFeature.isSearch
+          ? this.searchCollectionKey
+          : this.collectionID(this.clickedFeature.properties.coords);
+        this.collections.get(id)?.features.push(this.clickedFeature);
+
+        const marker = this.circleMarker(
+          {
+            lat: this.clickedFeature.geometry.coordinates[1],
+            lng: this.clickedFeature.geometry.coordinates[0],
+          },
           pointStyle(
-            this.clickedLayer.feature,
+            this.clickedFeature,
             this.zoom,
             this.theme.global.current.dark
           )
         );
+        this.onEachFeature(this.clickedFeature, marker);
+        this.geoJsonObj(id)?.addLayer(marker);
       }
 
-      this.clickedLayer = layer;
+      const id = feature.isSearch
+        ? this.searchCollectionKey
+        : this.collectionID(feature.properties.coords);
+      this.collections.get(id)?.features.splice(feature);
+
+      this.clickedFeature = feature;
       this.hoveredFeature = null;
       this.onCenterPoint();
-      this.clickedLayer.setStyle(
-        clickedPointStyle(
-          this.clickedLayer.feature,
-          this.zoom,
-          this.theme.global.current.dark
-        )
-      );
     },
     onCenterPoint() {
       this.map?.setView(
         {
-          lat: this.clickedLayer.feature.geometry.coordinates[1],
-          lng: this.clickedLayer.feature.geometry.coordinates[0],
+          lat: this.clickedFeature.geometry.coordinates[1],
+          lng: this.clickedFeature.geometry.coordinates[0],
         },
         this.zoom
       );
