@@ -22,8 +22,21 @@ export default {
     },
   },
   methods: {
+    hover(item: any) {
+      return `${this.data.ticks[item.dataIndex]}: 1e${
+        Math.round((item.parsed.y + Number.EPSILON) * 1000) / 1000
+      }`;
+    },
     options() {
       return {
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (item: any) => this.hover(item),
+            },
+          },
+        },
         scales: {
           x: {
             title: {
