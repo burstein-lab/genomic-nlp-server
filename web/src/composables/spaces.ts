@@ -48,8 +48,7 @@ const clickedPointStyle = (
   zoom: number,
   isDarkTheme: boolean
 ) => {
-  const res = highlightedPointStyle(feature, zoom, isDarkTheme);
-  return res;
+  return highlightedPointStyle(feature, zoom, isDarkTheme);
 };
 
 const spaceToFeature = (
@@ -115,6 +114,7 @@ interface SpaceValue {
   hypothetical: boolean;
   predicted_class: string;
   distance: string;
+  color: string;
 }
 
 interface Space {

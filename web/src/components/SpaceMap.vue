@@ -32,7 +32,7 @@
       />
       <l-geo-json
         v-if="clickedFeature"
-        :key="`geoJson-clickerFeature-${zoom}-${theme.global.current.dark}`"
+        :key="`geoJson-clickerFeature-${zoom}-${theme.global.current.dark}-${renderGeoJsonsToggle}`"
         :geojson="{
           type: 'FeatureCollection',
           features: [clickedFeature],
@@ -134,6 +134,7 @@ export default {
       collections: collections,
       tileSize: 1024,
       map: null as LMap | null,
+      renderGeoJsonsToggle: false, // Used to force a re-render of the map
       searchCollectionKey: "search",
       circleMarker: (latlng: LatLng, layer: Object): LCircleMarker => {},
       clickedLayer: null as LCircleMarker | null,
@@ -145,11 +146,24 @@ export default {
     this.geoJsonOptions.onEachFeature = this.onEachFeature;
     this.geoJsonOptions.pointToLayer = (feature: Feature, latlng: LatLng) => {
       if (this.clickedFeature?.properties?.id === feature.properties.id) {
+        const isSearch = this.clickedFeature.properties.isSearch;
         this.clickedFeature = feature;
+        this.clickedFeature.properties.isSearch = isSearch;
         return null;
       }
 
       if (this.zoom !== feature.properties.coords.z) return null;
+
+      if (!feature.properties.isSearch) {
+        const searchFeature = this.collections
+          .get(this.searchCollectionKey)
+          ?.features?.find(
+            (f: Feature) => f.properties.id === feature.properties.id
+          );
+        if (searchFeature) {
+          return null;
+        }
+      }
 
       return circleMarker(
         latlng,
@@ -190,6 +204,7 @@ export default {
       // When both zoom and latlng change, using setView alone results in zoom change without latlng.
       await this.map.setZoom(res.zoom);
       await this.map.setView(res.latlng, res.zoom);
+      this.renderGeoJsonsToggle = !this.renderGeoJsonsToggle;
     },
     onTileLayerReady() {
       const tileLayer = this.$refs.tileLayerRef.leafletObject;
@@ -306,7 +321,15 @@ export default {
       const id = feature.isSearch
         ? this.searchCollectionKey
         : this.collectionID(feature.properties.coords);
-      this.collections.get(id)?.features.splice(feature);
+
+      if (this.collections.has(id)) {
+        const index = this.collections
+          .get(id)
+          ?.features.findIndex(
+            (f: Feature) => f.properties.id === feature.properties.id
+          );
+        this.collections.get(id)?.features.splice(index, 1);
+      }
 
       this.clickedFeature = feature;
       this.hoveredFeature = null;
