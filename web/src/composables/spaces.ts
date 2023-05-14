@@ -16,6 +16,33 @@ const spacesToCollection = (
   };
 };
 
+const searchMode = (
+  label: string,
+  type?: string,
+  emit?: string,
+  multiple: boolean = false
+): SearchMode => ({
+  label,
+  type: type ? type : label.toLowerCase(),
+  emit: emit ? emit : label.toLowerCase(),
+  multiple,
+});
+
+interface SearchMode {
+  label: string;
+  type: string;
+  emit: string;
+  multiple: boolean;
+}
+
+const searchModeToType = {
+  Space: searchMode("Space"),
+  Label: searchMode("Label"),
+  "KO / Hypo": searchMode("KO / Hypo", "word", "word", true),
+  Neighbors: searchMode("Word", "word", "neighbors"),
+  Gene: searchMode("Gene"),
+} as { [key: string]: SearchMode };
+
 const pointStyle = (feature: Feature, zoom: number, isDarkTheme: boolean) => {
   return {
     radius: zoom + 2,
@@ -156,7 +183,6 @@ interface ScatterData {
 }
 
 const searchSpaces = async (type: string, e: string[], signal) => {
-  console.log(`${import.meta.env.VITE_SERVER_URL}/${type}/get/${e.toString()}`);
   const url = new URL(
     `${import.meta.env.VITE_SERVER_URL}/${type}/get/${e.toString()}`
   );
@@ -179,5 +205,7 @@ export {
   searchSpaces,
   pointStyle,
   clickedPointStyle,
+  spaceToFeature,
   highlightedPointStyle,
+  searchModeToType,
 };

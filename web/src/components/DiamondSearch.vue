@@ -51,6 +51,12 @@ export default {
       downloadableDiamondResult: "",
     };
   },
+  beforeMount() {
+    if (this.$route.query.searchValue) {
+      this.sequence = this.$route.query.searchValue;
+      this.onSequenceSearch(this.sequence);
+    }
+  },
   emits: ["setMap", "setLoading"],
   methods: {
     downloadDiamondResult() {
@@ -72,6 +78,12 @@ export default {
     },
     async onSequenceSearch(sequence: string) {
       this.$emit("setLoading", true);
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          searchValue: sequence,
+        },
+      });
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },

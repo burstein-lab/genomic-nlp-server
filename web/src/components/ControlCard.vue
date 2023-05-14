@@ -52,23 +52,25 @@
         <v-select
           color="info"
           v-model="searchMode"
+          @update:modelValue="updateSearchMode"
           :items="[...Object.keys(searchModeToType), 'Sequence']"
           label="Search Mode"
           density="comfortable"
           hide-details
         />
-        <div v-if="searchMode">
+        <div v-if="selectedSearchMode">
           <DiamondSearch
-            v-if="searchMode === 'Sequence'"
+            v-if="selectedSearchMode === 'Sequence'"
             @setMap="(e) => $emit('setMap', e)"
             @setLoading="(e: boolean) => loading = e"
           />
           <Search
             v-else
-            :key="searchMode"
-            :label="searchModeToType[searchMode].label"
-            :type="searchModeToType[searchMode].type"
-            @search="(e: string[]) => searchSpaces(searchModeToType[searchMode].emit, e)"
+            :key="selectedSearchMode"
+            :label="searchModeToType[selectedSearchMode].label"
+            :type="searchModeToType[selectedSearchMode].type"
+            :multiple="searchModeToType[selectedSearchMode].multiple"
+            @search="(e: string[]) => searchSpaces(searchModeToType[selectedSearchMode].emit, e)"
           />
         </div>
         <v-divider class="mx-4 mt-4" />
@@ -156,23 +158,7 @@ import DiamondSearch from "./DiamondSearch.vue";
 import NeighborsPlot from "./NeighborsPlot.vue";
 import PredictionPlot from "./PredictionPlot.vue";
 import { SpacesReponse, ScatterData } from "@/composables/spaces";
-import { searchSpaces, Feature } from "@/composables/spaces";
-
-interface SearchMode {
-  label: string;
-  type: string;
-  emit: string;
-}
-
-const searchMode = (
-  label: string,
-  type?: string,
-  emit?: string
-): SearchMode => ({
-  label,
-  type: type ? type : label.toLowerCase(),
-  emit: emit ? emit : label.toLowerCase(),
-});
+import { searchSpaces, searchModeToType, Feature } from "@/composables/spaces";
 
 export default {
   name: "ControlCard",
@@ -193,34 +179,94 @@ export default {
     },
   },
   data: () => {
-    const controller = new AbortController();
     return {
       searchMode: "",
-      searchModeToType: {
-        Space: searchMode("Space"),
-        Label: searchMode("Label"),
-        "KO / Hypo": searchMode("KO / Hypo", "word", "word"),
-        Neighbors: searchMode("Word", "word", "neighbors"),
-        Gene: searchMode("Gene"),
-      } as { [key: string]: SearchMode },
+      selectedSearchMode: "",
+      searchModeToType,
       neighbors: null as string[] | null,
       barData: null as SpacesReponse | null,
-      controller: controller,
+      controller: new AbortController(),
       loading: false,
-      plotToggle: "",
+      currentPlot: "",
       scatterData: null as ScatterData | null,
       shouldHideMap: false,
     };
+  },
+  async beforeMount() {
+    this.searchMode = this.$route.query.searchMode
+      ? this.$route.query.searchMode
+      : "";
+    this.selectedSearchMode = this.searchMode;
+
+    if (this.clickedFeature && this.$route.query.plot) {
+      this.plotToggle = this.$route.query.plot;
+    }
   },
   emits: ["centerPoint", "resetClickPoint", "setMap", "setHideMap"],
   methods: {
     resetClickPoint() {
       this.$emit("resetClickPoint");
     },
-    async searchSpaces(type: string, e: string[]) {
+    async searchSpaces(type: string, e: string | string[]) {
       this.loading = true;
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          searchMode: this.selectedSearchMode,
+          searchValue: e.toString(),
+        },
+      });
       this.$emit("setMap", await searchSpaces(type, e, this.controller.signal));
       this.loading = false;
+    },
+    async updateSearchMode(val: string) {
+      this.searchMode = val;
+      await this.$router.push({
+        query: {
+          ...this.$route.query,
+          searchMode: val,
+          searchValue: "",
+        },
+      });
+      this.selectedSearchMode = this.searchMode;
+    },
+  },
+  computed: {
+    plotToggle: {
+      get() {
+        return this.currentPlot;
+      },
+      async set(val: string) {
+        this.currentPlot = val;
+        await this.$router.push({
+          query: {
+            ...this.$route.query,
+            plot: val,
+          },
+        });
+        if (val == "bar" && !this.barData) {
+          this.loading = true;
+          const rawRes = await fetch(
+            `${import.meta.env.VITE_SERVER_URL}/neighbors/get/${
+              this.clickedFeature.properties.value.word
+            }?with_distance=true&k=10`,
+            { signal: this.controller.signal }
+          );
+          this.barData = await rawRes.json();
+          this.loading = false;
+        } else if (val == "scatter" && !this.scatterData) {
+          this.loading = true;
+          const rawRes = await fetch(
+            `${import.meta.env.VITE_SERVER_URL}/plot/scatter/${
+              this.clickedFeature.properties.value.word
+            }`,
+            { signal: this.controller.signal }
+          );
+          const res = await rawRes.json();
+          this.scatterData = res;
+          this.loading = false;
+        }
+      },
     },
   },
   watch: {
@@ -231,31 +277,6 @@ export default {
       this.barData = null;
       this.scatterData = null;
       this.plotToggle = "";
-    },
-    async plotToggle(val) {
-      if (val == "bar" && !this.barData) {
-        this.loading = true;
-        const rawRes = await fetch(
-          `${import.meta.env.VITE_SERVER_URL}/neighbors/get/${
-            this.clickedFeature.properties.value.word
-          }?with_distance=true&k=10`,
-          { signal: this.controller.signal }
-        );
-        const res = await rawRes.json();
-        this.barData = res;
-        this.loading = false;
-      } else if (val == "scatter" && !this.scatterData) {
-        this.loading = true;
-        const rawRes = await fetch(
-          `${import.meta.env.VITE_SERVER_URL}/plot/scatter/${
-            this.clickedFeature.properties.value.word
-          }`,
-          { signal: this.controller.signal }
-        );
-        const res = await rawRes.json();
-        this.scatterData = res;
-        this.loading = false;
-      }
     },
   },
 };

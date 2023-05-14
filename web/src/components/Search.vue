@@ -3,6 +3,7 @@
     color="info"
     v-debounce:300ms="onInputChange"
     debounce-events="update:searchValue"
+    v-model="searchValue"
     @update:modelValue="onChoose"
     :items="items"
     :multiple="multiple"
@@ -51,12 +52,21 @@ export default {
   data: () => ({
     items: [],
     isLoading: false,
-    model: null,
-    search: null as string | null,
+    searchValue: "" as string | string[],
+    searchTerm: "",
     page: 1,
     done: false,
     controller: new AbortController(),
   }),
+  async beforeMount() {
+    if (this.multiple) {
+      this.searchValue = this.$route.query.searchValue?.split(",");
+    } else {
+      this.searchValue = this.$route.query.searchValue;
+      this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
+    }
+    await this.onInputChange(this.searchTerm);
+  },
   methods: {
     async onInputChange(value: string) {
       this.controller.abort();
@@ -64,13 +74,13 @@ export default {
       this.isLoading = true;
       this.page = 1;
       this.done = false;
-      this.search = value;
+      this.searchTerm = value;
       const res = await this.fetchItems();
       this.done = res.length === 0;
       this.items = res;
       this.isLoading = false;
     },
-    async onIntersect() {
+    async onIntersect(val: string) {
       if (this.isLoading || this.done) return;
 
       this.isLoading = true;
@@ -80,7 +90,7 @@ export default {
       this.items = [...this.items, ...res];
       this.isLoading = false;
     },
-    async onChoose(val: any) {
+    async onChoose(val: string | string[]) {
       this.isLoading = false;
       this.controller.abort();
       this.controller = new AbortController();
@@ -90,16 +100,13 @@ export default {
       const rawRes = await fetch(
         `${
           import.meta.env.VITE_SERVER_URL
-        }/${this.type.toLowerCase()}/search?filter=${this.search.toLowerCase()}&page=${
+        }/${this.type.toLowerCase()}/search?filter=${this.searchTerm.toLowerCase()}&page=${
           this.page
         }`,
         { signal: this.controller.signal }
       );
       return await rawRes.json();
     },
-  },
-  created() {
-    this.onInputChange("");
   },
 };
 </script>

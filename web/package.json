@@ -17,6 +17,7 @@
     "vue-chart-3": "^3.1.8",
     "vue-chartjs": "^5.1.0",
     "vue-debounce": "^4.0.0",
+    "vue-router": "4",
     "vuetify": "^3.1.4",
     "webfontloader": "^1.0.0"
   },

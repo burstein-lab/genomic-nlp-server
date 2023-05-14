@@ -1,7 +1,3 @@
 <template>
-  <SpaceMap />
+  <router-view></router-view>
 </template>
-
-<script setup lang="ts">
-import SpaceMap from "@/components/SpaceMap.vue";
-</script>

@@ -82,10 +82,13 @@ import "leaflet/dist/leaflet.css";
 import { useTheme } from "vuetify";
 import ControlCard from "./ControlCard.vue";
 import {
+  searchModeToType,
   FeatureCollection,
   SpacesResponse,
   spacesToCollection,
   Coords,
+  spaceToFeature,
+  searchSpaces,
   LatLng,
   pointStyle,
   clickedPointStyle,
@@ -145,16 +148,17 @@ export default {
     this.circleMarker = circleMarker;
     this.geoJsonOptions.onEachFeature = this.onEachFeature;
     this.geoJsonOptions.pointToLayer = (feature: Feature, latlng: LatLng) => {
-      if (this.clickedFeature?.properties?.id === feature.properties.id) {
-        const isSearch = this.clickedFeature.properties.isSearch;
+      if (
+        this.clickedFeature?.properties?.value?.word ===
+        feature.properties.value.word
+      ) {
         this.clickedFeature = feature;
-        this.clickedFeature.properties.isSearch = isSearch;
         return null;
       }
 
-      if (this.zoom !== feature.properties.coords.z) return null;
-
       if (!feature.properties.isSearch) {
+        if (this.zoom !== feature.properties.coords.z) return null;
+
         const searchFeature = this.collections
           .get(this.searchCollectionKey)
           ?.features?.find(
@@ -178,17 +182,35 @@ export default {
         latlng,
         clickedPointStyle(feature, this.zoom, this.theme.global.current.dark)
       );
+      this.clickedLayer.bringToFront();
       return this.clickedLayer;
     };
+
+    // Setting before search spaces in case the clicked feature is in the search results.
+    if (this.$route.query.clickedFeature) {
+      const spaces = await searchSpaces(
+        "word",
+        this.$route.query.clickedFeature,
+        new AbortController().signal
+      );
+      this.clickedFeature = spaceToFeature(spaces.spaces[0]);
+    }
+
+    if (this.$route.query.searchValue) {
+      const spaces = await searchSpaces(
+        searchModeToType[this.$route.query.searchMode].type,
+        this.$route.query.searchValue
+      );
+      await this.onSetMap(spaces, false);
+    }
   },
   methods: {
-    async onSetMap(res: SpacesResponse) {
+    async onSetMap(res: SpacesResponse, focus = true) {
       if (!res) {
         this.collections.set(this.searchCollectionKey, spacesToCollection());
         return;
       }
 
-      this.zoom = res.zoom;
       this.collections.set(
         this.searchCollectionKey,
         spacesToCollection(
@@ -201,9 +223,14 @@ export default {
           true
         )
       );
-      // When both zoom and latlng change, using setView alone results in zoom change without latlng.
-      await this.map.setZoom(res.zoom);
-      await this.map.setView(res.latlng, res.zoom);
+
+      if (focus) {
+        this.zoom = res.zoom;
+        // When both zoom and latlng change, using setView alone results in zoom change without latlng.
+        await this.map.setZoom(res.zoom);
+        await this.map.setView(res.latlng, res.zoom);
+      }
+
       this.renderGeoJsonsToggle = !this.renderGeoJsonsToggle;
     },
     onTileLayerReady() {
@@ -274,7 +301,7 @@ export default {
           this.resetHighlight(layer, feature);
         },
         click: () => {
-          this.onClickPoint(layer, feature);
+          this.onClickPoint(feature);
         },
       });
     },
@@ -296,9 +323,9 @@ export default {
       this.hoveredFeature = null;
       this.clickedLayer?.bringToFront();
     },
-    onClickPoint(layer, feature: Feature) {
-      if (this.clickedFeature) {
-        const id = this.clickedFeature.isSearch
+    async onClickPoint(feature: Feature) {
+      if (this.clickedFeature?.properties?.coords) {
+        const id = this.clickedFeature.properties.isSearch
           ? this.searchCollectionKey
           : this.collectionID(this.clickedFeature.properties.coords);
         this.collections.get(id)?.features.push(this.clickedFeature);
@@ -348,6 +375,14 @@ export default {
   watch: {
     zoom(value: number) {
       console.log(value);
+    },
+    clickedFeature(value: Feature) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          clickedFeature: value ? value.properties.value.word : "",
+        },
+      });
     },
   },
 };
