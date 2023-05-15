@@ -25,7 +25,11 @@
     label="Upload file"
     hide-details
   />
-  <v-btn v-if="downloadableDiamondResult" @click="downloadDiamondResult">
+  <v-btn
+    v-if="downloadableDiamondResult"
+    @click="downloadDiamondResult"
+    color="info"
+  >
     Download diamond result
   </v-btn>
 </template>
