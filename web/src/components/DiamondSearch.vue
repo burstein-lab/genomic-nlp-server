@@ -12,8 +12,8 @@
     rows="3"
     row-height="30"
     shaped
-    append-icon="mdi-send"
-    @click:append="onSequenceSearch(sequence)"
+    :append-icon="loading ? 'mdi-close' : 'mdi-send'"
+    @click:append="loading ? onCancelSearch() : onSequenceSearch(sequence)"
     density="comfortable"
     hide-details
   />
@@ -53,6 +53,7 @@ export default {
       shouldShowMap: true,
       apiUrl: import.meta.env.VITE_SERVER_URL,
       downloadableDiamondResult: "",
+      controller: new AbortController(),
     };
   },
   beforeMount() {
@@ -63,9 +64,14 @@ export default {
   },
   emits: ["setMap", "setLoading"],
   methods: {
+    onCancelSearch() {
+      this.controller.abort();
+      this.controller = new AbortController();
+      this.loading = false;
+    },
     downloadDiamondResult() {
       // credit: https://www.bitdegree.org/learn/javascript-download
-      let filename = "file.tsv";
+      let filename = "result.tsv";
       let element = document.createElement("a");
       element.setAttribute(
         "href",
@@ -81,7 +87,7 @@ export default {
       document.body.removeChild(element);
     },
     async onSequenceSearch(sequence: string) {
-      this.$emit("setLoading", true);
+      this.loading = true;
       this.$router.push({
         query: {
           ...this.$route.query,
@@ -92,6 +98,7 @@ export default {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sequence }),
+        signal: this.controller.signal,
       };
       const url = new URL(`${this.diamondUrl}diamond`);
       const rawRes = await fetch(url.href, requestOptions);
@@ -123,10 +130,13 @@ export default {
       }
 
       this.downloadableDiamondResult = result;
-      this.$emit("setLoading", false);
+      this.loading = false;
     },
   },
   watch: {
+    loading(val) {
+      this.$emit("setLoading", val);
+    },
     sequenceFile(val) {
       if (!val) return;
 
