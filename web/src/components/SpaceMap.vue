@@ -132,7 +132,7 @@ export default {
         pointToLayer: (feature: Feature, latlng: LatLng) => {},
       },
       hoveredFeature: null as Feature | null,
-      clickedFeature: null as Feature | null,
+      _clickedFeature: undefined as Feature | null,
       isMapVisible: true,
       collections: collections,
       tileSize: 1024,
@@ -194,6 +194,8 @@ export default {
         new AbortController().signal
       );
       this.clickedFeature = spaceToFeature(spaces.spaces[0]);
+    } else {
+      this.clickedFeature = null;
     }
 
     if (this.$route.query.searchValue) {
@@ -372,17 +374,25 @@ export default {
       );
     },
   },
+  computed: {
+    clickedFeature: {
+      get() {
+        return this._clickedFeature;
+      },
+      set(value: Feature | null) {
+        this._clickedFeature = value;
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            clickedFeature: value ? value.properties.value.word : "",
+          },
+        });
+      },
+    },
+  },
   watch: {
     zoom(value: number) {
       console.log(value);
-    },
-    clickedFeature(value: Feature) {
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          clickedFeature: value ? value.properties.value.word : "",
-        },
-      });
     },
   },
 };

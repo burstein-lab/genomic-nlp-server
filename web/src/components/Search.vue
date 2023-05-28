@@ -52,7 +52,7 @@ export default {
   data: () => ({
     items: [],
     isLoading: false,
-    searchValue: "" as string | string[],
+    searchValue: null as string | string[],
     searchTerm: "",
     page: 1,
     done: false,
@@ -60,9 +60,13 @@ export default {
   }),
   async beforeMount() {
     if (this.multiple) {
-      this.searchValue = this.$route.query.searchValue?.split(",");
+      this.searchValue = this.$route.query.searchValue
+        ? this.$route.query.searchValue.split(",")
+        : null;
     } else {
-      this.searchValue = this.$route.query.searchValue;
+      this.searchValue = this.$route.query.searchValue
+        ? this.$route.query.searchValue
+        : null;
       this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
     }
     await this.onInputChange(this.searchTerm);

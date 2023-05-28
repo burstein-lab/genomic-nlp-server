@@ -27,12 +27,12 @@
             <v-btn
               @click="
                 {
-                  $router.push({ query: {} }); // Reset URL.
                   resetClickPoint();
                   shouldHideMap = false;
                   $emit('setHideMap', false);
                   $emit('setMap', null);
                   searchMode = '';
+                  $router.push({ query: {} }); // Reset URL.
                 }
               "
               color="info"
@@ -107,11 +107,15 @@
                   density="comfortable"
                   size="small"
                 >
-                  <v-btn value="bar" :disabled="loading" density="comfortable">
+                  <v-btn
+                    value="neighbors"
+                    :disabled="loading"
+                    density="comfortable"
+                  >
                     Neighbors
                   </v-btn>
                   <v-btn
-                    value="scatter"
+                    value="predictions"
                     :disabled="
                       loading || !clickedFeature.properties.value.hypothetical
                     "
@@ -131,11 +135,11 @@
             </v-row>
           </v-container>
           <NeighborsPlot
-            v-if="plotToggle == 'bar' && barData"
+            v-if="plotToggle == 'neighbors' && barData"
             :data="barData"
           />
           <PredictionPlot
-            v-else-if="plotToggle == 'scatter' && scatterData"
+            v-else-if="plotToggle == 'predictions' && scatterData"
             :data="scatterData"
           />
         </div>
@@ -201,10 +205,6 @@ export default {
       ? this.$route.query.searchMode
       : "";
     this.selectedSearchMode = this.searchMode;
-
-    if (this.clickedFeature && this.$route.query.plot) {
-      this.plotToggle = this.$route.query.plot;
-    }
   },
   emits: ["centerPoint", "resetClickPoint", "setMap", "setHideMap"],
   methods: {
@@ -245,10 +245,13 @@ export default {
         await this.$router.push({
           query: {
             ...this.$route.query,
+            clickedFeature: this.clickedFeature?.properties?.value?.word
+              ? this.clickedFeature?.properties?.value?.word
+              : "",
             plot: val,
           },
         });
-        if (val == "bar" && !this.barData) {
+        if (val == "neighbors" && !this.barData) {
           this.loading = true;
           const rawRes = await fetch(
             `${import.meta.env.VITE_SERVER_URL}/neighbors/get/${
@@ -258,7 +261,7 @@ export default {
           );
           this.barData = await rawRes.json();
           this.loading = false;
-        } else if (val == "scatter" && !this.scatterData) {
+        } else if (val == "predictions" && !this.scatterData) {
           this.loading = true;
           const rawRes = await fetch(
             `${import.meta.env.VITE_SERVER_URL}/plot/scatter/${
@@ -274,7 +277,13 @@ export default {
     },
   },
   watch: {
-    clickedFeature(val) {
+    clickedFeature(newVal, oldVal) {
+      if (oldVal === undefined && newVal && this.$route.query.plot) {
+        // Only happens on first load. After that, oldVal is either set, or null.
+        this.plotToggle = this.$route.query.plot;
+        return;
+      }
+
       this.controller.abort();
       this.controller = new AbortController();
       this.loading = false;
