@@ -36,7 +36,7 @@
           icon="mdi-alert-outline"
           color="error"
           density="compact"
-          text="No significat hit was found in the DB."
+          text="No significat hit was found in the database."
         ></v-alert>
         <v-btn v-else @click="downloadDiamondResult" color="info">
           Download diamond result
