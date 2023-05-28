@@ -64,7 +64,7 @@ jobs:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
       - uses: google-github-actions/setup-gcloud@v0
       # Delete all but the latest image
-      - run: gcloud artifacts --project genomic-nlp docker images list --include-tags us-central1-docker.pkg.dev/genomic-nlp/cloudrun | awk '$3 ~ !/^latest$/' | awk '{print $1"@"$2}' | xargs -L1 gcloud artifacts docker images delete --async --delete-tags --quiet
+      - run: gcloud artifacts --project genomic-nlp docker images list --include-tags us-central1-docker.pkg.dev/genomic-nlp/cloudrun | awk '$3 !~ /^latest$/' | awk '{print $1"@"$2}' | xargs -L1 gcloud artifacts docker images delete --async --delete-tags --quiet
 
   create-map:
     runs-on: ubuntu-latest
