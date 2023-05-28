@@ -27,6 +27,7 @@
             <v-btn
               @click="
                 {
+                  $router.push({ query: {} }); // Reset URL.
                   resetClickPoint();
                   shouldHideMap = false;
                   $emit('setHideMap', false);
