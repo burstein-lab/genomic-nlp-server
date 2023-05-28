@@ -25,13 +25,26 @@
     label="Upload file"
     hide-details
   />
-  <v-btn
-    v-if="downloadableDiamondResult"
-    @click="downloadDiamondResult"
-    color="info"
+  <v-container
+    v-if="downloadableDiamondResult !== null && !loading"
+    class="ps-0 pe-0 pb-0"
   >
-    Download diamond result
-  </v-btn>
+    <v-row>
+      <v-col cols="11">
+        <v-alert
+          v-if="downloadableDiamondResult === ''"
+          icon="mdi-alert-outline"
+          color="error"
+          density="compact"
+          text="No significat hit was found in the DB."
+        ></v-alert>
+        <v-btn v-else @click="downloadDiamondResult" color="info">
+          Download diamond result
+        </v-btn>
+      </v-col>
+      <v-col cols="1"></v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -52,7 +65,7 @@ export default {
       sequence: "",
       shouldShowMap: true,
       apiUrl: import.meta.env.VITE_SERVER_URL,
-      downloadableDiamondResult: "",
+      downloadableDiamondResult: null as string | null,
       controller: new AbortController(),
     };
   },
@@ -87,6 +100,7 @@ export default {
       document.body.removeChild(element);
     },
     async onSequenceSearch(sequence: string) {
+      this.downloadableDiamondResult = null;
       this.loading = true;
       this.$router.push({
         query: {
@@ -103,6 +117,12 @@ export default {
       const url = new URL(`${this.diamondUrl}diamond`);
       const rawRes = await fetch(url.href, requestOptions);
       const res = await rawRes.json();
+      if (!res["out"]) {
+        // No significat hit was found in the DB.
+        this.downloadableDiamondResult = "";
+        this.loading = false;
+        return;
+      }
       // for each line in the output, split on tab and take the second element.
       const out = res["out"].trim().split("\n");
       const ids = out.map((line: string) => line.split("\t")[1]);
