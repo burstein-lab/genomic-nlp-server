@@ -53,7 +53,7 @@
           color="info"
           v-model="searchMode"
           @update:modelValue="updateSearchMode"
-          :items="[...Object.keys(searchModeToType), 'Sequence']"
+          :items="searchModes"
           label="Search Mode"
           density="comfortable"
           hide-details
@@ -179,9 +179,12 @@ export default {
     },
   },
   data: () => {
+    const searchModes = [...Object.keys(searchModeToType)];
+    searchModes.splice(1, 0, "Sequence");
     return {
       searchMode: "",
       selectedSearchMode: "",
+      searchModes: searchModes,
       searchModeToType,
       neighbors: null as string[] | null,
       barData: null as SpacesReponse | null,

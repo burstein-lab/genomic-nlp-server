@@ -36,11 +36,11 @@ interface SearchMode {
 }
 
 const searchModeToType = {
-  Space: searchMode("Space"),
-  Label: searchMode("Label"),
-  "KO / Hypo": searchMode("KO / Hypo", "word", "word", true),
+  "Kegg KO": searchMode("Space"),
+  "Functional Category": searchMode("Label"),
+  "Model Word": searchMode("KO / Hypo", "word", "word", true),
   Neighbors: searchMode("Word", "word", "neighbors"),
-  Gene: searchMode("Gene"),
+  "Gene Name": searchMode("Gene"),
 } as { [key: string]: SearchMode };
 
 const pointStyle = (feature: Feature, zoom: number, isDarkTheme: boolean) => {
