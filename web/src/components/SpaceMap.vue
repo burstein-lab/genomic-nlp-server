@@ -22,7 +22,7 @@
       <l-tile-layer
         v-if="isMapVisible"
         ref="tileLayerRef"
-        url="map/{z}/space_by_label_{x}_{y}.png"
+        :url="`${publicURL}map/{z}/space_by_label_{x}_{y}.png`"
         layer-type="base"
         name="OpenStreetMap"
         :max-zoom="maxZoom"
@@ -136,6 +136,7 @@ export default {
       isMapVisible: true,
       collections: collections,
       tileSize: 1024,
+      publicURL: import.meta.env.VITE_PUBLIC_URL,
       map: null as LMap | null,
       renderGeoJsonsToggle: false, // Used to force a re-render of the map
       searchCollectionKey: "search",
@@ -269,7 +270,7 @@ export default {
     async getFeatures(coords: Coords) {
       const id = this.collectionID(coords);
       const rawRes = await fetch(
-        `map/${coords.z}/space_by_label_${coords.x}_${coords.y}.json`
+        `${this.publicURL}map/${coords.z}/space_by_label_${coords.x}_${coords.y}.json`
       );
 
       if (rawRes.status === 404) return;
