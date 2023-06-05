@@ -49,6 +49,7 @@
 
 <script lang="ts">
 import { searchSpaces } from "@/composables/spaces";
+import { downloadTSVFile } from "@/composables/utils";
 
 export default {
   name: "DiamondSearch",
@@ -84,21 +85,7 @@ export default {
       this.loading = false;
     },
     downloadDiamondResult() {
-      // credit: https://www.bitdegree.org/learn/javascript-download
-      let filename = "result.tsv";
-      let element = document.createElement("a");
-      element.setAttribute(
-        "href",
-        "data:application/json;charset=utf-8," +
-          encodeURIComponent(this.downloadableDiamondResult)
-      );
-      element.setAttribute("download", filename);
-
-      element.style.display = "none";
-      document.body.appendChild(element);
-
-      element.click();
-      document.body.removeChild(element);
+      downloadTSVFile("sequence.tsv", this.downloadableDiamondResult);
     },
     async onSequenceSearch(sequence: string) {
       if (!sequence) {

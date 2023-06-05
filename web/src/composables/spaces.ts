@@ -199,6 +199,7 @@ export type {
   LatLng,
   SpacesResponse,
   ScatterData,
+  SpaceValue,
 };
 export {
   spacesToCollection,
