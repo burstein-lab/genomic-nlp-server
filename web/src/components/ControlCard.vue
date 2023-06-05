@@ -136,6 +136,7 @@
           </v-container>
           <NeighborsPlot
             v-if="plotToggle == 'neighbors' && barData"
+            @click="(e) => onNeighborsClick(e)"
             :data="barData"
           />
           <PredictionPlot
@@ -206,10 +207,21 @@ export default {
       : "";
     this.selectedSearchMode = this.searchMode;
   },
-  emits: ["centerPoint", "resetClickPoint", "setMap", "setHideMap"],
+  emits: [
+    "centerPoint",
+    "setClickPoint",
+    "resetClickPoint",
+    "setMap",
+    "setHideMap",
+  ],
   methods: {
     resetClickPoint() {
       this.$emit("resetClickPoint");
+    },
+    async onNeighborsClick(word: string) {
+      this.loading = true;
+      this.$emit("setClickPoint", word);
+      this.loading = false;
     },
     async searchSpaces(type: string, e: string | string[]) {
       this.loading = true;

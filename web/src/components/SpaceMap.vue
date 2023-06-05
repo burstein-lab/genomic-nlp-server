@@ -50,6 +50,7 @@
         <ControlCard
           :hoveredFeature="hoveredFeature"
           :clickedFeature="clickedFeature"
+          @setClickPoint="onSetClickPoint"
           @resetClickPoint="onResetClickPoint"
           @centerPoint="onCenterPoint"
           @setMap="onSetMap"
@@ -189,12 +190,7 @@ export default {
 
     // Setting before search spaces in case the clicked feature is in the search results.
     if (this.$route.query.clickedFeature) {
-      const spaces = await searchSpaces(
-        "word",
-        this.$route.query.clickedFeature,
-        new AbortController().signal
-      );
-      this.clickedFeature = spaceToFeature(spaces.spaces[0]);
+      this.onSetClickPoint(this.$route.query.clickedFeature);
     } else {
       this.clickedFeature = null;
     }
@@ -208,6 +204,14 @@ export default {
     }
   },
   methods: {
+    async onSetClickPoint(word: string) {
+      const spaces = await searchSpaces(
+        "word",
+        word,
+        new AbortController().signal
+      );
+      this.clickedFeature = spaceToFeature(spaces.spaces[0]);
+    },
     async onSetMap(res: SpacesResponse, focus = true) {
       if (!res) {
         this.collections.set(this.searchCollectionKey, spacesToCollection());

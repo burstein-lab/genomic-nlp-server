@@ -20,6 +20,7 @@ export default {
       required: true,
     },
   },
+  emits: ["click"],
   methods: {
     hover(item: any) {
       const infoMap = spaceToInfo(this.data.spaces[item.dataIndex].value);
@@ -37,6 +38,21 @@ export default {
               footer: (items: any) => this.hover(items[0]),
             },
           },
+        },
+        onClick: (e: ChartEvent) => {
+          // Found example in https://masteringjs.io/tutorials/chartjs/onclick-bar-chart
+          const res = e.chart.getElementsAtEventForMode(
+            e,
+            "nearest",
+            { intersect: true },
+            true
+          );
+
+          if (res.length === 0) {
+            return;
+          }
+
+          this.$emit("click", this.data.spaces[res[0].index].value.word);
         },
       };
     },
@@ -59,4 +75,8 @@ export default {
     },
   },
 };
+
+interface ChartEvent extends Event {
+  chart: Chart;
+}
 </script>
