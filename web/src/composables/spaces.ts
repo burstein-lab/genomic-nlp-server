@@ -19,12 +19,12 @@ const spacesToCollection = (
 const searchMode = (
   label: string,
   type: string,
-  emit: string,
+  emit?: string,
   multiple: boolean = false
 ): SearchMode => ({
   label,
   type: type,
-  emit: emit,
+  emit: emit ? emit : type,
   multiple,
 });
 
@@ -36,11 +36,12 @@ interface SearchMode {
 }
 
 const searchModeToType = {
-  "Kegg KO": searchMode("Kegg KO", "space", "space"),
-  "Functional Category": searchMode("Functional category", "label", "label"),
-  "Model Word": searchMode("KO / Hypo", "word", "word", true),
+  "Kegg KO": searchMode("Kegg KO", "space"),
+  "Functional Category": searchMode("Functional category", "label"),
+  "Gene Description": searchMode("Gene Description", "gene_product"),
+  "Gene Name": searchMode("Gene Name", "gene"),
   Neighbors: searchMode("Word", "word", "neighbors"),
-  "Gene Name": searchMode("Gene Name", "gene", "gene"),
+  "Model Word": searchMode("KO / Hypo", "word", "word", true),
 } as { [key: string]: SearchMode };
 
 const pointStyle = (feature: Feature, zoom: number, isDarkTheme: boolean) => {
