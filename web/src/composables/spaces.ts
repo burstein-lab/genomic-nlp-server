@@ -104,7 +104,7 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
     entries = {
       Word: point.word,
       "Predicted class": point.predicted_class,
-      "Trusted prediction": point.significant,
+      "Prediction confidence": point.significant ? "high" : "low",
     };
   } else {
     entries = {
