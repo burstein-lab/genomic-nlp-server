@@ -26,17 +26,17 @@
     hide-details
   />
   <v-container
-    v-if="downloadableDiamondResult !== null && !loading"
+    v-if="(downloadableDiamondResult || alertText) && !loading"
     class="ps-0 pe-0 pb-0"
   >
     <v-row>
       <v-col cols="11">
         <v-alert
-          v-if="downloadableDiamondResult === ''"
+          v-if="alertText"
           icon="mdi-alert-outline"
           color="error"
           density="compact"
-          text="No significat hit was found in the database."
+          :text="alertText"
         ></v-alert>
         <v-btn v-else @click="downloadDiamondResult" color="info">
           Download diamond result
@@ -65,7 +65,8 @@ export default {
       sequence: "",
       shouldShowMap: true,
       apiUrl: import.meta.env.VITE_SERVER_URL,
-      downloadableDiamondResult: null as string | null,
+      downloadableDiamondResult: "",
+      alertText: "",
       controller: new AbortController(),
     };
   },
@@ -100,7 +101,19 @@ export default {
       document.body.removeChild(element);
     },
     async onSequenceSearch(sequence: string) {
-      this.downloadableDiamondResult = null;
+      if (!sequence) {
+        this.alertText = "Please enter a valid FASTA sequence.";
+        return;
+      }
+
+      if (sequence[0] !== ">") {
+        this.alertText =
+          "Sequence must begin with an identifier that starts with '>'.";
+        return;
+      }
+
+      this.downloadableDiamondResult = "";
+      this.alertText = "";
       this.loading = true;
       this.$router.push({
         query: {
@@ -119,7 +132,7 @@ export default {
       const res = await rawRes.json();
       if (!res["out"]) {
         // No significat hit was found in the DB.
-        this.downloadableDiamondResult = "";
+        this.alertText = "No significat hit was found in the database.";
         this.loading = false;
         return;
       }
