@@ -250,7 +250,7 @@ export default {
         // Either trigger cleanup, or create a set without consequences.
         // this.collections.set(this.collectionID(coords), spacesToCollection());
       });
-      tileLayer.on("tileloadstart", async ({ coords }: { coords: Coords }) => {
+      tileLayer.on("tileload", async ({ coords }: { coords: Coords }) => {
         await this.getFeatures(coords);
       });
     },
