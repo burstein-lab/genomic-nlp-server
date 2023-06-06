@@ -40,7 +40,7 @@
         :options="geoJsonClickedOptions"
       />
       <l-geo-json
-        v-for="[k, v] in collections"
+        v-for="[k, v] in isMapVisible ? collections : []"
         :key="`geoJson-${k}-${zoom}-${theme.global.current.dark}`"
         :ref="`geoJson-${k}-Ref`"
         :geojson="v"
