@@ -25,21 +25,39 @@
     label="Upload file"
     hide-details
   />
-  <v-container
-    v-if="(downloadableDiamondResult || alertText) && !loading"
-    class="ps-0 pe-0 pb-0"
-  >
+  <v-container v-if="alertText" class="pa-0 pe-0 pb-0">
     <v-row>
       <v-col cols="11">
         <v-alert
-          v-if="alertText"
           icon="mdi-alert-outline"
           color="error"
           density="compact"
           :text="alertText"
         ></v-alert>
-        <v-btn v-else @click="downloadDiamondResult" color="info">
-          Download diamond result
+      </v-col>
+      <v-col cols="1"></v-col>
+    </v-row>
+  </v-container>
+  <v-container v-else-if="downloadableDiamondResult" class="pa-0">
+    <v-row v-for="(item, index) in diamondResults" dense>
+      <v-divider v-if="index !== 0" class="ms-4 me-12" />
+      <v-col cols="11">
+        <v-list lines="one">
+          <v-list-item subtitle="Query" :title="item.query"></v-list-item>
+          <v-list-item subtitle="Word" :title="item.word"></v-list-item>
+          <v-list-item subtitle="E-value" :title="item.eValue"></v-list-item>
+          <v-list-item
+            subtitle="Percent Identical"
+            :title="item.identicalAminoAcidsPercentage"
+          ></v-list-item>
+        </v-list>
+      </v-col>
+      <v-col></v-col>
+    </v-row>
+    <v-row dense>
+      <v-col cols="11">
+        <v-btn @click="downloadDiamondResult" color="info">
+          Download diamond results
         </v-btn>
       </v-col>
       <v-col cols="1"></v-col>
@@ -48,7 +66,7 @@
 </template>
 
 <script lang="ts">
-import { searchSpaces } from "@/composables/spaces";
+import { searchSpaces, Space } from "@/composables/spaces";
 import { downloadTSVFile } from "@/composables/utils";
 
 export default {
@@ -69,6 +87,7 @@ export default {
       downloadableDiamondResult: "",
       alertText: "",
       controller: new AbortController(),
+      diamondResults: null as Array<DiamondResult> | null,
     };
   },
   beforeMount() {
@@ -125,28 +144,53 @@ export default {
       }
       // for each line in the output, split on tab and take the second element.
       const out = res["out"].trim().split("\n");
+      this.diamondResults = new Array();
+      for (const line of out) {
+        const [query, word, eValue, identicalAminoAcidsPercentage] =
+          line.split("\t");
+        this.diamondResults.push({
+          query,
+          word,
+          eValue,
+          identicalAminoAcidsPercentage,
+        });
+      }
+
       const ids = out.map((line: string) => line.split("\t")[1]);
       const searchResult = await searchSpaces("word", ids);
       this.$emit("setMap", searchResult);
-      const spaces = searchResult.spaces;
+      const wordToSpace = new Map<string, Space>();
+      for (const space of searchResult.spaces) {
+        wordToSpace.set(space.value.word, space);
+      }
       let result =
         "query\tword\te_value\tidentical_amino_acids_percentage\tko\tlabel\tproduct\tgene_name\tsignificant\tpredicted_class\n";
 
-      for (let i = 0; i < spaces.length; i++) {
+      for (const diamond of this.diamondResults) {
         result +=
-          out[i] +
+          diamond.query +
           "\t" +
-          (spaces[i].value.ko +
+          diamond.word +
+          "\t" +
+          diamond.eValue +
+          "\t" +
+          diamond.identicalAminoAcidsPercentage;
+
+        const space = wordToSpace.get(diamond.word);
+        result +=
+          "\t" +
+          (space.value.ko +
             "\t" +
-            spaces[i].value.label +
+            space.value.label +
             "\t" +
-            spaces[i].value.product +
+            space.value.product +
             "\t" +
-            spaces[i].value.gene_name +
+            space.value.gene_name +
             "\t" +
-            spaces[i].value.significant +
+            space.value.significant +
             "\t" +
-            spaces[i].value.predicted_class);
+            space.value.predicted_class) +
+          "\n";
       }
 
       this.downloadableDiamondResult = result;
@@ -168,4 +212,11 @@ export default {
     },
   },
 };
+
+interface DiamondResult {
+  query: string;
+  word: string;
+  eValue: string;
+  identicalAminoAcidsPercentage: string;
+}
 </script>

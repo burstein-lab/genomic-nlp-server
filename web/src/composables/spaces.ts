@@ -183,7 +183,11 @@ interface ScatterData {
   ticks: string[];
 }
 
-const searchSpaces = async (type: string, e: string[], signal) => {
+const searchSpaces = async (
+  type: string,
+  e: string[],
+  signal
+): Promise<SpacesResponse> => {
   const url = new URL(
     `${import.meta.env.VITE_SERVER_URL}/${type}/get/${e.toString()}`
   );
