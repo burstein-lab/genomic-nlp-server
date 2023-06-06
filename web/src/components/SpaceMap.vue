@@ -246,9 +246,8 @@ export default {
     },
     onTileLayerReady() {
       const tileLayer = this.$refs.tileLayerRef.leafletObject;
-      tileLayer.on("tileunload", async ({ coords }: { coords: Coords }) => {
-        // Either trigger cleanup, or create a set without consequences.
-        // this.collections.set(this.collectionID(coords), spacesToCollection());
+      tileLayer.on("tileerror", async ({ coords }: { coords: Coords }) => {
+        await this.getFeatures(coords);
       });
       tileLayer.on("tileload", async ({ coords }: { coords: Coords }) => {
         await this.getFeatures(coords);
