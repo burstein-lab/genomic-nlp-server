@@ -14,4 +14,8 @@ const downloadTSVFile = (filename: string, content: string) => {
   document.body.removeChild(element);
 };
 
-export { downloadTSVFile };
+function truncate(str: string, n: number) {
+  return str.length > n ? str.slice(0, n - 1) + "..." : str;
+}
+
+export { downloadTSVFile, truncate };
