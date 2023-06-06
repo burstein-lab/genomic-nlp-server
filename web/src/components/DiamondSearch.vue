@@ -70,7 +70,7 @@
 
 <script lang="ts">
 import { searchSpaces, Space } from "@/composables/spaces";
-import { downloadTSVFile, truncate } from "@/composables/utils";
+import { downloadFile, truncate } from "@/composables/utils";
 
 export default {
   name: "DiamondSearch",
@@ -111,7 +111,7 @@ export default {
       return truncate(">" + sequence.split("\n")[0], 25);
     },
     downloadDiamondResult() {
-      downloadTSVFile("sequence.tsv", this.downloadableDiamondResult);
+      downloadFile("sequence.tsv", this.downloadableDiamondResult);
     },
     async onSequenceSearch(sequence: string) {
       if (!sequence) {

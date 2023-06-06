@@ -19,7 +19,7 @@ import {
   Space,
   SpacesReponse,
 } from "@/composables/spaces";
-import { downloadTSVFile } from "@/composables/utils";
+import { downloadFile } from "@/composables/utils";
 
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
@@ -42,7 +42,7 @@ export default {
       return Array.from(infoMap, ([key, value]) => `${key}: ${value}`);
     },
     downloadGraphData() {
-      downloadTSVFile(
+      downloadFile(
         "graph_data.tsv",
         this.spacesToTSV(this.data.spaces.map((space: Space) => space.value))
       );

@@ -76,30 +76,20 @@
         </div>
         <v-divider class="mx-4 mt-4" />
         <div v-if="hoveredFeature">
-          <FeatureInfo :feature="hoveredFeature" />
+          <FeatureInfo :feature="hoveredFeature" :actionable="false" />
           Click point for actions
         </div>
         <div v-else-if="clickedFeature">
-          <FeatureInfo :feature="clickedFeature" />
-          <v-container class="text-center pt-1 pb-0">
-            <v-row justify="center" no-gutters>
-              <v-col cols="1">
-                <v-tooltip text="Move to point" location="bottom">
-                  <template v-slot:activator="{ props }">
-                    <v-btn-group density="comfortable" v-bind="props">
-                      <v-btn
-                        color="info"
-                        icon
-                        density="comfortable"
-                        @click="$emit('centerPoint')"
-                      >
-                        <v-icon>mdi-target</v-icon>
-                      </v-btn>
-                    </v-btn-group>
-                  </template>
-                </v-tooltip>
-              </v-col>
-              <v-col cols="10">
+          <FeatureInfo
+            :feature="clickedFeature"
+            :actionable="true"
+            @downloadSequence="downloadSequence"
+            @centerPoint="$emit('centerPoint')"
+            @resetClickPoint="resetClickPoint"
+          />
+          <v-container class="text-center pt-1 py-0">
+            <v-row justify="center">
+              <v-col >
                 <v-btn-toggle
                   color="info"
                   variant="outlined"
@@ -124,13 +114,6 @@
                     Gene Predictions
                   </v-btn>
                 </v-btn-toggle>
-              </v-col>
-              <v-col cols="1">
-                <v-btn-group density="comfortable">
-                  <v-btn color="grey" icon dark @click="resetClickPoint">
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
-                </v-btn-group>
               </v-col>
             </v-row>
           </v-container>
@@ -164,6 +147,7 @@ import DiamondSearch from "./DiamondSearch.vue";
 import NeighborsPlot from "./NeighborsPlot.vue";
 import PredictionPlot from "./PredictionPlot.vue";
 import { SpacesReponse, ScatterData } from "@/composables/spaces";
+import { downloadFile } from "@/composables/utils";
 import { searchSpaces, searchModeToType, Feature } from "@/composables/spaces";
 
 export default {
@@ -217,6 +201,22 @@ export default {
   methods: {
     resetClickPoint() {
       this.$emit("resetClickPoint");
+    },
+    async downloadSequence() {
+      this.loading = true;
+      const rawRes = await fetch(
+        `${import.meta.env.VITE_PUBLIC_URL}word_to_fasta/${
+          this.clickedFeature?.properties?.value?.word
+        }.faa`,
+        { signal: this.controller.signal }
+      );
+      console.log(await rawRes.text());
+      downloadFile(
+        `${this.clickedFeature?.properties?.value?.word}.faa`,
+        await rawRes.text(),
+        "text"
+      );
+      this.loading = false;
     },
     async onNeighborsClick(word: string) {
       this.loading = true;

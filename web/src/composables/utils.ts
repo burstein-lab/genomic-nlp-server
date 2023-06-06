@@ -1,9 +1,9 @@
-const downloadTSVFile = (filename: string, content: string) => {
+const downloadFile = (filename: string, content: string, contentType: string="text/tsv") => {
   // credit: https://www.bitdegree.org/learn/javascript-download
   let element = document.createElement("a");
   element.setAttribute(
     "href",
-    "data:text/tsv;charset=utf-8," + encodeURIComponent(content)
+    "data:" + contentType + ";charset=utf-8," + encodeURIComponent(content)
   );
   element.setAttribute("download", filename);
 
@@ -18,4 +18,4 @@ function truncate(str: string, n: number) {
   return str.length > n ? str.slice(0, n - 1) + "..." : str;
 }
 
-export { downloadTSVFile, truncate };
+export { downloadFile, truncate };
