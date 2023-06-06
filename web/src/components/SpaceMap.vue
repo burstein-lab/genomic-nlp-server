@@ -53,7 +53,12 @@
           @setClickPoint="onSetClickPoint"
           @resetClickPoint="onResetClickPoint"
           @centerPoint="onCenterPoint"
-          @setMap="onSetMap"
+          @setMap="
+            (res) => {
+              onSetMap(res);
+              focusSpaceResponse(res);
+            }
+          "
           @setHideMap="(shouldHideMap) => (isMapVisible = !shouldHideMap)"
         />
       </l-control>
@@ -196,23 +201,24 @@ export default {
     }
 
     if (this.$route.query.searchValue) {
-      const spaces = await searchSpaces(
+      const res = await searchSpaces(
         searchModeToType[this.$route.query.searchMode].type,
         this.$route.query.searchValue
       );
-      await this.onSetMap(spaces, false);
+      await this.onSetMap(res);
     }
   },
   methods: {
     async onSetClickPoint(word: string) {
-      const spaces = await searchSpaces(
+      const res = await searchSpaces(
         "word",
         word,
         new AbortController().signal
       );
-      this.clickedFeature = spaceToFeature(spaces.spaces[0]);
+      this.clickedFeature = spaceToFeature(res.spaces[0]);
+      this.focusSpaceResponse(res);
     },
-    async onSetMap(res: SpacesResponse, focus = true) {
+    async onSetMap(res: SpacesResponse) {
       if (!res) {
         this.collections.set(this.searchCollectionKey, spacesToCollection());
         return;
@@ -230,14 +236,12 @@ export default {
           true
         )
       );
-
-      if (focus) {
-        this.zoom = res.zoom;
-        // When both zoom and latlng change, using setView alone results in zoom change without latlng.
-        await this.map.setZoom(res.zoom);
-        await this.map.setView(res.latlng, res.zoom);
-      }
-
+    },
+    focusSpaceResponse(res: SpacesResponse) {
+      this.zoom = res.zoom;
+      // When both zoom and latlng change, using setView alone results in zoom change without latlng.
+      this.map.setZoom(res.zoom);
+      this.map.setView(res.latlng, res.zoom);
       this.renderGeoJsonsToggle = !this.renderGeoJsonsToggle;
     },
     onTileLayerReady() {
