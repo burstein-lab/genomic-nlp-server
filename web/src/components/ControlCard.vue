@@ -203,20 +203,17 @@ export default {
       this.$emit("resetClickPoint");
     },
     async downloadSequence() {
-      this.loading = true;
       const rawRes = await fetch(
-        `${import.meta.env.VITE_PUBLIC_URL}word_to_fasta/${
+        `${import.meta.env.VITE_PUBLIC_URL}fasta_per_word/${
           this.clickedFeature?.properties?.value?.word
         }.faa`,
         { signal: this.controller.signal }
       );
-      console.log(await rawRes.text());
       downloadFile(
         `${this.clickedFeature?.properties?.value?.word}.faa`,
         await rawRes.text(),
         "text"
       );
-      this.loading = false;
     },
     async onNeighborsClick(word: string) {
       this.loading = true;
