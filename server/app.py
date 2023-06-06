@@ -39,14 +39,10 @@ def filter_by_space(type_):
 
 @app.route("/space/get/<name>")
 def space_get(name):
-    spaces = []
-    if name.lower().startswith("ko") and "." not in name:
-        spaces = MODEL_DATA.df[MODEL_DATA.df["KO"].str.match(name)]
-
-    else:
-        spaces = MODEL_DATA.df[MODEL_DATA.df["word"].str.match(name)]
-
-    return spaces_df_to_features(spaces, MODEL_DATA)
+    return spaces_df_to_features(
+        MODEL_DATA.df[MODEL_DATA.df["KO"].str.match(name)],
+        MODEL_DATA,
+    )
 
 
 @app.route("/label/get/<label>")
