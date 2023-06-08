@@ -40,7 +40,7 @@ def filter_by_space(type_):
 @app.route("/space/get/<name>")
 def space_get(name):
     return spaces_df_to_features(
-        MODEL_DATA.df[MODEL_DATA.df["KO"].str.match(name)],
+        MODEL_DATA.df[MODEL_DATA.df["KO"].str.match(name, na=False)],
         MODEL_DATA,
     )
 
