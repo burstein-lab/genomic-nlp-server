@@ -180,39 +180,6 @@ class Plotter:
         )
 
 
-class SpaceFocus:
-    """Helper class to focus on a specific area of the space."""
-
-    def __init__(self, data_path):
-        self.data_path = data_path
-        self.model_data.df = pd.read_pickle(data_path)
-
-    def focus(self, x_range, y_range):
-        try:
-            result = self.model_data.df
-            x_min = result.x.min()
-            y_min = result.y.min()
-            x_max = result.x.max()
-            y_max = result.y.max()
-
-            x_range_min = self.normalize(x_range[0], x_min, x_max)
-            x_range_max = self.normalize(x_range[1], x_min, x_max)
-            y_range_min = self.normalize(y_range[0], y_min, y_max)
-            y_range_max = self.normalize(y_range[1], y_min, y_max)
-            result = result[result["x"] < x_range_max]
-            result = result[result["x"] >= x_range_min]
-            result = result[result["y"] < y_range_max]
-            result = result[result["y"] >= y_range_min]
-            return result, (x_range_min, x_range_max), (y_range_min, y_range_max)
-        except Exception as exc:
-            raise TypeError(f'Input data file should be a pickled data frame, provided'
-                            f' {os.path.splitext(self.data_path)[1]} extension') from exc
-
-    @staticmethod
-    def normalize(value, value_min, value_max):
-        return value * (value_max - value_min) + value_min
-
-
 def zoom_splitter(zoom):
     result = [0]
     part = 1 / (2 ** zoom)
@@ -269,7 +236,7 @@ def plot_everything(args):
         )
         if len(df) == 0:
             print("finished plotting at zoom", zoom)
-            break
+            continue
 
         print("len of df", len(df), "zoom", zoom)
 
