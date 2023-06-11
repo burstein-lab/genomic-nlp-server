@@ -3,6 +3,9 @@ name: Map
 on:
   workflow_dispatch:
     inputs:
+      min_zoom:
+        description: "Min zoom level for map tiles"
+        default: 0
       max_png_zoom:
         description: "Max zoom level for PNG tiles"
         default: 6
@@ -30,5 +33,5 @@ jobs:
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: pipenv install --dev
       - run: gsutil cp gs://gnlp.bursteinlab.org/data/model_data.pkl ./
-      - run: pipenv run python server/plot.py --outdir=web/src/assets/map --max-png-zoom ${{ github.event.inputs.max_png_zoom }} --max-zoom ${{ github.event.inputs.max_zoom }}
+      - run: pipenv run python server/plot.py --outdir=web/src/assets/map --min-zoom ${{ github.event.inputs.min_zoom }} --max-png-zoom ${{ github.event.inputs.max_png_zoom }} --max-zoom ${{ github.event.inputs.max_zoom }}
       - run: gsutil -m rsync -rd web/src/assets/map gs://gnlp.bursteinlab.org/map
