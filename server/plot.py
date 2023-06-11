@@ -265,7 +265,7 @@ def plot_everything(args):
         df = new_plotter.plot_jsons(
             outdir,
             zoom,
-            -1 if zoom == args.max_zoom else args.min_img_points,
+            -1 if zoom > args.max_png_zoom else args.min_img_points,
         )
         if len(df) == 0:
             print("finished plotting at zoom", zoom)
@@ -286,12 +286,11 @@ if __name__ == "__main__":
                           help='output dir for img to be saved [default[/src/assest]')
     argparse.add_argument('--min-zoom', default=0, type=int)
     argparse.add_argument('--max-zoom', default=0, type=int)
+    argparse.add_argument('--max-png-zoom', default=0, type=int)
     argparse.add_argument('--bins', default=1, type=int,
                           help='number of bins to split the space [default:1]')
     argparse.add_argument('--max_bins', default=30, type=int,
                           help='max number of bins [default:30]')
-    argparse.add_argument('--fmt', default='svg', type=str,
-                          help='image format [default: svg]')
     argparse.add_argument('--min-img-points', default=2000, type=int,
                           help='Number of points for image. If less a pickle will be created [default: 1000]')
     argparse.add_argument('--save_img', default=1, type=int, help='whether to save figures or display them, 1 is True,'
