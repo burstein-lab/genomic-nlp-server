@@ -57,7 +57,6 @@
       />
       <l-circle-marker
         v-for="space in backgroundInteractiveSpaces()"
-        :key="zoom.toString() + space.value.word"
         :lat-lng="[space.y, space.x]"
         :radius="zoom + 2"
         color="#666"
