@@ -75,13 +75,13 @@
           />
         </div>
         <v-divider class="mx-4 mt-4" />
-        <div v-if="hoveredFeature">
-          <FeatureInfo :feature="hoveredFeature" :actionable="false" />
+        <div v-if="hoveredSpace">
+          <SpaceInfo :space="hoveredSpace" :actionable="false" />
           Click point for actions
         </div>
-        <div v-else-if="clickedFeature">
-          <FeatureInfo
-            :feature="clickedFeature"
+        <div v-else-if="clickedSpace">
+          <SpaceInfo
+            :space="clickedSpace"
             :actionable="true"
             @downloadSequence="downloadSequence"
             @centerPoint="$emit('centerPoint')"
@@ -89,7 +89,7 @@
           />
           <v-container class="text-center pt-1 py-0">
             <v-row justify="center">
-              <v-col >
+              <v-col>
                 <v-btn-toggle
                   color="info"
                   variant="outlined"
@@ -106,9 +106,7 @@
                   </v-btn>
                   <v-btn
                     value="predictions"
-                    :disabled="
-                      loading || !clickedFeature.properties.value.hypothetical
-                    "
+                    :disabled="loading || !clickedSpace.value.hypothetical"
                     density="comfortable"
                   >
                     Gene Predictions
@@ -142,13 +140,13 @@
 <script lang="ts">
 import Search from "./Search.vue";
 import ThemeToggle from "./ThemeToggle.vue";
-import FeatureInfo from "./FeatureInfo.vue";
+import SpaceInfo from "./SpaceInfo.vue";
 import DiamondSearch from "./DiamondSearch.vue";
 import NeighborsPlot from "./NeighborsPlot.vue";
 import PredictionPlot from "./PredictionPlot.vue";
 import { SpacesReponse, ScatterData } from "@/composables/spaces";
 import { downloadFile } from "@/composables/utils";
-import { searchSpaces, searchModeToType, Feature } from "@/composables/spaces";
+import { searchSpaces, searchModeToType, Space } from "@/composables/spaces";
 
 export default {
   name: "ControlCard",
@@ -157,15 +155,15 @@ export default {
     PredictionPlot,
     Search,
     ThemeToggle,
-    FeatureInfo,
+    SpaceInfo,
     DiamondSearch,
   },
   props: {
-    hoveredFeature: {
-      type: Object as () => Feature | null,
+    hoveredSpace: {
+      type: Object as () => Space | null,
     },
-    clickedFeature: {
-      type: Object as () => Feature | null,
+    clickedSpace: {
+      type: Object as () => Space | null,
     },
   },
   data: () => {
@@ -205,12 +203,12 @@ export default {
     async downloadSequence() {
       const rawRes = await fetch(
         `${import.meta.env.VITE_PUBLIC_URL}fasta_per_word/${
-          this.clickedFeature?.properties?.value?.word
+          this.clickedSpace?.value?.word
         }.faa`,
         { signal: this.controller.signal }
       );
       downloadFile(
-        `${this.clickedFeature?.properties?.value?.word}.faa`,
+        `${this.clickedSpace?.value?.word}.faa`,
         await rawRes.text(),
         "text"
       );
@@ -254,8 +252,8 @@ export default {
         await this.$router.push({
           query: {
             ...this.$route.query,
-            clickedFeature: this.clickedFeature?.properties?.value?.word
-              ? this.clickedFeature?.properties?.value?.word
+            clickedSpace: this.clickedSpace?.value?.word
+              ? this.clickedSpace?.value?.word
               : "",
             plot: val,
           },
@@ -264,7 +262,7 @@ export default {
           this.loading = true;
           const rawRes = await fetch(
             `${import.meta.env.VITE_SERVER_URL}/neighbors/get/${
-              this.clickedFeature.properties.value.word
+              this.clickedSpace.value.word
             }?with_distance=true&k=10`,
             { signal: this.controller.signal }
           );
@@ -274,7 +272,7 @@ export default {
           this.loading = true;
           const rawRes = await fetch(
             `${import.meta.env.VITE_SERVER_URL}/plot/scatter/${
-              this.clickedFeature.properties.value.word
+              this.clickedSpace.value.word
             }`,
             { signal: this.controller.signal }
           );
@@ -286,7 +284,7 @@ export default {
     },
   },
   watch: {
-    clickedFeature(newVal, oldVal) {
+    clickedSpace(newVal, oldVal) {
       if (oldVal === undefined && newVal && this.$route.query.plot) {
         // Only happens on first load. After that, oldVal is either set, or null.
         this.plotToggle = this.$route.query.plot;

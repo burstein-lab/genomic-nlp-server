@@ -5,7 +5,7 @@ import simplejson
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from common import ModelData, TILE_SIZE, df_to_features
+from common import ModelData, TILE_SIZE, df_to_interactive_spaces
 
 GREY_HEX = "#808080"
 GREY_OPACITY = int(0.3 * 255)
@@ -91,7 +91,7 @@ class Plotter:
                 with open(os.path.join(outdir, f"space_by_label_{i}_{len(x_lines) - 1 - j}.json"), "w", encoding="utf8") as dest:
                     dest.write(
                         simplejson.dumps(
-                            {"features": df_to_features(
+                            {"spaces": df_to_interactive_spaces(
                                 plot_df, self.model_data)},
                             ignore_nan=True,
                         ),

@@ -43,7 +43,7 @@ class Point:
         }
 
 
-def df_to_features(df, model_data: ModelData, additonal_columns: list[str] = None):
+def df_to_interactive_spaces(df, model_data: ModelData, additonal_columns: list[str] = None):
     features = []
     if df is None:
         return features
@@ -126,10 +126,10 @@ def calc_center(spaces, model_data: ModelData):
     return {"lat": lat, "lng": lng}
 
 
-def spaces_df_to_features(spaces, model_data: ModelData, additional_columns: list[str] = None):
+def jsonify_spaces(spaces, model_data: ModelData, additional_columns: list[str] = None):
     return jsonify(
         {
-            "spaces": df_to_features(spaces, model_data, additional_columns),
+            "spaces": df_to_interactive_spaces(spaces, model_data, additional_columns),
             "latlng": calc_center(spaces, model_data),
             "zoom": calc_zoom(spaces, model_data),
         },

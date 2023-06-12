@@ -6,7 +6,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
 
-from common import ModelData, spaces_df_to_features
+from common import ModelData, jsonify_spaces
 
 
 PAGE_SIZE = 20
@@ -39,7 +39,7 @@ def filter_by_space(type_):
 
 @app.route("/space/get/<name>")
 def space_get(name):
-    return spaces_df_to_features(
+    return jsonify_spaces(
         MODEL_DATA.df[MODEL_DATA.df["KO"].str.match(name, na=False)],
         MODEL_DATA,
     )
@@ -47,7 +47,7 @@ def space_get(name):
 
 @app.route("/label/get/<label>")
 def filter_by_label(label):
-    return spaces_df_to_features(MODEL_DATA.df[MODEL_DATA.df["label"] == label], MODEL_DATA)
+    return jsonify_spaces(MODEL_DATA.df[MODEL_DATA.df["label"] == label], MODEL_DATA)
 
 
 @app.route("/gene/get/<name>")
@@ -56,13 +56,13 @@ def filter_by_gene(name):
     # pylint: disable=unsubscriptable-object
     g2ko_spaces = df[df["name"].str.match(name)]
     spaces = MODEL_DATA.df[MODEL_DATA.df["KO"].isin(g2ko_spaces["ko"])]
-    return spaces_df_to_features(spaces, MODEL_DATA)
+    return jsonify_spaces(spaces, MODEL_DATA)
 
 
 @app.route("/word/get/<label>")
 def filter_by_word(label):
     notna_df = MODEL_DATA.df.dropna(subset=["word"])
-    return spaces_df_to_features(notna_df[notna_df["word"].str.match(label.replace(",", "|"))], MODEL_DATA)
+    return jsonify_spaces(notna_df[notna_df["word"].str.match(label.replace(",", "|"))], MODEL_DATA)
 
 
 @app.route("/plot/scatter/<word>")
@@ -111,7 +111,7 @@ def neighbors(word):
         k = int(request.args.get("k"))
 
     df = pd.merge(top_k_df.nlargest(k, "distance"), MODEL_DATA.df, on="word")
-    return spaces_df_to_features(df, MODEL_DATA, additional_columns)
+    return jsonify_spaces(df, MODEL_DATA, additional_columns)
 
 
 def _filter_by_space(type_, filter_):

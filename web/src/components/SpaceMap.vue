@@ -30,32 +30,55 @@
         :tileSize="tileSize"
         @ready="onTileLayerReady()"
       />
-      <l-geo-json
-        v-if="clickedFeature"
-        :key="`geoJson-clickerFeature-${zoom}-${theme.global.current.dark}-${renderGeoJsonsToggle}`"
-        :geojson="{
-          type: 'FeatureCollection',
-          features: [clickedFeature],
-        }"
-        :options="geoJsonClickedOptions"
+      <l-circle-marker
+        v-if="clickedSpace"
+        ref="clickedSpaceLayerRef"
+        :lat-lng="[clickedSpace.y, clickedSpace.x]"
+        :radius="zoom + 4"
+        :color="theme.global.current.dark ? '#FFFFFF' : '#000000'"
+        :fillColor="clickedSpace.value.color"
+        :weight="3"
+        :opacity="1"
+        :fillOpacity="0.7"
+        @ready="(e) => e.bringToFront()"
       />
-      <l-geo-json
-        v-for="[k, v] in isMapVisible ? collections : []"
-        :key="`geoJson-${k}-${zoom}-${theme.global.current.dark}`"
-        :ref="`geoJson-${k}-Ref`"
-        :geojson="v"
-        :options="geoJsonOptions"
+      <l-circle-marker
+        v-for="[_, space] in searchSpaces"
+        :lat-lng="[space.y, space.x]"
+        :radius="zoom + 2"
+        :color="theme.global.current.dark ? '#FFFFFF' : '#000000'"
+        :fillColor="space.value.color"
+        :weight="1"
+        :opacity="1"
+        :fillOpacity="0.7"
+        @mouseover="(e) => onMouseOver(e, space)"
+        @mouseout="(e) => onMouseOut(e, space)"
+        @click="(e) => onClick(e, space)"
+      />
+      <l-circle-marker
+        v-for="space in backgroundInteractiveSpaces()"
+        :key="zoom.toString() + space.value.word"
+        :lat-lng="[space.y, space.x]"
+        :radius="zoom + 2"
+        color="#666"
+        :fillColor="space.value.color"
+        :weight="1"
+        :opacity="1"
+        :fillOpacity="0.7"
+        @mouseover="(e) => onMouseOver(e, space)"
+        @mouseout="(e) => onMouseOut(e, space)"
+        @click="(e) => onClick(e, space)"
       />
       <l-control ref="controlRef" position="topleft">
         <ControlCard
-          :hoveredFeature="hoveredFeature"
-          :clickedFeature="clickedFeature"
+          :hoveredSpace="hoveredSpace"
+          :clickedSpace="clickedSpace"
           @setClickPoint="onSetClickPoint"
           @resetClickPoint="onResetClickPoint"
           @centerPoint="onCenterPoint"
           @setMap="
             (res) => {
-              onSetMap(res);
+              onSetSearchSpaces(res);
               focusSpaceResponse(res);
             }
           "
@@ -81,24 +104,19 @@ import {
   LPolyline,
   LCircleMarker,
   LPolygon,
-  LFeatureGroup,
   LRectangle,
+  LGridLayer,
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTheme } from "vuetify";
 import ControlCard from "./ControlCard.vue";
 import {
   searchModeToType,
-  FeatureCollection,
   SpacesResponse,
-  spacesToCollection,
   Coords,
-  spaceToFeature,
   searchSpaces,
-  LatLng,
+  Space,
   pointStyle,
-  clickedPointStyle,
-  Feature,
   highlightedPointStyle,
 } from "@/composables/spaces";
 
@@ -106,13 +124,13 @@ export default {
   name: "SpaceMap",
   components: {
     LMap,
-    LIcon,
     LCircleMarker,
+    LIcon,
     LTileLayer,
     LControlZoom,
-    LFeatureGroup,
     LMarker,
     LImageOverlay,
+    LGridLayer,
     LTooltip,
     LPopup,
     LControl,
@@ -125,79 +143,26 @@ export default {
   data() {
     const theme = useTheme();
     const maxZoom = Number(import.meta.env.VITE_MAX_ZOOM);
-    const collections = new Map<string, FeatureCollection>();
     return {
       theme: theme,
       maxZoom: maxZoom,
       zoom: 0,
-      geoJsonOptions: {
-        onEachFeature: (feature: Feature, layer: any) => {},
-        pointToLayer: (feature: Feature, latlng: LatLng) => {},
-      },
-      geoJsonClickedOptions: {
-        pointToLayer: (feature: Feature, latlng: LatLng) => {},
-      },
-      hoveredFeature: null as Feature | null,
-      _clickedFeature: undefined as Feature | null,
+      hoveredSpace: null as Space | null,
+      _clickedSpace: undefined as Space | null,
       isMapVisible: true,
-      collections: collections,
+      tileToSpaces: new Map<string, Space[]>(),
       tileSize: 1024,
       publicURL: import.meta.env.VITE_PUBLIC_URL,
       map: null as LMap | null,
-      renderGeoJsonsToggle: false, // Used to force a re-render of the map
-      searchCollectionKey: "search",
-      circleMarker: (latlng: LatLng, layer: Object): LCircleMarker => {},
-      clickedLayer: null as LCircleMarker | null,
+      searchSpaces: new Map<string, Space>(),
     };
   },
   async beforeMount() {
-    const { circleMarker } = await import("leaflet/dist/leaflet-src.esm");
-    this.circleMarker = circleMarker;
-    this.geoJsonOptions.onEachFeature = this.onEachFeature;
-    this.geoJsonOptions.pointToLayer = (feature: Feature, latlng: LatLng) => {
-      if (
-        this.clickedFeature?.properties?.value?.word ===
-        feature.properties.value.word
-      ) {
-        this.clickedFeature = feature;
-        return null;
-      }
-
-      if (!feature.properties.isSearch) {
-        if (this.zoom !== feature.properties.coords.z) return null;
-
-        const searchFeature = this.collections
-          .get(this.searchCollectionKey)
-          ?.features?.find(
-            (f: Feature) => f.properties.id === feature.properties.id
-          );
-        if (searchFeature) {
-          return null;
-        }
-      }
-
-      return circleMarker(
-        latlng,
-        pointStyle(feature, this.zoom, this.theme.global.current.dark)
-      );
-    };
-    this.geoJsonClickedOptions.pointToLayer = (
-      feature: Feature,
-      latlng: LatLng
-    ) => {
-      this.clickedLayer = circleMarker(
-        latlng,
-        clickedPointStyle(feature, this.zoom, this.theme.global.current.dark)
-      );
-      this.clickedLayer.bringToFront();
-      return this.clickedLayer;
-    };
-
-    // Setting before search spaces in case the clicked feature is in the search results.
-    if (this.$route.query.clickedFeature) {
-      this.onSetClickPoint(this.$route.query.clickedFeature);
+    // Setting before search spaces in case the clicked space is in the search results.
+    if (this.$route.query.clickedSpace) {
+      this.onSetClickPoint(this.$route.query.clickedSpace);
     } else {
-      this.clickedFeature = null;
+      this.clickedSpace = null;
     }
 
     if (this.$route.query.searchValue) {
@@ -205,7 +170,7 @@ export default {
         searchModeToType[this.$route.query.searchMode].type,
         this.$route.query.searchValue
       );
-      await this.onSetMap(res);
+      await this.onSetSearchSpaces(res);
     }
   },
   methods: {
@@ -215,51 +180,36 @@ export default {
         word,
         new AbortController().signal
       );
-      this.clickedFeature = spaceToFeature(res.spaces[0]);
+      this.clickedSpace = res.spaces[0];
       this.focusSpaceResponse(res);
     },
-    async onSetMap(res: SpacesResponse) {
+    async onSetSearchSpaces(res: SpacesResponse) {
       if (!res) {
-        this.collections.set(this.searchCollectionKey, spacesToCollection());
+        this.searchSpaces.clear();
         return;
       }
 
-      this.collections.set(
-        this.searchCollectionKey,
-        spacesToCollection(
-          res.spaces,
-          {
-            z: res.zoom,
-            x: res.latlng.lng,
-            y: res.latlng.lat,
-          },
-          true
-        )
-      );
+      for (const space of res.spaces as Space[]) {
+        this.searchSpaces.set(space.value.word, space);
+      }
     },
     focusSpaceResponse(res: SpacesResponse) {
       this.zoom = res.zoom;
       // When both zoom and latlng change, using setView alone results in zoom change without latlng.
       this.map.setZoom(res.zoom);
       this.map.setView(res.latlng, res.zoom);
-      this.renderGeoJsonsToggle = !this.renderGeoJsonsToggle;
     },
     onTileLayerReady() {
       const tileLayer = this.$refs.tileLayerRef.leafletObject;
       tileLayer.on("tileerror", async ({ coords }: { coords: Coords }) => {
-        await this.getFeatures(coords);
+        await this.getInteractiveSpaces(coords);
       });
       tileLayer.on("tileload", async ({ coords }: { coords: Coords }) => {
-        await this.getFeatures(coords);
+        await this.getInteractiveSpaces(coords);
       });
     },
-    geoJsonObj(k: string) {
-      // When using v-for, ref is a list.
-      const obj = this.$refs[`geoJson-${k}-Ref`];
-      if (obj) return obj[0].leafletObject;
-    },
     onResetClickPoint() {
-      this.clickedFeature = null;
+      this.clickedSpace = null;
     },
     onMapReady() {
       this.map = this.$refs.mapRef.leafletObject;
@@ -271,11 +221,10 @@ export default {
         0
       );
     },
-    collectionID(coords: Coords): string {
-      return `${coords.z}-${coords.x}-${coords.y}`;
+    coordsToTile(coords: Coords) {
+      return `${coords.z}_${coords.x}_${coords.y}`;
     },
-    async getFeatures(coords: Coords) {
-      const id = this.collectionID(coords);
+    async getInteractiveSpaces(coords: Coords) {
       const rawRes = await fetch(
         `${this.publicURL}map/${coords.z}/space_by_label_${coords.x}_${coords.y}.json`
       );
@@ -283,16 +232,17 @@ export default {
       if (rawRes.status === 404) return;
 
       const res = (await rawRes.json()) as SpacesResponse;
-      this.collections.set(
-        id,
-        spacesToCollection(res["features"], coords, false)
-      );
+
+      this.tileToSpaces.set(this.coordsToTile(coords), res.spaces as Space[]);
 
       const cleanup = () => {
-        if (!this.collections.has(id)) return;
+        if (!this.tileToSpaces.has(this.coordsToTile(coords))) return;
 
-        if (this.zoom !== coords.z || this.collections.get(id)?.length === 0) {
-          this.collections.delete(id);
+        if (
+          this.zoom !== coords.z ||
+          this.tileToSpaces.get(this.coordsToTile(coords))?.length === 0
+        ) {
+          this.tileToSpaces.delete(this.coordsToTile(coords));
           return;
         }
 
@@ -301,98 +251,77 @@ export default {
 
       setTimeout(cleanup, 3000);
     },
-    // layer is the circle marker
-    onEachFeature(feature: Feature, layer) {
-      layer.on({
-        mouseover: () => {
-          this.highlightFeature(layer, feature);
-        },
-        mouseout: () => {
-          this.resetHighlight(layer, feature);
-        },
-        click: () => {
-          this.onClickPoint(feature);
-        },
-      });
-    },
-    highlightFeature(layer, feature: Feature) {
-      layer.setStyle(
-        highlightedPointStyle(
-          feature,
-          this.zoom,
-          this.theme.global.current.dark
-        )
-      );
-      layer.bringToFront();
-      this.hoveredFeature = feature;
-    },
-    resetHighlight(layer, feature: Feature) {
-      layer.setStyle(
-        pointStyle(feature, this.zoom, this.theme.global.current.dark)
-      );
-      this.hoveredFeature = null;
-      this.clickedLayer?.bringToFront();
-    },
-    async onClickPoint(feature: Feature) {
-      if (this.clickedFeature?.properties?.coords) {
-        const id = this.clickedFeature.properties.isSearch
-          ? this.searchCollectionKey
-          : this.collectionID(this.clickedFeature.properties.coords);
-        this.collections.get(id)?.features.push(this.clickedFeature);
-
-        const marker = this.circleMarker(
-          {
-            lat: this.clickedFeature.geometry.coordinates[1],
-            lng: this.clickedFeature.geometry.coordinates[0],
-          },
-          pointStyle(
-            this.clickedFeature,
-            this.zoom,
-            this.theme.global.current.dark
-          )
-        );
-        this.onEachFeature(this.clickedFeature, marker);
-        this.geoJsonObj(id)?.addLayer(marker);
-      }
-
-      const id = feature.isSearch
-        ? this.searchCollectionKey
-        : this.collectionID(feature.properties.coords);
-
-      if (this.collections.has(id)) {
-        const index = this.collections
-          .get(id)
-          ?.features.findIndex(
-            (f: Feature) => f.properties.id === feature.properties.id
-          );
-        this.collections.get(id)?.features.splice(index, 1);
-      }
-
-      this.clickedFeature = feature;
-      this.hoveredFeature = null;
-      this.onCenterPoint();
-    },
     onCenterPoint() {
       this.map?.setView(
         {
-          lat: this.clickedFeature.geometry.coordinates[1],
-          lng: this.clickedFeature.geometry.coordinates[0],
+          lat: this.clickedSpace.y,
+          lng: this.clickedSpace.x,
         },
         this.zoom
       );
     },
+    onMouseOver(e, space: Space) {
+      if (space.value.word === this.clickedSpace?.value?.word) return;
+
+      e.target.bringToFront();
+      e.target.setStyle(
+        highlightedPointStyle(
+          space,
+          this.searchSpaces.has(space.value.word),
+          this.zoom,
+          this.theme.global.current.dark
+        )
+      );
+      this.hoveredSpace = space;
+    },
+    onMouseOut(e, space: Space) {
+      e.target.setStyle(
+        pointStyle(
+          space,
+          this.searchSpaces.has(space.value.word),
+          this.zoom,
+          this.theme.global.current.dark
+        )
+      );
+      this.hoveredSpace = null;
+      if (this.$refs.clickedSpaceLayerRef?.leafletObject)
+        this.$refs.clickedSpaceLayerRef?.leafletObject.bringToFront();
+    },
+    onClick(e, space: Space) {
+      this.clickedSpace = space;
+      this.hoveredSpace = null;
+      this.onCenterPoint();
+    },
+    backgroundInteractiveSpaces() {
+      if (!this.isMapVisible) return [];
+
+      const res: Space[] = [];
+      for (const [tile, spaces] of this.tileToSpaces) {
+        if (tile[0] !== String(this.zoom)) continue;
+
+        for (const space of spaces) {
+          if (
+            !this.searchSpaces.has(space.value.word) &&
+            this.clickedSpace?.value.word !== space.value.word
+          ) {
+            res.push(space);
+          }
+        }
+      }
+      return res;
+    },
   },
   computed: {
-    clickedFeature: {
+    clickedSpace: {
       get() {
-        return this._clickedFeature;
+        return this._clickedSpace;
       },
-      set(value: Feature | null) {
-        this._clickedFeature = value;
+      set(value: Space | null) {
+        this._clickedSpace = value;
         this.$router.push({
           query: {
             ...this.$route.query,
-            clickedFeature: value ? value.properties.value.word : "",
+            clickedSpace: value ? value.value.word : "",
           },
         });
       },

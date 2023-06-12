@@ -1,7 +1,7 @@
 <template>
   <v-list lines="one">
     <v-list-item
-      v-for="[k, v] in spaceToInfo(feature.properties.value)"
+      v-for="[k, v] in spaceToInfo(space.value)"
       :key="k"
       :subtitle="k"
       :title="displayedValue(k, v)"
@@ -57,14 +57,14 @@
 
 <script lang="ts">
 import { truncate } from "@/composables/utils";
-import { spaceToInfo, Feature } from "@/composables/spaces";
+import { spaceToInfo, Space } from "@/composables/spaces";
 
 export default {
-  name: "FeatureInfo",
+  name: "SpaceInfo",
   components: {},
   props: {
-    feature: {
-      type: Object as () => Feature | null,
+    space: {
+      type: Object as () => Space | null,
     },
     actionable: Boolean,
   },

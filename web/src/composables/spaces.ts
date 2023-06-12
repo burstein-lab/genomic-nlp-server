@@ -1,21 +1,3 @@
-const spacesToCollection = (
-  spaces?: Space[],
-  coords?: Coords,
-  isSearch?: boolean
-): FeatureCollection => {
-  const features: Feature[] = [];
-  if (spaces !== undefined && coords !== undefined && isSearch !== undefined) {
-    for (var i = 0; i < spaces.length; i++) {
-      features.push(spaceToFeature(spaces[i], coords, isSearch));
-    }
-  }
-
-  return {
-    type: "FeatureCollection",
-    features: features,
-  };
-};
-
 const searchMode = (
   label: string,
   type: string,
@@ -44,15 +26,16 @@ const searchModeToType = {
   "Model Word": searchMode("KO / Hypo", "word", "word", true),
 } as { [key: string]: SearchMode };
 
-const pointStyle = (feature: Feature, zoom: number, isDarkTheme: boolean) => {
+const pointStyle = (
+  space: Space,
+  isSearch: boolean,
+  zoom: number,
+  isDarkTheme: boolean
+) => {
   return {
     radius: zoom + 2,
-    color: feature.properties.isSearch
-      ? isDarkTheme
-        ? "#FFFFFF"
-        : "#000000"
-      : "#666",
-    fillColor: feature.properties.value.color,
+    color: isSearch ? (isDarkTheme ? "#FFFFFF" : "#000000") : "#666",
+    fillColor: space.value.color,
     weight: 1,
     opacity: 1,
     fillOpacity: 0.7,
@@ -60,43 +43,16 @@ const pointStyle = (feature: Feature, zoom: number, isDarkTheme: boolean) => {
 };
 
 const highlightedPointStyle = (
-  feature: Feature,
+  space: Space,
+  isSearch: boolean,
   zoom: number,
   isDarkTheme: boolean
 ) => {
-  const res = pointStyle(feature, zoom, isDarkTheme);
+  const res = pointStyle(space, isSearch, zoom, isDarkTheme);
   res.radius += 2;
   res.weight += 2;
   res.color = isDarkTheme ? "#FFFFFF" : "#000000";
   return res;
-};
-
-const clickedPointStyle = (
-  feature: Feature,
-  zoom: number,
-  isDarkTheme: boolean
-) => {
-  return highlightedPointStyle(feature, zoom, isDarkTheme);
-};
-
-const spaceToFeature = (
-  space: Space,
-  coords: Coords,
-  isSearch: boolean
-): Feature => {
-  return {
-    type: "Feature",
-    properties: {
-      id: space.id,
-      coords: coords,
-      isSearch: isSearch,
-      value: space.value,
-    },
-    geometry: {
-      type: "Point",
-      coordinates: [space.x, space.y],
-    },
-  };
 };
 
 const spaceToInfo = (point: SpaceValue): Map<string, string> => {
@@ -158,25 +114,6 @@ interface Coords {
   z: number;
 }
 
-interface FeatureCollection {
-  type: "FeatureCollection";
-  features: Feature[];
-}
-
-interface Feature {
-  type: "Feature";
-  properties: {
-    id: string;
-    coords: Coords;
-    isSearch: boolean;
-    value: SpaceValue;
-  };
-  geometry: {
-    type: string;
-    coordinates: number[];
-  };
-}
-
 interface ScatterData {
   label: string;
   data: { x: number; y: number }[];
@@ -195,23 +132,11 @@ const searchSpaces = async (
   return await rawRes.json();
 };
 
-export type {
-  Coords,
-  Space,
-  Feature,
-  FeatureCollection,
-  LatLng,
-  SpacesResponse,
-  ScatterData,
-  SpaceValue,
-};
+export type { Coords, Space, LatLng, SpacesResponse, ScatterData, SpaceValue };
 export {
-  spacesToCollection,
   spaceToInfo,
   searchSpaces,
   pointStyle,
-  clickedPointStyle,
-  spaceToFeature,
   highlightedPointStyle,
   searchModeToType,
 };
