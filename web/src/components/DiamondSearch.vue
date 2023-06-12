@@ -41,11 +41,6 @@
       <v-divider v-if="index !== 0" class="ms-4 me-12" />
       <v-col cols="11">
         <v-list lines="one">
-          <v-list-item
-            subtitle="Identifier"
-            v-if="diamondResults && diamondResults.length > 0"
-            :title="getSequenceIdentifier(index)"
-          ></v-list-item>
           <v-list-item subtitle="Query" :title="item.query"></v-list-item>
           <v-list-item subtitle="Word" :title="item.word"></v-list-item>
           <v-list-item subtitle="E-value" :title="item.eValue"></v-list-item>
@@ -105,10 +100,6 @@ export default {
       this.controller.abort();
       this.controller = new AbortController();
       this.loading = false;
-    },
-    getSequenceIdentifier(index: number) {
-      const sequence = this.sequence.split(">")[index + 1];
-      return truncate(">" + sequence.split("\n")[0], 25);
     },
     downloadDiamondResult() {
       downloadFile("sequence.tsv", this.downloadableDiamondResult);
