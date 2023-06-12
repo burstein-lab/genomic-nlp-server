@@ -43,7 +43,7 @@ export default {
     },
     downloadGraphData() {
       downloadFile(
-        "graph_data.tsv",
+        this.$route.query.clickedFeature + ".neighbors.tsv",
         this.spacesToTSV(this.data.spaces.map((space: Space) => space.value))
       );
     },
