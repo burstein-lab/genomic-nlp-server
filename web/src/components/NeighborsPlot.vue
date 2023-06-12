@@ -48,7 +48,6 @@ export default {
       );
     },
     spacesToTSV(spaces: SpaceValue[]) {
-      const distanceHeader = "Distance to " + this.$route.query.clickedFeature;
       const header: string[] = [
         "Word",
         "KO",
@@ -56,7 +55,7 @@ export default {
         "Gene name",
         "Functional category",
         "Prediction confidence",
-        distanceHeader,
+        "Distance",
       ];
       const result: Object[] = [];
 
@@ -73,7 +72,7 @@ export default {
               ? "high"
               : "low"
             : "N/A",
-          distanceHeader: space.distance,
+          Distance: space.distance,
         });
       });
 
