@@ -7,7 +7,7 @@
     v-if="fromSequence"
     v-model="sequence"
     filled
-    label="Search by sequence"
+    label="Enter protein sequence (FASTA format)"
     rows="5"
     shaped
     :append-icon="loading ? 'mdi-close' : 'mdi-send'"
