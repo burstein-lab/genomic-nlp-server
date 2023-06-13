@@ -89,7 +89,8 @@
           />
           <v-container class="text-center pt-1 py-0">
             <v-row justify="center">
-              <v-col>
+              <v-col cols="1"></v-col>
+              <v-col cols="9">
                 <v-btn-toggle
                   color="info"
                   variant="outlined"
@@ -112,6 +113,23 @@
                     Gene Predictions
                   </v-btn>
                 </v-btn-toggle>
+              </v-col>
+              <v-col cols="2">
+                <v-tooltip text="Download graph data" location="bottom">
+                  <template v-slot:activator="{ props }">
+                    <v-btn-group density="comfortable" v-bind="props">
+                      <v-btn
+                        color="info"
+                        icon
+                        :disabled="!plotToggle || (!barData && !scatterData)"
+                        density="comfortable"
+                        @click="downloadGraphData"
+                      >
+                        <v-icon>mdi-download</v-icon>
+                      </v-btn>
+                    </v-btn-group>
+                  </template>
+                </v-tooltip>
               </v-col>
             </v-row>
           </v-container>
@@ -146,7 +164,12 @@ import NeighborsPlot from "./NeighborsPlot.vue";
 import PredictionPlot from "./PredictionPlot.vue";
 import { SpacesReponse, ScatterData } from "@/composables/spaces";
 import { downloadFile } from "@/composables/utils";
-import { searchSpaces, searchModeToType, Space } from "@/composables/spaces";
+import {
+  searchSpaces,
+  searchModeToType,
+  Space,
+  SpaceValue,
+} from "@/composables/spaces";
 
 export default {
   name: "ControlCard",
@@ -241,6 +264,69 @@ export default {
       });
       this.selectedSearchMode = this.searchMode;
     },
+    downloadGraphData() {
+      if (this.plotToggle == "neighbors") {
+        downloadFile(
+          this.$route.query.clickedSpace + ".neighbors.tsv",
+          this.neighborsToTSV(
+            this.barData.spaces.map((space: Space) => space.value)
+          )
+        );
+
+        return;
+      }
+
+      downloadFile(
+        this.$route.query.clickedSpace + ".prediction.tsv",
+        this.predictionToTSV(
+          this.scatterData.ticks,
+          this.scatterData.data.map((v: { x: Number; y: Number }) => v.y)
+        )
+      );
+    },
+    predictionToTSV(ticks: string[], values: Number[]) {
+      const res = ["Functional category\tPrediction score (1e)"];
+      for (let i = 0; i < ticks.length; i++) {
+        res.push(ticks[i] + "\t" + values[i]);
+      }
+
+      return res.join("\n");
+    },
+    neighborsToTSV(spaces: SpaceValue[]) {
+      const header: string[] = [
+        "Word",
+        "KO",
+        "Product",
+        "Gene name",
+        "Functional category",
+        "Prediction confidence",
+        "Distance",
+      ];
+      const result: Object[] = [];
+
+      spaces.forEach((space) => {
+        result.push({
+          Word: space.word,
+          KO: space.ko,
+          Product: space.product,
+          "Gene name": space.gene_name,
+          "Functional category":
+            space.predicted_class + (space.hypothetical ? " [PREDICTED]" : ""),
+          "Prediction confidence": space.hypothetical
+            ? space.significant
+              ? "high"
+              : "low"
+            : "N/A",
+          Distance: space.distance,
+        });
+      });
+
+      return (
+        header.join("\t") +
+        "\n" +
+        result.map((row) => Object.values(row).join("\t")).join("\n")
+      );
+    },
   },
   computed: {
     plotToggle: {
@@ -276,8 +362,7 @@ export default {
             }`,
             { signal: this.controller.signal }
           );
-          const res = await rawRes.json();
-          this.scatterData = res;
+          this.scatterData = await rawRes.json();
           this.loading = false;
         }
       },

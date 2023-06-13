@@ -1,25 +1,10 @@
 <template>
   <BarChart class="mt-3" :chartData="chartData()" :options="options()" />
-  <v-container class="ps-0 pe-0 pb-0">
-    <v-row>
-      <v-col>
-        <v-btn @click="downloadGraphData" color="info">
-          Download Graph Data
-        </v-btn>
-      </v-col>
-    </v-row>
-  </v-container>
 </template>
 
 <script lang="ts">
 import { BarChart } from "vue-chart-3";
-import {
-  spaceToInfo,
-  SpaceValue,
-  Space,
-  SpacesReponse,
-} from "@/composables/spaces";
-import { downloadFile } from "@/composables/utils";
+import { spaceToInfo, Space, SpacesReponse } from "@/composables/spaces";
 
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
@@ -40,47 +25,6 @@ export default {
     hover(item: any) {
       const infoMap = spaceToInfo(this.data.spaces[item.dataIndex].value);
       return Array.from(infoMap, ([key, value]) => `${key}: ${value}`);
-    },
-    downloadGraphData() {
-      downloadFile(
-        this.$route.query.clickedFeature + ".neighbors.tsv",
-        this.spacesToTSV(this.data.spaces.map((space: Space) => space.value))
-      );
-    },
-    spacesToTSV(spaces: SpaceValue[]) {
-      const header: string[] = [
-        "Word",
-        "KO",
-        "Product",
-        "Gene name",
-        "Functional category",
-        "Prediction confidence",
-        "Distance",
-      ];
-      const result: Object[] = [];
-
-      spaces.forEach((space) => {
-        result.push({
-          Word: space.word,
-          KO: space.ko,
-          Product: space.product,
-          "Gene name": space.gene_name,
-          "Functional category":
-            space.predicted_class + (space.hypothetical ? " [PREDICTED]" : ""),
-          "Prediction confidence": space.hypothetical
-            ? space.significant
-              ? "high"
-              : "low"
-            : "N/A",
-          Distance: space.distance,
-        });
-      });
-
-      return (
-        header.join("\t") +
-        "\n" +
-        result.map((row) => Object.values(row).join("\t")).join("\n")
-      );
     },
     options() {
       return {

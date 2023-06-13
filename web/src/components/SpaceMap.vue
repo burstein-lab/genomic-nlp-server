@@ -91,20 +91,9 @@
 <script lang="ts">
 import {
   LMap,
-  LIcon,
   LTileLayer,
-  LMarker,
   LControl,
-  LControlZoom,
-  LTooltip,
-  LPopup,
-  LImageOverlay,
-  LGeoJson,
-  LPolyline,
   LCircleMarker,
-  LPolygon,
-  LRectangle,
-  LGridLayer,
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useTheme } from "vuetify";
@@ -124,19 +113,8 @@ export default {
   components: {
     LMap,
     LCircleMarker,
-    LIcon,
     LTileLayer,
-    LControlZoom,
-    LMarker,
-    LImageOverlay,
-    LGridLayer,
-    LTooltip,
-    LPopup,
     LControl,
-    LPolyline,
-    LGeoJson,
-    LPolygon,
-    LRectangle,
     ControlCard,
   },
   data() {
@@ -200,10 +178,7 @@ export default {
     },
     onTileLayerReady() {
       const tileLayer = this.$refs.tileLayerRef.leafletObject;
-      tileLayer.on("tileerror", async ({ coords }: { coords: Coords }) => {
-        await this.getInteractiveSpaces(coords);
-      });
-      tileLayer.on("tileload", async ({ coords }: { coords: Coords }) => {
+      tileLayer.on("tileloadstart", async ({ coords }: { coords: Coords }) => {
         await this.getInteractiveSpaces(coords);
       });
     },
