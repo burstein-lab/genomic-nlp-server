@@ -14,6 +14,7 @@
     hide-selected
     hide-details
     :label="label"
+    auto-select-first
     placeholder="Start typing to search"
     density="comfortable"
   >
