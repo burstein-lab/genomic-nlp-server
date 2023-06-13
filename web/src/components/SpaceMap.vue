@@ -56,7 +56,7 @@
         @click="(e) => onClick(e, space)"
       />
       <l-circle-marker
-        v-for="space in backgroundInteractiveSpaces()"
+        v-for="space in backgroundInteractiveSpaces(zoom)"
         :lat-lng="[space.y, space.x]"
         :radius="zoom + 2"
         color="#666"
@@ -93,6 +93,7 @@ import {
   LMap,
   LTileLayer,
   LControl,
+  LControlZoom,
   LCircleMarker,
 } from "@vue-leaflet/vue-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -113,6 +114,7 @@ export default {
   components: {
     LMap,
     LCircleMarker,
+    LControlZoom,
     LTileLayer,
     LControl,
     ControlCard,
@@ -147,7 +149,7 @@ export default {
         searchModeToType[this.$route.query.searchMode].type,
         this.$route.query.searchValue
       );
-      await this.onSetSearchSpaces(res);
+      await this.onSetSearchSpaces(res, false);
     }
   },
   methods: {
@@ -160,7 +162,7 @@ export default {
       this.clickedSpace = res.spaces[0];
       this.focusSpaceResponse(res);
     },
-    async onSetSearchSpaces(res: SpacesResponse) {
+    async onSetSearchSpaces(res: SpacesResponse, autoClick = true) {
       if (!res) {
         this.searchSpaces.clear();
         return;
@@ -168,6 +170,10 @@ export default {
 
       for (const space of res.spaces as Space[]) {
         this.searchSpaces.set(space.value.word, space);
+      }
+
+      if (autoClick && res.spaces.length === 1) {
+        this.clickedSpace = res.spaces[0];
       }
     },
     focusSpaceResponse(res: SpacesResponse) {
@@ -266,12 +272,12 @@ export default {
       this.hoveredSpace = null;
       this.onCenterPoint();
     },
-    backgroundInteractiveSpaces() {
+    backgroundInteractiveSpaces(zoom: number) {
       if (!this.isMapVisible) return [];
 
       const res: Space[] = [];
       for (const [tile, spaces] of this.tileToSpaces) {
-        if (tile[0] !== String(this.zoom)) continue;
+        if (tile[0] !== String(zoom)) continue;
 
         for (const space of spaces) {
           if (

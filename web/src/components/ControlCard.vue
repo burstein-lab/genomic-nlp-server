@@ -88,7 +88,7 @@
             @resetClickPoint="resetClickPoint"
           />
           <v-container class="text-center pt-1 py-0">
-            <v-row justify="center">
+            <v-row justify="center" no-gutters>
               <v-col cols="1"></v-col>
               <v-col cols="9">
                 <v-btn-toggle
