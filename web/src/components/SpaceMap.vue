@@ -78,7 +78,6 @@
           @setMap="
             (res) => {
               onSetSearchSpaces(res);
-              focusSpaceResponse(res);
             }
           "
           @setHideMap="(shouldHideMap) => (isMapVisible = !shouldHideMap)"
@@ -136,22 +135,6 @@ export default {
       searchSpaces: new Map<string, Space>(),
     };
   },
-  async beforeMount() {
-    // Setting before search spaces in case the clicked space is in the search results.
-    if (this.$route.query.clickedSpace) {
-      this.onSetClickPoint(this.$route.query.clickedSpace);
-    } else {
-      this.clickedSpace = null;
-    }
-
-    if (this.$route.query.searchValue) {
-      const res = await searchSpaces(
-        searchModeToType[this.$route.query.searchMode].type,
-        this.$route.query.searchValue
-      );
-      await this.onSetSearchSpaces(res, false);
-    }
-  },
   methods: {
     async onSetClickPoint(word: string) {
       const res = await searchSpaces(
@@ -175,6 +158,9 @@ export default {
       if (autoClick && res.spaces.length === 1) {
         this.clickedSpace = res.spaces[0];
       }
+
+      console.log(res.zoom, res.latlng);
+      this.focusSpaceResponse(res);
     },
     focusSpaceResponse(res: SpacesResponse) {
       this.zoom = res.zoom;
@@ -191,15 +177,51 @@ export default {
     onResetClickPoint() {
       this.clickedSpace = null;
     },
-    onMapReady() {
+    async onMapReady() {
+      let zoom = 0;
+      let lat = -this.tileSize / 2;
+      let lng = this.tileSize / 2;
       this.map = this.$refs.mapRef.leafletObject;
+      if (this.$route.query.location) {
+        [zoom, lat, lng] = this.$route.query.location.split(",");
+      }
+
       this.map.setView(
         {
-          lat: -this.tileSize / 2,
-          lng: this.tileSize / 2,
+          lat: lat,
+          lng: lng,
         },
-        0
+        zoom
       );
+
+      // Setting before search spaces in case the clicked space is in the search results.
+      if (this.$route.query.clickedSpace) {
+        this.onSetClickPoint(this.$route.query.clickedSpace);
+      } else {
+        this.clickedSpace = null;
+      }
+
+      if (this.$route.query.searchValue) {
+        const res = await searchSpaces(
+          searchModeToType[this.$route.query.searchMode].type,
+          this.$route.query.searchValue
+        );
+        await this.onSetSearchSpaces(res, false);
+      }
+
+      const printCenter = () => {
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            location: `${this.zoom},${this.map.getCenter().lat},${
+              this.map.getCenter().lng
+            }`,
+          },
+        });
+        setTimeout(printCenter, 3000);
+      };
+
+      printCenter();
     },
     coordsToTile(coords: Coords) {
       return `${coords.z}_${coords.x}_${coords.y}`;
