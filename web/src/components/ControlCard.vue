@@ -64,7 +64,7 @@
           <DiamondSearch
             v-if="selectedSearchMode === 'Sequence'"
             @setMap="(e) => $emit('setMap', e)"
-            @setLoading="(e: boolean) => loading = e"
+            @setLoading="(isLoading: boolean) => {isDiamondLoading = isLoading; loading = isLoading}"
           />
           <Search
             v-else
@@ -148,7 +148,11 @@
           Search to explore the model and hover a point to view extra options
         </div>
         <div v-if="loading" class="pt-2">
-          Getting data...
+          {{
+            isDiamondLoading
+              ? "Searching similar sequences, please wait..."
+              : "Getting data..."
+          }}
           <v-progress-linear indeterminate color="info" rounded />
         </div>
       </v-container>
@@ -195,6 +199,7 @@ export default {
     searchModes.splice(1, 0, "Sequence");
     return {
       searchMode: "",
+      isDiamondLoading: false,
       selectedSearchMode: "",
       searchModes: searchModes,
       searchModeToType,
