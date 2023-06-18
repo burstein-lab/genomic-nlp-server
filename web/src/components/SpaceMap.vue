@@ -73,6 +73,19 @@
           :hoveredSpace="hoveredSpace"
           :clickedSpace="clickedSpace"
           @setClickPoint="onSetClickPoint"
+          @resetCoords="
+            async () => {
+              zoom = 0;
+              await map.setZoom(zoom);
+              await map.setView(
+                {
+                  lat: -tileSize / 2,
+                  lng: tileSize / 2,
+                },
+                zoom
+              );
+            }
+          "
           @resetClickPoint="onResetClickPoint"
           @centerPoint="onCenterPoint"
           @setMap="

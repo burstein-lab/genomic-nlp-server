@@ -31,6 +31,7 @@
                   shouldHideMap = false;
                   $emit('setHideMap', false);
                   $emit('setMap', null);
+                  $emit('resetCoords');
                   searchMode = '';
                   $router.push({ query: {} }); // Reset URL.
                 }
@@ -216,6 +217,7 @@ export default {
     "centerPoint",
     "setClickPoint",
     "resetClickPoint",
+    "resetCoords",
     "setMap",
     "setHideMap",
   ],
