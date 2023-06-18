@@ -11,7 +11,6 @@
     :closable-chips="multiple"
     :loading="isLoading"
     hide-no-data
-    hide-selected
     hide-details
     :label="label"
     auto-select-first
