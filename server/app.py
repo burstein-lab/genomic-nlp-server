@@ -34,7 +34,10 @@ def filter_by_space(type_):
     page = int(request.args.get("page"))
     filter_ = request.args.get("filter")
     result = sorted(set(_filter_by_space(type_, filter_)))
-    return jsonify(result[(page - 1) * PAGE_SIZE:page * PAGE_SIZE])
+    return jsonify({
+        "items": result[(page - 1) * PAGE_SIZE:page * PAGE_SIZE],
+        "done": len(result) <= page * PAGE_SIZE,
+    })
 
 
 @app.route("/space/get/<name>")
@@ -48,6 +51,11 @@ def space_get(name):
 @app.route("/label/get/<label>")
 def filter_by_label(label):
     return jsonify_spaces(MODEL_DATA.df[MODEL_DATA.df["label"] == label], MODEL_DATA)
+
+
+@app.route("/gene_product/get/<name>")
+def filter_by_gene_product(name):
+    return jsonify_spaces(MODEL_DATA.df[MODEL_DATA.df["gene_product"] == name], MODEL_DATA)
 
 
 @app.route("/gene/get/<name>")

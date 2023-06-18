@@ -81,8 +81,8 @@ export default {
       this.done = false;
       this.searchTerm = value;
       const res = await this.fetchItems();
-      this.done = res.length === 0;
-      this.items = res;
+      this.done = res.done;
+      this.items = res.items;
       this.isLoading = false;
     },
     async onIntersect(val: string) {
@@ -91,8 +91,8 @@ export default {
       this.isLoading = true;
       this.page += 1;
       const res = await this.fetchItems();
-      this.done = res.length === 0;
-      this.items = [...this.items, ...res];
+      this.done = res.done;
+      this.items = [...this.items, ...res.items];
       this.isLoading = false;
     },
     async onChoose(val: string | string[]) {
