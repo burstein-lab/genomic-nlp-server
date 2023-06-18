@@ -45,10 +45,10 @@
       <l-circle-marker
         v-for="[_, space] in searchSpaces"
         :lat-lng="[space.y, space.x]"
-        :radius="zoom + 2"
+        :radius="zoom + 3"
         :color="theme.global.current.dark ? '#FFFFFF' : '#000000'"
         :fillColor="space.value.color"
-        :weight="1"
+        :weight="2"
         :opacity="1"
         :fillOpacity="0.7"
         @mouseover="(e) => onMouseOver(e, space)"

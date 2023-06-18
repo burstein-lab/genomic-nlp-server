@@ -33,10 +33,10 @@ const pointStyle = (
   isDarkTheme: boolean
 ) => {
   return {
-    radius: zoom + 2,
+    radius: zoom + (isSearch ? 3 : 2),
     color: isSearch ? (isDarkTheme ? "#FFFFFF" : "#000000") : "#666",
     fillColor: space.value.color,
-    weight: 1,
+    weight: isSearch ? 2 : 1,
     opacity: 1,
     fillOpacity: 0.7,
   };
@@ -49,8 +49,8 @@ const highlightedPointStyle = (
   isDarkTheme: boolean
 ) => {
   const res = pointStyle(space, isSearch, zoom, isDarkTheme);
-  res.radius += 2;
-  res.weight += 2;
+  res.radius += isSearch ? 1 : 2;
+  res.weight += isSearch ? 1 : 2;
   res.color = isDarkTheme ? "#FFFFFF" : "#000000";
   return res;
 };
