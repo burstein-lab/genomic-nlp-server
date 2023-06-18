@@ -17,7 +17,7 @@
               v-model="shouldHideMap"
               @update:modelValue="$emit('setHideMap', shouldHideMap)"
               color="info"
-              label="Hide Map"
+              label="Hide map"
               hide-details
               inset
               density="comfortable"
@@ -55,7 +55,7 @@
           v-model="searchMode"
           @update:modelValue="updateSearchMode"
           :items="searchModes"
-          label="Search Mode"
+          label="Search mode"
           density="comfortable"
           hide-details
         />

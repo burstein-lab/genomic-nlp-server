@@ -19,11 +19,11 @@ interface SearchMode {
 
 const searchModeToType = {
   "Kegg KO": searchMode("Kegg KO", "space"),
-  "Functional Category": searchMode("Functional category", "label"),
-  "Gene Description": searchMode("Gene Description", "gene_product"),
-  "Gene Name": searchMode("Gene Name", "gene"),
+  "Functional category": searchMode("Functional category", "label"),
+  "Gene description": searchMode("Gene description", "gene_product"),
+  "Gene name": searchMode("Gene name", "gene"),
   Neighbors: searchMode("Word", "word", "neighbors"),
-  "Model Word": searchMode("KO / Hypo", "word", "word", true),
+  "Model word": searchMode("KO / Hypo", "word", "word", true),
 } as { [key: string]: SearchMode };
 
 const pointStyle = (

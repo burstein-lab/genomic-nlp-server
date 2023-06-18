@@ -3,7 +3,7 @@
     @update:modelValue="toggleTheme"
     color="info"
     inset
-    label="Light Theme"
+    label="Light theme"
     hide-details
     density="comfortable"
   />
