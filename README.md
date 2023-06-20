@@ -18,9 +18,10 @@ Weights and trained model are available on the paper's [GitHub repository](https
 
 This web service does not require any previous installation.<br/>
 In the following use case, we demonstrate the core features of the web server together with potential biological insights.
+<br>
+Upon entering the web service, a map of all genes supported by our model is presented, color-coded by their functional group, unknown proteins are colored in light grey.<br>
 
 ### Search for sequence
-
 We start by using the server on an unknown protein sequence, with no mapping to existing databases.
 
 ```
