@@ -66,4 +66,4 @@ The neighbors are:
 
 This strengthens the confidence that this protein is related to Defense mechanisms, and more specifically to Subtype I in which Csc proteins are apparent.<br>
 
-_*note*_: distances were calculated on a high dimensional space, thus elements might not seem to be close in the 2D space map.<br>
+_*Note*_: distances were calculated on a high dimensional space, thus elements might not seem to be close in the 2D space map.<br>
