@@ -135,8 +135,8 @@ export default {
       const rawRes = await fetch(url.href, requestOptions);
       const res = await rawRes.json();
       if (!res["out"]) {
-        // No significat hit was found in the DB.
-        this.alertText = "No significat hit was found in the database.";
+        // No significant hit was found in the DB.
+        this.alertText = "No significant hit was found in the database.";
         this.loading = false;
         return;
       }
