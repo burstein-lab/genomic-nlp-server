@@ -6,7 +6,7 @@
 
 The quick user guide is available at our [GitHub wiki](https://github.com/burstein-lab/genomic-nlp-server/wiki)
 
-![](https://github.com/burstein-lab/genomic-nlp-server/blob/main/img/demo.gif)
+![](https://github.com/burstein-lab/genomic-nlp-server/blob/main/img/demo_720.gif)
 
 This repository contains the implementation of _GeNLP_, a user-friendly web server to explore gene relationships!<br>
 The server is based on a pre-trained published language model:<br>
@@ -17,11 +17,12 @@ Weights and trained model are available on the paper's [GitHub repository](https
 ## Getting Started
 
 This web service does not require any previous installation.<br/>
-In the following use case we demonstrate the core features of the web-server together with potential biological insights.
+In the following use case, we demonstrate the core features of the web server together with potential biological insights.
+<br>
+Upon entering the web service, a map of all genes supported by our model is presented, color-coded by their functional group, unknown proteins are colored in light grey.<br>
 
 ### Search for sequence
-
-We start by using the server on an uknown protein sequence, with no mapping to existing databases.
+We start by using the server on an unknown protein sequence, with no mapping to existing databases.
 
 ```
 >Protein1
@@ -33,26 +34,26 @@ To obtain a prediction, go to the search panel and choose `Sequence`. The app wi
 gene identifier in our model for Protein1.<br>
 _NOTICE_: This process might take a few minutes :hugs:<br>
 
-After the search is completed, the predicted gene identifier and its corresponding predictions score will be available for download.
-We will use the predicted gene idetifier: `hypo.clst.15503442` to explore `Protein1`.<br>
+After the search is completed, the predicted gene identifier and its corresponding prediction scores will be available for download.
+We will use the predicted gene identifier: `hypo.clst.15503442` to explore `Protein1`.<br>
 
 ### Explore prediction
 
 _note_: if you ran the search by sequence the predicted gene `hypo.clst.15503442` will be highlighted in the genomic map.<br>
 Go to the search bar and select _model word_ mode. Type the identifier name in the search bar below (it should auto-complete).<br>
-The highlighted dot on the space markes `hypo.clst.15503442`. By zooming in to the cluster in which this dot reside we can interactivaly inspcet the neighboring genes, most of them are related to the CRISPR-Cas system.
-Fon in depth analyzis, click on the dot to open a panel with the following information:
+The highlighted dot on the space marked `hypo.clst.15503442`. By zooming in to the cluster in which this dot resides we can interactively inspect the neighboring genes, most of which are related to the CRISPR-Cas system.
+For in-depth analysis, click on the dot to open a panel with the following information:
 
 - Predicted class
-- Trusted prediction
+- Prediction confidence
 - Neighbors
 - Gene prediction
 
 #### Gene prediction
 
 The predicted class is _Prokaryotic Defense System_ and the prediction is _reliable_ (trusted prediction is True).<br>
-By clicking on `GENE PREDICTIONS` a panel will open showing all scores recived by the model for the different classes. Here, the
-_Prokaryotic Defense System_ prediction was unequivocal, with a score closed to 1 (possible scores are between 0 to 1).<br>
+By clicking on `GENE PREDICTIONS` a panel will open showing all scores received by the model for the different classes. Here, the
+_Prokaryotic Defense System_ prediction was unequivocal, with a score close to 1 (possible scores are between 0 to 1).<br>
 
 #### Analyzing neighbors
 
@@ -60,9 +61,9 @@ By clicking on the `NEIGHBORS` tab a bar plot will be opened with the closest 10
 The neighbors are:
 
 1. Five Cas proteins, including Cas3, Csc1, Csc2 and two variants on Csc3.
-2. Five Hypothetical proteins, all with a trusted prediction of "Prokaryotic Defense System".
+2. Five Hypothetical proteins, all with a trusted prediction of a "Prokaryotic Defense System".
    Hovering on a specific bar will show extended information on each gene.<br>
 
-This streghthens the confidance that this protein is related to Defense mechanisms, and more specifically to Subtype I in which Csc proteins are apparent.<br>
+This strengthens the confidence that this protein is related to Defense mechanisms, and more specifically to Subtype I in which Csc proteins are apparent.<br>
 
-_*note*_: distances were calculated on a high dimensional space, thus elemets might not seem to be close in the 2D space map.<br>
+_*Note*_: distances were calculated on a high dimensional space, thus elements might not seem to be close in the 2D space map.<br>
