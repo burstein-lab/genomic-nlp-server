@@ -67,10 +67,9 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
     entries = {
       Word: point.word,
       KO: point.ko,
-      Label: point.label,
       Product: point.product,
       "Gene name": point.gene_name,
-      "Functional category": point.predicted_class,
+      "Functional category": point.label,
     };
   }
 
