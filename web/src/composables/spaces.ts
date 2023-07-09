@@ -22,8 +22,8 @@ const searchModeToType = {
   "Functional category": searchMode("Functional category", "label"),
   "Gene description": searchMode("Gene description", "gene_product"),
   "Gene name": searchMode("Gene name", "gene"),
-  Neighbors: searchMode("Word", "word", "neighbors"),
-  "Model word": searchMode("KO / Hypo", "word", "word", true),
+  Neighbors: searchMode("Model word", "neighbors"),
+  "Model word": searchMode("Model word", "word", "word", true),
 } as { [key: string]: SearchMode };
 
 const pointStyle = (
