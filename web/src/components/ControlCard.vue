@@ -46,7 +46,7 @@
               variant="text"
               class="ms-2"
               target="_blank"
-              href="https://github.com/burstein-lab/genomic-nlp-server/wiki"
+              href="https://github.com/burstein-lab/genomic-nlp-server#dna-genlp"
             />
           </v-col>
         </v-row>
