@@ -125,7 +125,9 @@ const searchSpaces = async (
   signal
 ): Promise<SpacesResponse> => {
   const url = new URL(
-    `${import.meta.env.VITE_SERVER_URL}/${type}/get/${e.toString()}`
+    `${import.meta.env.VITE_SERVER_URL}/${type}/get/${encodeURIComponent(
+      e.toString()
+    )}`
   );
   const rawRes = await fetch(url.href, { signal });
   return await rawRes.json();
