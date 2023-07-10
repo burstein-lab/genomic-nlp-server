@@ -96,6 +96,9 @@ def normalize(value, value_min, value_max):
 
 
 def calc_zoom(spaces, model_data: ModelData):
+    if len(spaces) == 0:
+        return 0
+
     min_y, min_x = df_coord_to_latlng(
         spaces.y.min(),
         spaces.x.min(),

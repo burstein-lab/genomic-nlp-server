@@ -159,10 +159,7 @@ export default {
       this.focusSpaceResponse(res);
     },
     async onSetSearchSpaces(res: SpacesResponse, autoClick = true) {
-      if (!res) {
-        this.searchSpaces.clear();
-        return;
-      }
+      this.searchSpaces.clear();
 
       for (const space of res.spaces as Space[]) {
         this.searchSpaces.set(space.value.word, space);
