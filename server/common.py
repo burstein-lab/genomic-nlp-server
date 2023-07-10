@@ -123,7 +123,7 @@ def calc_center(spaces, model_data: ModelData):
         calc_middle_value(spaces.x),
         model_data,
     )
-    return {"lat": lat, "lng": lng}
+    return {"lat": None if pd.isnull(lat) else lat, "lng": None if pd.isnull(lng) else lng}
 
 
 def jsonify_spaces(spaces, model_data: ModelData, additional_columns: list[str] = None):

@@ -1,7 +1,6 @@
 import pickle
 import math
 import re
-from urllib.parse import unquote_plus
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -33,51 +32,51 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 @app.route("/<type_>/search")
 def filter_by_space(type_):
     page = int(request.args.get("page"))
-    filter_ = unquote_plus(request.args.get("filter"))
-    result = sorted(set(_filter_by_space(unquote_plus(type_), filter_)))
+    filter_ = request.args.get("filter")
+    result = sorted(set(_filter_by_space(type_, filter_)))
     return jsonify({
         "items": result[(page - 1) * PAGE_SIZE:page * PAGE_SIZE],
         "done": len(result) <= page * PAGE_SIZE,
     })
 
 
-@app.route("/space/get/<name>")
+@app.route("/space/get/<path:name>")
 def space_get(name):
     return jsonify_spaces(
         MODEL_DATA.df[MODEL_DATA.df["KO"].str.match(
-            unquote_plus(name), na=False)],
+            name, na=False)],
         MODEL_DATA,
     )
 
 
-@app.route("/label/get/<label>")
+@app.route("/label/get/<path:label>")
 def filter_by_label(label):
-    return jsonify_spaces(MODEL_DATA.df[MODEL_DATA.df["label"] == unquote_plus(label)], MODEL_DATA)
+    return jsonify_spaces(MODEL_DATA.df[MODEL_DATA.df["label"] == label], MODEL_DATA)
 
 
-@app.route("/gene_product/get/<name>")
+@app.route("/gene_product/get/<path:name>")
 def filter_by_gene_product(name):
-    return jsonify_spaces(MODEL_DATA.df[MODEL_DATA.df["gene_product"] == unquote_plus(name)], MODEL_DATA)
+    return jsonify_spaces(MODEL_DATA.df[MODEL_DATA.df["gene_product"] == name], MODEL_DATA)
 
 
-@app.route("/gene/get/<name>")
+@app.route("/gene/get/<path:name>")
 def filter_by_gene(name):
     df = G2KO.dropna()
     # pylint: disable=unsubscriptable-object
-    g2ko_spaces = df[df["name"].str.match(unquote_plus(name))]
+    g2ko_spaces = df[df["name"].str.match(name)]
     spaces = MODEL_DATA.df[MODEL_DATA.df["KO"].isin(g2ko_spaces["ko"])]
     return jsonify_spaces(spaces, MODEL_DATA)
 
 
-@app.route("/word/get/<label>")
+@app.route("/word/get/<path:label>")
 def filter_by_word(label):
     notna_df = MODEL_DATA.df.dropna(subset=["word"])
-    return jsonify_spaces(notna_df[notna_df["word"].str.match(unquote_plus(label).replace(",", "|"))], MODEL_DATA)
+    return jsonify_spaces(notna_df[notna_df["word"].str.match(label.replace(",", "|"))], MODEL_DATA)
 
 
-@app.route("/plot/scatter/<word>")
+@app.route("/plot/scatter/<path:word>")
 def plot_scatter(word):
-    word_data = MODEL_DATA.df[MODEL_DATA.df['word'] == unquote_plus(word)]
+    word_data = MODEL_DATA.df[MODEL_DATA.df['word'] == word]
     pred_df = pd.DataFrame(
         word_data['prediction_summary'].values[0].items(),
         columns=['class', 'score'],
@@ -97,21 +96,21 @@ def plot_scatter(word):
 
     return jsonify(
         {
-            "label": f"Word: {unquote_plus(word)}, Hypothetical: {word_data['hypothetical'].values[0]}, Significant: {word_data['significant'].values[0]}",
+            "label": f"Word: {word}, Hypothetical: {word_data['hypothetical'].values[0]}, Significant: {word_data['significant'].values[0]}",
             "data": data,
             "ticks": list(pred_df["class"].values),
         }
     )
 
 
-@app.route("/neighbors/get/<word>")
+@app.route("/neighbors/get/<path:word>")
 def neighbors(word):
     additional_columns = []
-    if unquote_plus(request.args.get("with_distance")) == "true":
+    if request.args.get("with_distance") == "true":
         additional_columns.append("distance")
 
     top_k_df = pd.read_csv(
-        f'https://storage.googleapis.com/gnlp.bursteinlab.org/knn/{unquote_plus(word)}.txt',
+        f'https://storage.googleapis.com/gnlp.bursteinlab.org/knn/{word}.txt',
         names=["word", "distance"],
         delimiter=" ",
     )
@@ -127,16 +126,16 @@ def neighbors(word):
 def _filter_by_space(type_, filter_):
     match type_:
         case "gene":
-            return _search(G2KO, "name", unquote_plus(filter_))
+            return _search(G2KO, "name", filter_)
         case "label":
-            return _search(LABEL_TO_WORD, "label", unquote_plus(filter_))
+            return _search(LABEL_TO_WORD, "label", filter_)
         case "space":
-            return _search(MODEL_DATA.df, "KO", unquote_plus(filter_))
+            return _search(MODEL_DATA.df, "KO", filter_)
         case _:
             if type_ == "ko":
                 type_ = "KO"
 
-            return _search(MODEL_DATA.df, unquote_plus(type_), unquote_plus(filter_))
+            return _search(MODEL_DATA.df, type_, filter_)
 
 
 def _search(df, column, filter_: str) -> list[str]:
