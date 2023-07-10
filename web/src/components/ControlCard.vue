@@ -33,6 +33,7 @@
                   $emit('setMap', null);
                   $emit('resetCoords');
                   searchMode = '';
+                  selectedSearchMode = '';
                   $router.push({ query: {} }); // Reset URL.
                 }
               "
