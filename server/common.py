@@ -69,6 +69,7 @@ def row_to_feature(model_data: ModelData, row, additonal_columns: list[str] = No
         "product": row["product"] if not pd.isnull(row["product"]) else None,
         "gene_name": row.gene_name if not pd.isnull(row.gene_name) else None,
         "significant": row.significant if not pd.isnull(row.significant) else None,
+        "ncbi_nr": row.ncbi_nr if not pd.isnull(row.ncbi_nr) else None,
         "predicted_class": row.predicted_class if not pd.isnull(row.predicted_class) else None,
         # hex color
         "color": row.color if not pd.isnull(row.color) else None,

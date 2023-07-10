@@ -308,6 +308,7 @@ export default {
         "Gene name",
         "Functional category",
         "Prediction confidence",
+        "NCBI NR description",
         "Distance",
       ];
       const result: Object[] = [];
@@ -325,6 +326,7 @@ export default {
               ? "high"
               : "low"
             : "N/A",
+          "NCBI NR description": space.hypothetical ? space.ncbi_nr : "N/A",
           Distance: space.distance,
         });
       });

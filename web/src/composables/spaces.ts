@@ -62,6 +62,7 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
       Word: point.word,
       "Predicted class": point.predicted_class,
       "Prediction confidence": point.significant ? "high" : "low",
+      "NCBI NR description": point.ncbi_nr,
     };
   } else {
     entries = {
@@ -96,6 +97,7 @@ interface SpaceValue {
   significant: boolean;
   hypothetical: boolean;
   predicted_class: string;
+  ncbi_nr: string;
   distance: string;
   color: string;
 }
