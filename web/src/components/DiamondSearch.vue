@@ -61,11 +61,21 @@
       <v-col cols="1"></v-col>
     </v-row>
   </v-container>
+  <v-snackbar v-model="snackbar" multi-line>
+    Rare genes may not appear as they lack enough occurrences to provide an
+    informative representation of their context.
+
+    <template v-slot:actions>
+      <v-btn color="blue" variant="text" @click="snackbar = false">
+        Close
+      </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script lang="ts">
 import { searchSpaces, Space } from "@/composables/spaces";
-import { downloadFile, truncate } from "@/composables/utils";
+import { downloadFile } from "@/composables/utils";
 
 export default {
   name: "DiamondSearch",
@@ -86,6 +96,7 @@ export default {
       alertText: "",
       controller: new AbortController(),
       diamondResults: null as Array<DiamondResult> | null,
+      snackbar: true,
     };
   },
   beforeMount() {
