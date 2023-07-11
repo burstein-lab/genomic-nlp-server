@@ -171,6 +171,7 @@ export default {
 
       const ids = out.map((line: string) => line.split("\t")[1]);
       const searchResult = await searchSpaces("word", ids);
+      this.$emit("setLoading", false);
       this.$emit("setMap", searchResult);
       const wordToSpace = new Map<string, Space>();
       for (const space of searchResult.spaces) {
@@ -207,7 +208,6 @@ export default {
       }
 
       this.downloadableDiamondResult = result;
-      this.$emit("setLoading", false);
     },
   },
   watch: {

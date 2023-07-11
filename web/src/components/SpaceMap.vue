@@ -90,20 +90,13 @@
           "
           @resetClickPoint="onResetClickPoint"
           @centerPoint="onCenterPoint"
-          @setMap="
-            (res) => {
-              onSetSearchSpaces(res);
-            }
-          "
+          @setMap="onSetSearchSpaces"
           @setHideMap="(shouldHideMap) => (isMapVisible = !shouldHideMap)"
         />
       </l-control>
     </l-map>
   </div>
   <v-dialog v-model="diamondDialog" width="800">
-    <template v-slot:activator="{ props }">
-      <v-btn color="primary" v-bind="props"> Open Dialog </v-btn>
-    </template>
     <v-card>
       <v-card-text>
         Selecting a space during sequence search will abort the search.
@@ -190,13 +183,17 @@ export default {
         this._clickedSpace = null;
       }
     },
-    async onSetClickPoint(word: string) {
+    async onSetClickPoint(word: string, setQueryParams = true) {
       const res = await searchSpaces(
         "word",
         word,
         new AbortController().signal
       );
-      this.clickedSpace = res.spaces[0];
+      if (setQueryParams) {
+        this.clickedSpace = res.spaces[0];
+      } else {
+        this._clickedSpace = res.spaces[0];
+      }
       this.focusSpaceResponse(res);
     },
     async onSetSearchSpaces(res: SpacesResponse, autoClick = true) {
@@ -247,7 +244,7 @@ export default {
 
       // Setting before search spaces in case the clicked space is in the search results.
       if (this.$route.query.clickedSpace) {
-        this.onSetClickPoint(this.$route.query.clickedSpace);
+        this.onSetClickPoint(this.$route.query.clickedSpace, false);
       } else {
         this.clickedSpace = null;
       }
@@ -259,20 +256,6 @@ export default {
         );
         await this.onSetSearchSpaces(res, false);
       }
-
-      const printCenter = () => {
-        this.$router.push({
-          query: {
-            ...this.$route.query,
-            location: `${this.zoom},${this.map.getCenter().lat},${
-              this.map.getCenter().lng
-            }`,
-          },
-        });
-        setTimeout(printCenter, 3000);
-      };
-
-      printCenter();
     },
     coordsToTile(coords: Coords) {
       return `${coords.z}_${coords.x}_${coords.y}`;

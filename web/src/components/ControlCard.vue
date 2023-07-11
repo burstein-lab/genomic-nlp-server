@@ -395,7 +395,6 @@ export default {
 
       this.controller.abort();
       this.controller = new AbortController();
-      this.loading = false;
       this.barData = null;
       this.scatterData = null;
       this.plotToggle = "";
