@@ -72,7 +72,9 @@
         <ControlCard
           :hoveredSpace="hoveredSpace"
           :clickedSpace="clickedSpace"
+          :isDiamondLoading="isDiamondLoading"
           @setClickPoint="onSetClickPoint"
+          @setDiamondLoading="onSetDiamondLoading"
           @resetCoords="
             async () => {
               zoom = 0;
@@ -98,6 +100,37 @@
       </l-control>
     </l-map>
   </div>
+  <v-dialog v-model="diamondDialog" width="800">
+    <template v-slot:activator="{ props }">
+      <v-btn color="primary" v-bind="props"> Open Dialog </v-btn>
+    </template>
+    <v-card>
+      <v-card-text>
+        Selecting a space during sequence search will abort the search.
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn
+          color="info"
+          variant="text"
+          @click="diamondDialogSelection = null"
+        >
+          Cancel selection
+        </v-btn>
+        <v-btn
+          color="error"
+          variant="text"
+          @click="
+            isDiamondLoading = false;
+            clickedSpace = diamondDialogSelection;
+            diamondDialogSelection = null;
+          "
+        >
+          Cancel search
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script lang="ts">
@@ -146,9 +179,17 @@ export default {
       publicURL: import.meta.env.VITE_PUBLIC_URL,
       map: null as LMap | null,
       searchSpaces: new Map<string, Space>(),
+      isDiamondLoading: false,
+      diamondDialogSelection: null as Space | null,
     };
   },
   methods: {
+    async onSetDiamondLoading(isDiamondLoading: boolean) {
+      this.isDiamondLoading = isDiamondLoading;
+      if (isDiamondLoading) {
+        this._clickedSpace = null;
+      }
+    },
     async onSetClickPoint(word: string) {
       const res = await searchSpaces(
         "word",
@@ -329,6 +370,11 @@ export default {
         return this._clickedSpace;
       },
       set(value: Space | null) {
+        if (this.isDiamondLoading) {
+          this.diamondDialogSelection = value;
+          return;
+        }
+
         this._clickedSpace = value;
         this.$router.push({
           query: {
@@ -337,6 +383,9 @@ export default {
           },
         });
       },
+    },
+    diamondDialog(): boolean {
+      return Boolean(this.diamondDialogSelection);
     },
   },
   watch: {

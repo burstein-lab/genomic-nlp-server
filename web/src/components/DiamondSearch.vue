@@ -10,8 +10,8 @@
     label="Enter protein sequence (FASTA format)"
     rows="5"
     shaped
-    :append-icon="loading ? 'mdi-close' : 'mdi-send'"
-    @click:append="loading ? onCancelSearch() : onSequenceSearch(sequence)"
+    :append-icon="isLoading ? 'mdi-close' : 'mdi-send'"
+    @click:append="isLoading ? onCancelSearch() : onSequenceSearch(sequence)"
     density="comfortable"
     hide-details
   />
@@ -66,7 +66,7 @@
     informative representation of their context.
 
     <template v-slot:actions>
-      <v-btn color="blue" variant="text" @click="snackbar = false">
+      <v-btn color="info" variant="text" @click="snackbar = false">
         Close
       </v-btn>
     </template>
@@ -79,10 +79,14 @@ import { downloadFile } from "@/composables/utils";
 
 export default {
   name: "DiamondSearch",
+  props: {
+    isLoading: {
+      type: Boolean,
+    },
+  },
   data: () => {
     return {
       fromSequence: true,
-      loading: false,
       plotToggle: "",
       scatterData: null as Object | null,
       scatterOptions: null as Object | null,
@@ -110,7 +114,7 @@ export default {
     onCancelSearch() {
       this.controller.abort();
       this.controller = new AbortController();
-      this.loading = false;
+      this.$emit("setLoading", false);
     },
     downloadDiamondResult() {
       downloadFile("sequence.tsv", this.downloadableDiamondResult);
@@ -129,7 +133,7 @@ export default {
 
       this.downloadableDiamondResult = "";
       this.alertText = "";
-      this.loading = true;
+      this.$emit("setLoading", true);
       this.$router.push({
         query: {
           ...this.$route.query,
@@ -148,7 +152,7 @@ export default {
       if (!res["out"]) {
         // No significant hit was found in the DB.
         this.alertText = "No significant hit was found in the database.";
-        this.loading = false;
+        this.$emit("setLoading", false);
         return;
       }
       // for each line in the output, split on tab and take the second element.
@@ -203,13 +207,10 @@ export default {
       }
 
       this.downloadableDiamondResult = result;
-      this.loading = false;
+      this.$emit("setLoading", false);
     },
   },
   watch: {
-    loading(val) {
-      this.$emit("setLoading", val);
-    },
     sequenceFile(val) {
       if (!val) return;
 

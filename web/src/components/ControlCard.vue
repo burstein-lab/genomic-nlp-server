@@ -64,8 +64,9 @@
         <div v-if="selectedSearchMode">
           <DiamondSearch
             v-if="selectedSearchMode === 'Sequence'"
+            :isLoading="isDiamondLoading"
             @setMap="(e) => $emit('setMap', e)"
-            @setLoading="(isLoading: boolean) => {isDiamondLoading = isLoading; loading = isLoading}"
+            @setLoading="(isLoading: boolean) => {$emit('setDiamondLoading', isLoading);}"
           />
           <Search
             v-else
@@ -102,14 +103,14 @@
                 >
                   <v-btn
                     value="neighbors"
-                    :disabled="loading"
+                    :disabled="isLoading"
                     density="comfortable"
                   >
                     Neighbors
                   </v-btn>
                   <v-btn
                     value="predictions"
-                    :disabled="loading || !clickedSpace.value.hypothetical"
+                    :disabled="isLoading || !clickedSpace.value.hypothetical"
                     density="comfortable"
                   >
                     Gene Predictions
@@ -148,7 +149,7 @@
         <div v-else class="pt-2">
           Search to explore the model and hover a point to view extra options
         </div>
-        <div v-if="loading" class="pt-2">
+        <div v-if="isLoading" class="pt-2">
           {{
             isDiamondLoading
               ? "Searching similar sequences, please wait..."
@@ -194,13 +195,15 @@ export default {
     clickedSpace: {
       type: Object as () => Space | null,
     },
+    isDiamondLoading: {
+      type: Boolean,
+    },
   },
   data: () => {
     const searchModes = [...Object.keys(searchModeToType)];
     searchModes.splice(1, 0, "Sequence");
     return {
       searchMode: "",
-      isDiamondLoading: false,
       selectedSearchMode: "",
       searchModes: searchModes,
       searchModeToType,
@@ -220,6 +223,7 @@ export default {
     this.selectedSearchMode = this.searchMode;
   },
   emits: [
+    "setDiamondLoading",
     "centerPoint",
     "setClickPoint",
     "resetClickPoint",
@@ -339,6 +343,9 @@ export default {
     },
   },
   computed: {
+    isLoading(): boolean {
+      return this.loading || this.isDiamondLoading;
+    },
     plotToggle: {
       get() {
         return this.currentPlot;
