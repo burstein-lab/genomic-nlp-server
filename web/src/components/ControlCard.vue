@@ -160,6 +160,16 @@
       </v-container>
     </v-card-text>
   </v-card>
+  <v-snackbar v-model="snackbar" multi-line>
+    The original high-dimensional distances may look different in the
+    two-dimensional representation.
+
+    <template v-slot:actions>
+      <v-btn color="info" variant="text" @click="snackbar = false">
+        Close
+      </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script lang="ts">
@@ -214,6 +224,7 @@ export default {
       currentPlot: "",
       scatterData: null as ScatterData | null,
       shouldHideMap: false,
+      snackbar: false,
     };
   },
   async beforeMount() {
@@ -267,6 +278,7 @@ export default {
     },
     async updateSearchMode(val: string) {
       this.searchMode = val;
+      if (val === "Neighbors") this.snackbar = true;
       await this.$router.push({
         query: {
           ...this.$route.query,
@@ -363,6 +375,7 @@ export default {
         });
         if (val == "neighbors" && !this.barData) {
           this.loading = true;
+          this.snackbar = true;
           const rawRes = await fetch(
             `${import.meta.env.VITE_SERVER_URL}/neighbors/get/${
               this.clickedSpace.value.word
