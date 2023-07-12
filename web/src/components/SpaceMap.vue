@@ -57,6 +57,7 @@
       />
       <l-circle-marker
         v-for="space in backgroundInteractiveSpaces(zoom)"
+        :key="space.value.word"
         :lat-lng="[space.y, space.x]"
         :radius="zoom + 2"
         color="#666"
@@ -256,6 +257,19 @@ export default {
         );
         await this.onSetSearchSpaces(res, false);
       }
+
+      const setQueryCenter = () => {
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            location: `${this.zoom},${this.map.getCenter().lat},${
+              this.map.getCenter().lng
+            }`,
+          },
+        });
+        setTimeout(setQueryCenter, 3000);
+      };
+      setQueryCenter();
     },
     coordsToTile(coords: Coords) {
       return `${coords.z}_${coords.x}_${coords.y}`;

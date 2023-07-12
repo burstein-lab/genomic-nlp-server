@@ -42,11 +42,20 @@
               </v-tooltip>
             </v-col>
             <v-col>
-              <v-btn-group density="comfortable">
-                <v-btn color="grey" icon dark @click="$emit('resetClickPoint')">
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-              </v-btn-group>
+              <v-tooltip text="Cancel selection" location="bottom">
+                <template v-slot:activator="{ props }">
+                  <v-btn-group density="comfortable" v-bind="props">
+                    <v-btn
+                      color="grey"
+                      icon
+                      dark
+                      @click="$emit('resetClickPoint')"
+                    >
+                      <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                  </v-btn-group>
+                </template>
+              </v-tooltip>
             </v-col>
           </v-row>
         </v-container>
