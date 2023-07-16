@@ -44,6 +44,7 @@
       />
       <l-circle-marker
         v-for="[_, space] in searchSpaces"
+        :key="space.value.word"
         :lat-lng="[space.y, space.x]"
         :radius="zoom + 3"
         :color="theme.global.current.dark ? '#FFFFFF' : '#000000'"
@@ -348,7 +349,6 @@ export default {
       const res: Space[] = [];
       for (const [tile, spaces] of this.tileToSpaces) {
         if (tile[0] !== String(zoom)) continue;
-
         for (const space of spaces) {
           if (
             !this.searchSpaces.has(space.value.word) &&
