@@ -348,7 +348,6 @@ export default {
 
       const res: Space[] = [];
       for (const [tile, spaces] of this.tileToSpaces) {
-        if (tile[0] !== String(zoom)) continue;
         for (const space of spaces) {
           if (
             !this.searchSpaces.has(space.value.word) &&
