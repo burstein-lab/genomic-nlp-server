@@ -72,6 +72,7 @@ class Plotter:
         zoom_levels = calc_zoom_levels(zoom)
         for i, x_lines in enumerate(zoom_levels):
             for j, zoom_ranges in enumerate(x_lines):
+                print("json plot zoom:", zoom, "i:", i, "j:", j)
                 min_x, max_x, min_y, max_y = self._focus(*zoom_ranges)
                 # Including all boundaries. We won't have overlaps even if this and neighboring tiles will be plotted because the points are masked from the main df.
                 mask = (
@@ -111,6 +112,7 @@ class Plotter:
             uncropped_size * self.normalize_to_standard(row['y'], self.model_data.y_min, self.model_data.y_max)), axis=1)
         for i, x_lines in enumerate(zoom_levels):
             for j, zoom_ranges in enumerate(x_lines):
+                print("img plot zoom:", zoom, "i:", i, "j:", j)
                 plt.clf()
                 fig = plt.gcf()
                 fig.set_size_inches(TILE_SIZE, TILE_SIZE)
@@ -234,6 +236,7 @@ def plot_everything(args):
             zoom,
             -1 if zoom > args.max_png_zoom else args.min_img_points,
         )
+        print("finished plotting jsons at zoom", zoom)
         if len(df) == 0:
             print("finished plotting at zoom", zoom)
             continue
@@ -245,21 +248,20 @@ def plot_everything(args):
             outdir,
             zoom,
         )
+        print("finished plotting images at zoom", zoom)
 
 
 if __name__ == "__main__":
     argparse = argparse.ArgumentParser()
     argparse.add_argument('--outdir', default='../src/assets/', type=str,
-                          help='output dir for img to be saved [default[/src/assest]')
+                          help='output dir for img to be saved')
     argparse.add_argument('--min-zoom', default=0, type=int)
     argparse.add_argument('--max-zoom', default=0, type=int)
     argparse.add_argument('--max-png-zoom', default=0, type=int)
     argparse.add_argument('--bins', default=1, type=int,
-                          help='number of bins to split the space [default:1]')
+                          help='number of bins to split the space')
     argparse.add_argument('--max_bins', default=30, type=int,
-                          help='max number of bins [default:30]')
+                          help='max number of bins')
     argparse.add_argument('--min-img-points', default=2000, type=int,
-                          help='Number of points for image. If less a pickle will be created [default: 1000]')
-    argparse.add_argument('--save_img', default=1, type=int, help='whether to save figures or display them, 1 is True,'
-                          ' else 0 [default: 1]')
+                          help='Number of points for image. If less a pickle will be created')
     plot_everything(argparse.parse_args())
