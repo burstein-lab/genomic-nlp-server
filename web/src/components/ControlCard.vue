@@ -265,6 +265,7 @@ export default {
       this.loading = false;
     },
     async searchSpaces(type: string, e: string | string[]) {
+      this.resetClickPoint();
       this.loading = true;
       this.$router.push({
         query: {
@@ -277,6 +278,7 @@ export default {
       this.loading = false;
     },
     async updateSearchMode(val: string) {
+      this.resetClickPoint();
       this.searchMode = val;
       if (val === "Neighbors") this.snackbar = true;
       await this.$router.push({
