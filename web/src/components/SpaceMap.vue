@@ -170,7 +170,7 @@ export default {
       _clickedSpace: undefined as Space | null,
       isMapVisible: true,
       tileToSpaces: new Map<string, Space[]>(),
-      tileSize: 1024,
+      tileSize: 512,
       publicURL: import.meta.env.VITE_PUBLIC_URL,
       map: null as LMap | null,
       searchSpaces: new Map<string, Space>(),
