@@ -126,6 +126,7 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+  <Snackbar :show="snackbar" @close="snackbar = false" />
 </template>
 
 <script lang="ts">
@@ -139,6 +140,7 @@ import {
 import "leaflet/dist/leaflet.css";
 import { useTheme } from "vuetify";
 import ControlCard from "./ControlCard.vue";
+import Snackbar from "./Snackbar.vue";
 import {
   searchModeToType,
   SpacesResponse,
@@ -158,6 +160,7 @@ export default {
     LTileLayer,
     LControl,
     ControlCard,
+    Snackbar,
   },
   data() {
     const theme = useTheme();
@@ -176,6 +179,7 @@ export default {
       searchSpaces: new Map<string, Space>(),
       isDiamondLoading: false,
       diamondDialogSelection: null as Space | null,
+      snackbar: false,
     };
   },
   methods: {
