@@ -8,10 +8,13 @@ on:
         default: 0
       max_png_zoom:
         description: "Max zoom level for PNG tiles"
-        default: 6
+        default: 8
       max_zoom:
         description: "Max zoom level for map tiles"
-        default: 8
+        default: 9
+      min_img_points:
+        description: "Min number of points for image tiles"
+        default: 250
 
 jobs:
   create-map:
@@ -33,5 +36,5 @@ jobs:
           key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
       - run: pipenv install --dev
       - run: gsutil cp gs://gnlp.bursteinlab.org/data/model_data.pkl ./
-      - run: pipenv run python server/plot.py --outdir=web/src/assets/map --min-zoom ${{ github.event.inputs.min_zoom }} --max-png-zoom ${{ github.event.inputs.max_png_zoom }} --max-zoom ${{ github.event.inputs.max_zoom }}
-      - run: gsutil -m rsync -rd web/src/assets/map gs://gnlp.bursteinlab.org/map
+      - run: pipenv run python server/plot.py --outdir=web/public/map --min-zoom ${{ github.event.inputs.min_zoom }} --max-png-zoom ${{ github.event.inputs.max_png_zoom }} --max-zoom ${{ github.event.inputs.max_zoom }} --min-img-points ${{ github.event.inputs.min_img_points }}
+      - run: gsutil -m rsync -rd web/public/map gs://gnlp.bursteinlab.org/map

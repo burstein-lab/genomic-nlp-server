@@ -28,7 +28,7 @@ dist-ssr
 *.sln
 *.sw?
 
-web/public/
+**/web/**
 *.png
 *.pkl
 *.pyc
