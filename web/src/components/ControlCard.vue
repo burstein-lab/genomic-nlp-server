@@ -277,7 +277,6 @@ export default {
       this.loading = false;
     },
     async searchSpaces(type: string, e: string | string[]) {
-      this.resetClickPoint();
       this.loading = true;
       this.$router.push({
         query: {
