@@ -94,6 +94,7 @@
             @downloadSequence="downloadSequence"
             @centerPoint="$emit('centerPoint')"
             @resetClickPoint="resetClickPoint"
+            @back="onBack"
           />
           <v-container class="text-center pt-1 py-0">
             <v-row justify="center" no-gutters>

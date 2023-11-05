@@ -25,6 +25,22 @@
                 </template>
               </v-tooltip>
             </v-col>
+            <v-col class="pe-4">
+              <v-tooltip text="Move to point" location="bottom">
+                <template v-slot:activator="{ props }">
+                  <v-btn-group density="comfortable" v-bind="props">
+                    <v-btn
+                      color="info"
+                      icon
+                      density="comfortable"
+                      @click="$emit('centerPoint')"
+                    >
+                      <v-icon>mdi-target</v-icon>
+                    </v-btn>
+                  </v-btn-group>
+                </template>
+              </v-tooltip>
+            </v-col>
             <v-col v-if="backable" class="pe-4">
               <v-tooltip
                 text="Back to previously selected point"
@@ -38,23 +54,7 @@
                       density="comfortable"
                       @click="$emit('back')"
                     >
-                      <v-icon>mdi-target</v-icon>
-                    </v-btn>
-                  </v-btn-group>
-                </template>
-              </v-tooltip>
-            </v-col>
-            <v-col class="pe-4">
-              <v-tooltip text="Move to point" location="bottom">
-                <template v-slot:activator="{ props }">
-                  <v-btn-group density="comfortable" v-bind="props">
-                    <v-btn
-                      color="info"
-                      icon
-                      density="comfortable"
-                      @click="$emit('centerPoint')"
-                    >
-                      <v-icon>mdi-target</v-icon>
+                      <v-icon>mdi-arrow-left</v-icon>
                     </v-btn>
                   </v-btn-group>
                 </template>
