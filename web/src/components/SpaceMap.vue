@@ -205,8 +205,12 @@ export default {
         this.searchSpaces.set(space.value.word, space);
       }
 
-      if (autoClick && res.spaces.length === 1) {
-        this.clickedSpace = res.spaces[0];
+      if (autoClick) {
+        if (res.spaces.length === 1) {
+          this.clickedSpace = res.spaces[0];
+        } else {
+          this.clickedSpace = null;
+        }
       }
 
       console.log(res.zoom, res.latlng);
