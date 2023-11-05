@@ -9,6 +9,25 @@
       <template v-if="isActionItem(k)" v-slot:append>
         <v-container class="text-center pa-0">
           <v-row justify="center" no-gutters>
+            <v-col v-if="backable" class="pe-4">
+              <v-tooltip
+                text="Go to previously selected point"
+                location="bottom"
+              >
+                <template v-slot:activator="{ props }">
+                  <v-btn-group density="comfortable" v-bind="props">
+                    <v-btn
+                      color="info"
+                      icon
+                      density="comfortable"
+                      @click="$emit('back')"
+                    >
+                      <v-icon>mdi-arrow-left</v-icon>
+                    </v-btn>
+                  </v-btn-group>
+                </template>
+              </v-tooltip>
+            </v-col>
             <v-col class="pe-4">
               <v-tooltip text="Download sequence" location="bottom">
                 <template v-slot:activator="{ props }">
@@ -36,25 +55,6 @@
                       @click="$emit('centerPoint')"
                     >
                       <v-icon>mdi-target</v-icon>
-                    </v-btn>
-                  </v-btn-group>
-                </template>
-              </v-tooltip>
-            </v-col>
-            <v-col v-if="backable" class="pe-4">
-              <v-tooltip
-                text="Go to previously selected point"
-                location="bottom"
-              >
-                <template v-slot:activator="{ props }">
-                  <v-btn-group density="comfortable" v-bind="props">
-                    <v-btn
-                      color="info"
-                      icon
-                      density="comfortable"
-                      @click="$emit('back')"
-                    >
-                      <v-icon>mdi-arrow-left</v-icon>
                     </v-btn>
                   </v-btn-group>
                 </template>
