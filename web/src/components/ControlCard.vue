@@ -79,16 +79,22 @@
         </div>
         <v-divider class="mx-4 mt-4" />
         <div v-if="hoveredSpace">
-          <SpaceInfo :space="hoveredSpace" :actionable="false" />
+          <SpaceInfo
+            :space="hoveredSpace"
+            :actionable="false"
+            :backable="false"
+          />
           Click point for actions
         </div>
         <div v-else-if="clickedSpace">
           <SpaceInfo
             :space="clickedSpace"
             :actionable="true"
+            :backable="previousPoint != null"
             @downloadSequence="downloadSequence"
             @centerPoint="$emit('centerPoint')"
             @resetClickPoint="resetClickPoint"
+            @back="onBack"
           />
           <v-container class="text-center pt-1 py-0">
             <v-row justify="center" no-gutters>
@@ -218,6 +224,7 @@ export default {
       scatterData: null as ScatterData | null,
       shouldHideMap: false,
       snackbar: false,
+      previousPoint: null as Space | null,
     };
   },
   async beforeMount() {
@@ -255,6 +262,11 @@ export default {
     async onNeighborsClick(word: string) {
       this.loading = true;
       this.$emit("setClickPoint", word);
+      this.loading = false;
+    },
+    async onBack() {
+      this.loading = true;
+      this.$emit("setClickPoint", this.previousPoint);
       this.loading = false;
     },
     async searchSpaces(type: string, e: string | string[]) {
@@ -398,6 +410,12 @@ export default {
         // Only happens on first load. After that, oldVal is either set, or null.
         this.plotToggle = this.$route.query.plot;
         return;
+      }
+
+      if (oldVal && newVal && oldVal.value.word !== newVal.value.word) {
+        this.previousPoint = oldVal?.value?.word;
+      } else {
+        this.previousPoint = null;
       }
 
       this.controller.abort();
