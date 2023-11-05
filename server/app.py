@@ -131,6 +131,8 @@ def _filter_by_space(type_, filter_):
             return _search(LABEL_TO_WORD, "label", filter_)
         case "space":
             return _search(MODEL_DATA.df, "KO", filter_)
+        case "word" | "neighbors":
+            return _search(MODEL_DATA.df, "word", filter_)
         case _:
             if type_ == "ko":
                 type_ = "KO"
