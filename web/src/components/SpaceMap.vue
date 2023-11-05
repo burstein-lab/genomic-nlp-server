@@ -179,7 +179,7 @@ export default {
       searchSpaces: new Map<string, Space>(),
       isDiamondLoading: false,
       diamondDialogSelection: null as Space | null,
-      snackbar: false,
+      snackbar: true,
     };
   },
   methods: {
