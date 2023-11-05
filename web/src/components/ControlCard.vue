@@ -160,16 +160,7 @@
       </v-container>
     </v-card-text>
   </v-card>
-  <v-snackbar v-model="snackbar" multi-line>
-    The original high-dimensional distances may look different in the
-    two-dimensional representation.
-
-    <template v-slot:actions>
-      <v-btn color="info" variant="text" @click="snackbar = false">
-        Close
-      </v-btn>
-    </template>
-  </v-snackbar>
+  <Snackbar :show="snackbar" @close="snackbar = false" />
 </template>
 
 <script lang="ts">
@@ -179,6 +170,7 @@ import SpaceInfo from "./SpaceInfo.vue";
 import DiamondSearch from "./DiamondSearch.vue";
 import NeighborsPlot from "./NeighborsPlot.vue";
 import PredictionPlot from "./PredictionPlot.vue";
+import Snackbar from "./Snackbar.vue";
 import { SpacesReponse, ScatterData } from "@/composables/spaces";
 import { downloadFile } from "@/composables/utils";
 import {
@@ -197,6 +189,7 @@ export default {
     ThemeToggle,
     SpaceInfo,
     DiamondSearch,
+    Snackbar,
   },
   props: {
     hoveredSpace: {
