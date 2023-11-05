@@ -43,7 +43,7 @@
             </v-col>
             <v-col v-if="backable" class="pe-4">
               <v-tooltip
-                text="Back to previously selected point"
+                text="Go to previously selected point"
                 location="bottom"
               >
                 <template v-slot:activator="{ props }">
