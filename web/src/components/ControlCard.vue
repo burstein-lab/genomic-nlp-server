@@ -24,23 +24,7 @@
             />
           </v-col>
           <v-col class="py-1 my-auto" cols="auto">
-            <v-btn
-              @click="
-                {
-                  resetClickPoint();
-                  shouldHideMap = false;
-                  $emit('setHideMap', false);
-                  $emit('setMap', null);
-                  $emit('resetCoords');
-                  searchMode = '';
-                  selectedSearchMode = '';
-                  $router.push({ query: {} }); // Reset URL.
-                }
-              "
-              color="info"
-            >
-              Reset
-            </v-btn>
+            <v-btn @click="reload" color="info"> Reset </v-btn>
             <v-btn
               icon="mdi-help-circle-outline"
               color="info"
@@ -243,6 +227,14 @@ export default {
     "setHideMap",
   ],
   methods: {
+    reload() {
+      const currentRoute = this.$router.currentRoute.value;
+      const { path, name, params } = currentRoute;
+      this.$router.push({ path, name, params, query: {} }).then(() => {
+        // Force reload the current route
+        this.$router.go(0);
+      });
+    },
     resetClickPoint() {
       this.$emit("resetClickPoint");
     },
