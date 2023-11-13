@@ -18,7 +18,7 @@ interface SearchMode {
 }
 
 const searchModeToType = {
-  "Kegg KO": searchMode("Kegg KO", "space"),
+  "Kegg ortholog": searchMode("Kegg ortholog", "space"),
   "Functional category": searchMode("Functional category", "label"),
   "Gene description": searchMode("Gene description", "gene_product"),
   "Gene name": searchMode("Gene name", "gene"),
