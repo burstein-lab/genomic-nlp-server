@@ -71,6 +71,7 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
       Product: point.product,
       "Gene name": point.gene_name,
       "Functional category": point.label,
+      "Gene family count": point.word_count,
     };
   }
 
@@ -100,6 +101,7 @@ interface SpaceValue {
   ncbi_nr: string;
   distance: string;
   color: string;
+  word_count: number;
 }
 
 interface Space {

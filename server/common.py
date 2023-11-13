@@ -71,6 +71,7 @@ def row_to_feature(model_data: ModelData, row, additonal_columns: list[str] = No
         "significant": row.significant if not pd.isnull(row.significant) else None,
         "ncbi_nr": row.ncbi_nr if not pd.isnull(row.ncbi_nr) else None,
         "predicted_class": row.predicted_class if not pd.isnull(row.predicted_class) else None,
+        "word_count": row.word_count if not pd.isnull(row.word_count) else None,
         # hex color
         "color": row.color if not pd.isnull(row.color) else None,
         "hypothetical": row.hypothetical if not pd.isnull(row.hypothetical) else None,
