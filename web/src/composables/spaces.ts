@@ -63,6 +63,7 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
       "Predicted class": point.predicted_class,
       "Prediction confidence": point.significant ? "high" : "low",
       "NCBI NR description": point.ncbi_nr,
+      "Gene family size": point.word_count,
     };
   } else {
     entries = {
@@ -71,6 +72,7 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
       Product: point.product,
       "Gene name": point.gene_name,
       "Functional category": point.label,
+      "Gene family size": point.word_count,
     };
   }
 
@@ -100,6 +102,7 @@ interface SpaceValue {
   ncbi_nr: string;
   distance: string;
   color: string;
+  word_count: number;
 }
 
 interface Space {
