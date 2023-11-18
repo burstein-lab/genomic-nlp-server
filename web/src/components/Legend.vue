@@ -8,7 +8,7 @@
         dense
       >
         <v-list-item-icon>
-          <v-icon :color="item.color">mdi-sqaure</v-icon>
+          <v-icon :color="item.color">mdi-circle</v-icon>
         </v-list-item-icon>
 
         <v-list-item-content>
