@@ -1,14 +1,15 @@
 <template>
-  <v-card width="300">
-    <v-list dense>
+  <v-card>
+    <v-list :lines="false" density="compact" nav>
       <v-list-item
         v-for="item in items"
         :key="item.color"
         :color="selectedItem === item.color ? 'info' : undefined"
-        dense
+        active-color="info"
+        v-model="selectedItem"
       >
         <template v-slot:prepend>
-          <v-icon :color="item.color">mdi-circle</v-icon>
+          <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
         </template>
         <v-list-item-title v-text="item.text"></v-list-item-title>
       </v-list-item>
@@ -21,7 +22,6 @@ export default {
   name: "Legend",
   data: () => {
     return {
-      serverUrl: new URL(import.meta.env.VITE_SERVER_URL),
       selectedItem: "#808080",
       items: [],
     };
