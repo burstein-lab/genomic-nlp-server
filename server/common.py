@@ -24,15 +24,15 @@ class ModelData:
     @property
     def x_max(self):
         return self._x_max
-    
+ 
     @property
     def y_max(self):
         return self._y_max
-    
+
     @property
     def x_min(self):
         return self._x_min
-    
+
     @property
     def y_min(self):
         return self._y_min
