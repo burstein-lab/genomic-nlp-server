@@ -73,6 +73,7 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
       "Gene name": point.gene_name,
       "Functional category": point.label,
       "Gene family size": point.word_count,
+      "KEGG information": "https://www.genome.jp/entry/" + point.ko,
     };
   }
 

@@ -5,6 +5,7 @@
       :key="k"
       :subtitle="k"
       :title="displayedValue(k, v)"
+      :href="v.startsWith('https') ? v : undefined"
     >
       <template v-if="isActionItem(k)" v-slot:append>
         <v-container class="text-center pa-0">
@@ -103,11 +104,8 @@ export default {
       return spaceToInfo(space);
     },
     displayedValue(k: string, v: string): string {
-      let length = 50;
-      if (this.isActionItem(k)) {
-        length = 30;
-      }
       const value = v === undefined || v === null ? "N/A" : v.toString();
+      const length = this.isActionItem(k) ? 30 : 50;
       return truncate(value, length);
     },
     isActionItem(k: string): boolean {
