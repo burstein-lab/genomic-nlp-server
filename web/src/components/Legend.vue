@@ -12,8 +12,8 @@
       activator="#legend"
       :contained="true"
       location-strategy="connected"
-      location="top start"
-      origin="start bottom"
+      location="start bottom"
+      origin="top start"
     >
       <v-card v-bind="props">
         <v-list :lines="false" density="compact">
