@@ -81,7 +81,6 @@ export default {
       scatterData: null as Object | null,
       scatterOptions: null as Object | null,
       diamondUrl: new URL(`${import.meta.env.VITE_DIAMOND_URL}`),
-      serverUrl: new URL(import.meta.env.VITE_SERVER_URL),
       sequenceFile: new Array(),
       sequence: "",
       shouldShowMap: true,
