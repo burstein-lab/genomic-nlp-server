@@ -4,6 +4,7 @@
   </v-btn>
   <v-overlay
     activator="#legend"
+    :contained="true"
     location-strategy="connected"
     location="top start"
     origin="start bottom"
