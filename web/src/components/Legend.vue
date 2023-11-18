@@ -1,19 +1,16 @@
 <template>
   <v-card width="300">
-    <v-list nav dense>
+    <v-list dense>
       <v-list-item
         v-for="item in items"
         :key="item.color"
         :color="selectedItem === item.color ? 'info' : undefined"
         dense
       >
-        <v-list-item-icon>
+        <template v-slot:prepend>
           <v-icon :color="item.color">mdi-circle</v-icon>
-        </v-list-item-icon>
-
-        <v-list-item-content>
-          <v-list-item-title v-text="item.text"></v-list-item-title>
-        </v-list-item-content>
+        </template>
+        <v-list-item-title v-text="item.text"></v-list-item-title>
       </v-list-item>
     </v-list>
   </v-card>
