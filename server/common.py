@@ -10,20 +10,37 @@ MAX_ZOOM = 9
 
 
 class ModelData:
+    """Manages the model data with preset calculated values.
+    """
     def __init__(self):
         self.df = pd.read_pickle(
             "model_data.pkl",
         )
-        self.x_max = self.df.x.max()
-        self.y_max = self.df.y.max()
-        self.x_min = self.df.x.min()
-        self.y_min = self.df.y.min()
+        self._x_max = self.df.x.max()
+        self._y_max = self.df.y.max()
+        self._x_min = self.df.x.min()
+        self._y_min = self.df.y.min()
+
+    @property
+    def x_max(self):
+        return self._x_max
+
+    @property
+    def y_max(self):
+        return self._y_max
+
+    @property
+    def x_min(self):
+        return self._x_min
+
+    @property
+    def y_min(self):
+        return self._y_min
 
 
 class Point:
     """Defines a point coordinations and its value in space
     """
-
     def __init__(self, id_, x_coord, y_coord, value) -> None:
         self.id_ = id_
         self.x_coord = x_coord
