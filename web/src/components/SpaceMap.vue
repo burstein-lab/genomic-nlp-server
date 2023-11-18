@@ -96,6 +96,9 @@
           @setHideMap="(shouldHideMap) => (isMapVisible = !shouldHideMap)"
         />
       </l-control>
+      <l-control ref="legendRef" position="bottomleft">
+        <Legend />
+      </l-control>
     </l-map>
   </div>
   <v-dialog v-model="diamondDialog" width="800">
@@ -140,6 +143,7 @@ import {
 import "leaflet/dist/leaflet.css";
 import { useTheme } from "vuetify";
 import ControlCard from "./ControlCard.vue";
+import Legend from "./Legend.vue";
 import Snackbar from "./Snackbar.vue";
 import {
   searchModeToType,
@@ -161,6 +165,7 @@ export default {
     LControl,
     ControlCard,
     Snackbar,
+    Legend,
   },
   data() {
     const theme = useTheme();
