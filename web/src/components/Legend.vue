@@ -1,17 +1,19 @@
 <template>
   <v-card width="300">
-    <v-list dense>
-      <v-list-item-group v-model="selectedItem" color="primary">
-        <v-list-item v-for="(item, i) in items" :key="i">
-          <v-list-item-icon>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-icon>
+    <v-list nav dense>
+      <v-list-item
+        v-for="item in items"
+        :key="item.color"
+        :color="selectedItem === item.color ? 'info' : undefined"
+      >
+        <v-list-item-icon>
+          <v-icon :color="item.color">{{ item.icon }}</v-icon>
+        </v-list-item-icon>
 
-          <v-list-item-content>
-            <v-list-item-title v-text="item.text"></v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list-item-group>
+        <v-list-item-content>
+          <v-list-item-title v-text="item.text"></v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
   </v-card>
 </template>
@@ -22,12 +24,8 @@ export default {
   data: () => {
     return {
       serverUrl: new URL(import.meta.env.VITE_SERVER_URL),
-      selectedItem: 0,
-      items: [
-        { text: "Test 1", icon: "mdi-star" },
-        { text: "Test 2", icon: "mdi-star" },
-        { text: "Test 3", icon: "mdi-star" },
-      ],
+      selectedItem: "#808080",
+      items: [],
     };
   },
   methods: {
@@ -40,8 +38,9 @@ export default {
         .split("\n")
         .slice(1)
         .forEach((line) => {
+          if (!line) return;
           const [color, text] = line.split("\t");
-          this.items.push({ text, icon: "mdi-star" });
+          this.items.push({ text, color });
         });
     },
   },
