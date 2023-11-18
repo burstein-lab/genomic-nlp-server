@@ -115,11 +115,11 @@ def neighbors(word):
         delimiter=" ",
     )
 
-    k = len(top_k_df)
-    if request.args.get("k") != None:
-        k = int(request.args.get("k"))
+    k_neighbors = len(top_k_df)
+    if request.args.get("k") is not None:
+        k_neighbors = int(request.args.get("k"))
 
-    df = pd.merge(top_k_df.nlargest(k, "distance"), MODEL_DATA.df, on="word")
+    df = pd.merge(top_k_df.nlargest(k_neighbors, "distance"), MODEL_DATA.df, on="word")
     return jsonify_spaces(df, MODEL_DATA, additional_columns)
 
 
