@@ -1,31 +1,38 @@
 <template>
-  <v-btn @click="isActive = !isActive" color="info" v-bind="props" id="legend">
-    Legend
-  </v-btn>
-  <v-overlay
-    activator="#legend"
-    :contained="true"
-    location-strategy="connected"
-    location="top start"
-    origin="start bottom"
-  >
-    <v-card v-bind="props">
-      <v-list :lines="false" density="compact">
-        <v-list-item
-          v-for="item in items"
-          :key="item.color"
-          :color="selectedItem === item.color ? 'info' : undefined"
-          active-color="info"
-          v-model="selectedItem"
-        >
-          <template v-slot:prepend>
-            <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
-          </template>
-          <v-list-item-title v-text="item.text"></v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-card>
-  </v-overlay>
+  <div>
+    <v-btn
+      @click="isActive = !isActive"
+      color="info"
+      v-bind="props"
+      id="legend"
+    >
+      Legend <v-icon>mdi-chevron-{{ isActive ? "down" : "up" }}</v-icon>
+    </v-btn>
+    <v-overlay
+      activator="#legend"
+      :contained="true"
+      location-strategy="connected"
+      location="top start"
+      origin="start top"
+    >
+      <v-card v-bind="props">
+        <v-list :lines="false" density="compact">
+          <v-list-item
+            v-for="item in items"
+            :key="item.color"
+            :color="selectedItem === item.color ? 'info' : undefined"
+            active-color="info"
+            v-model="selectedItem"
+          >
+            <template v-slot:prepend>
+              <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
+            </template>
+            <v-list-item-title v-text="item.text"></v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-card>
+    </v-overlay>
+  </div>
 </template>
 
 <script lang="ts">
