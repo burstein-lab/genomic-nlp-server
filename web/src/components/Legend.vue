@@ -1,20 +1,30 @@
 <template>
-  <v-card>
-    <v-list :lines="false" density="compact" nav>
-      <v-list-item
-        v-for="item in items"
-        :key="item.color"
-        :color="selectedItem === item.color ? 'info' : undefined"
-        active-color="info"
-        v-model="selectedItem"
-      >
-        <template v-slot:prepend>
-          <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
-        </template>
-        <v-list-item-title v-text="item.text"></v-list-item-title>
-      </v-list-item>
-    </v-list>
-  </v-card>
+  <v-btn @click="isActive = !isActive" color="info" v-bind="props" id="legend">
+    Legend
+  </v-btn>
+  <v-overlay
+    activator="#legend"
+    location-strategy="connected"
+    location="top start"
+    origin="start bottom"
+  >
+    <v-card v-bind="props">
+      <v-list :lines="false" density="compact">
+        <v-list-item
+          v-for="item in items"
+          :key="item.color"
+          :color="selectedItem === item.color ? 'info' : undefined"
+          active-color="info"
+          v-model="selectedItem"
+        >
+          <template v-slot:prepend>
+            <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
+          </template>
+          <v-list-item-title v-text="item.text"></v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-card>
+  </v-overlay>
 </template>
 
 <script lang="ts">
@@ -22,6 +32,7 @@ export default {
   name: "Legend",
   data: () => {
     return {
+      isActive: false,
       selectedItem: "#808080",
       items: [],
     };
