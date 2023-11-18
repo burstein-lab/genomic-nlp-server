@@ -13,7 +13,7 @@
       :contained="true"
       location-strategy="connected"
       location="top start"
-      origin="start top"
+      origin="start bottom"
     >
       <v-card v-bind="props">
         <v-list :lines="false" density="compact">
