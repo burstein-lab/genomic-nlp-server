@@ -5,9 +5,10 @@
         v-for="item in items"
         :key="item.color"
         :color="selectedItem === item.color ? 'info' : undefined"
+        dense
       >
         <v-list-item-icon>
-          <v-icon :color="item.color">{{ item.icon }}</v-icon>
+          <v-icon :color="item.color">mdi-sqaure</v-icon>
         </v-list-item-icon>
 
         <v-list-item-content>
