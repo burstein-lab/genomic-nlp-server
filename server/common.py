@@ -24,7 +24,7 @@ class ModelData:
     @property
     def x_max(self):
         return self._x_max
- 
+
     @property
     def y_max(self):
         return self._y_max
