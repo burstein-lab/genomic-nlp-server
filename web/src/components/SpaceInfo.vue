@@ -5,7 +5,7 @@
       :key="k"
       :subtitle="k"
       :title="displayedValue(k, v)"
-      :href="v?.startsWith('https') ? v : undefined"
+      :href="v?.toString()?.startsWith('https') ? v : undefined"
     >
       <template v-if="isActionItem(k)" v-slot:append>
         <v-container class="text-center pa-0">
