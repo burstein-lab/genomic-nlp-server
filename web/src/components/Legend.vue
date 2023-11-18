@@ -10,6 +10,7 @@
     </v-btn>
     <v-overlay
       activator="#legend"
+      v-model="isActive"
       :contained="true"
       location-strategy="connected"
       location="start bottom"
