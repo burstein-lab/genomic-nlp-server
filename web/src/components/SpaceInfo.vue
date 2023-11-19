@@ -6,6 +6,7 @@
       :subtitle="k"
       :title="displayedValue(k, v)"
       :href="v?.toString()?.startsWith('https') ? v : undefined"
+      :target="v?.toString()?.startsWith('https') ? '_blank' : undefined"
     >
       <template v-if="isActionItem(k)" v-slot:append>
         <v-container class="text-center pa-0">
