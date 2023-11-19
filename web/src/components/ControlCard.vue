@@ -324,7 +324,7 @@ export default {
         "Prediction confidence",
         "NCBI NR description",
         "Distance",
-        "Gene family size",
+        "Gene count in family",
       ];
       const result: Object[] = [];
 
@@ -343,7 +343,7 @@ export default {
             : "N/A",
           "NCBI NR description": space.hypothetical ? space.ncbi_nr : "N/A",
           Distance: space.distance,
-          "Gene family size": space.word_count,
+          "Gene count in family": space.word_count,
         });
       });
 

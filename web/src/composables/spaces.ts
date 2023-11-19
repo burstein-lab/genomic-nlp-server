@@ -63,7 +63,7 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
       "Predicted class": point.predicted_class,
       "Prediction confidence": point.significant ? "high" : "low",
       "NCBI NR description": point.ncbi_nr,
-      "Gene family size": point.word_count,
+      "Gene count in family": point.word_count,
     };
   } else {
     entries = {
@@ -72,7 +72,7 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
       Product: point.product,
       "Gene name": point.gene_name,
       "Functional category": point.label,
-      "Gene family size": point.word_count,
+      "Gene count in family": point.word_count,
       "KEGG information": "https://www.genome.jp/entry/" + point.ko,
     };
   }
