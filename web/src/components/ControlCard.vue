@@ -317,7 +317,7 @@ export default {
     neighborsToTSV(spaces: SpaceValue[]) {
       const header: string[] = [
         "Word",
-        "KO",
+        "KEGG Orthology",
         "Product",
         "Gene name",
         "Functional category",
@@ -331,7 +331,7 @@ export default {
       spaces.forEach((space) => {
         result.push({
           Word: space.word,
-          KO: space.ko,
+          "KEGG Orthology": space.ko,
           Product: space.product,
           "Gene name": space.gene_name,
           "Functional category":

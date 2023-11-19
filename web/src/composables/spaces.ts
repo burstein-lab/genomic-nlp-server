@@ -68,7 +68,7 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
   } else {
     entries = {
       Word: point.word,
-      KO: point.ko,
+      "KEGG Orthology": point.ko,
       Product: point.product,
       "Gene name": point.gene_name,
       "Functional category": point.label,
