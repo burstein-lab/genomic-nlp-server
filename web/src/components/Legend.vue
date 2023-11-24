@@ -5,13 +5,13 @@
     </v-btn>
     <v-overlay
       attach="#legend"
-      :v-model="isActive"
+      v-model="isActive"
       :contained="true"
       :persistent="true"
       location-strategy="connected"
       location="start bottom"
       origin="top start"
-      width="400"
+      width="380"
       :no-click-animation="true"
     >
       <v-card style="opacity: 0.9">
