@@ -4,7 +4,8 @@
       Legend <v-icon>mdi-chevron-{{ isActive ? "down" : "up" }}</v-icon>
     </v-btn>
     <v-overlay
-      activator="#legend"
+      activator-props="#legend"
+      v-model="isActive"
       :contained="true"
       :persistent="true"
       location-strategy="connected"
@@ -13,7 +14,7 @@
       width="400"
       :no-click-animation="true"
     >
-      <v-card>
+      <v-card style="opacity: 0.9">
         <v-list :lines="false" density="compact">
           <v-list-item
             v-for="item in items"
