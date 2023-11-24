@@ -4,7 +4,7 @@
       Legend <v-icon>mdi-chevron-{{ isActive ? "down" : "up" }}</v-icon>
     </v-btn>
     <v-overlay
-      v-model="isActive"
+      activator="#legend"
       :contained="true"
       :persistent="true"
       location-strategy="connected"
