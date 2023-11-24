@@ -6,7 +6,6 @@
     <v-overlay
       attach="#legend"
       v-model="isActive"
-      :contained="true"
       :persistent="true"
       location-strategy="connected"
       width="380"
