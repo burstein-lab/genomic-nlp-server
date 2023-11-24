@@ -10,7 +10,7 @@
       :persistent="true"
       location-strategy="connected"
       location="start bottom"
-      origin="top start"
+      origin="auto"
       width="380"
       :no-click-animation="true"
     >
