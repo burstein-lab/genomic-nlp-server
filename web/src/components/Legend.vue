@@ -9,8 +9,6 @@
       :contained="true"
       :persistent="true"
       location-strategy="connected"
-      location="start bottom"
-      origin="auto"
       width="380"
       :no-click-animation="true"
     >
