@@ -10,12 +10,14 @@
     </v-btn>
     <v-overlay
       activator="#legend"
+      v-model="isActive"
       :contained="true"
       :persistent="true"
       location-strategy="connected"
       location="start bottom"
       origin="top start"
       width="400"
+      :no-click-animation="true"
     >
       <v-card v-bind="props">
         <v-list :lines="false" density="compact">
