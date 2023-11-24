@@ -15,7 +15,7 @@
       location-strategy="connected"
       location="start bottom"
       origin="top start"
-      width="300"
+      width="400"
     >
       <v-card v-bind="props">
         <v-list :lines="false" density="compact">
