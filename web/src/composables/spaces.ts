@@ -63,22 +63,24 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
       "Predicted class": point.predicted_class,
       "Prediction confidence": point.significant ? "high" : "low",
       "NCBI NR description": point.ncbi_nr,
-      "Gene family size": point.word_count,
+      "Gene count in family": point.word_count,
     };
   } else {
     entries = {
       Word: point.word,
-      KO: point.ko,
+      "KEGG Orthology": point.ko,
       Product: point.product,
       "Gene name": point.gene_name,
       "Functional category": point.label,
-      "Gene family size": point.word_count,
-      "KEGG information": "https://www.genome.jp/entry/" + point.ko,
+      "Gene count in family": point.word_count,
+      "KEGG information": kosWithoutLink.includes(point.ko) ? "N/A": "https://www.genome.jp/entry/" + point.ko,
     };
   }
 
   return new Map(Object.entries(entries));
 };
+
+const kosWithoutLink = ["CRISPR", "tRNA","rRNA", "tmRNA"]
 
 interface LatLng {
   lat: number;

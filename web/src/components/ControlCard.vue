@@ -317,21 +317,21 @@ export default {
     neighborsToTSV(spaces: SpaceValue[]) {
       const header: string[] = [
         "Word",
-        "KO",
+        "KEGG Orthology",
         "Product",
         "Gene name",
         "Functional category",
         "Prediction confidence",
         "NCBI NR description",
         "Distance",
-        "Gene family size",
+        "Gene count in family",
       ];
       const result: Object[] = [];
 
       spaces.forEach((space) => {
         result.push({
           Word: space.word,
-          KO: space.ko,
+          "KEGG Orthology": space.ko,
           Product: space.product,
           "Gene name": space.gene_name,
           "Functional category":
@@ -343,7 +343,7 @@ export default {
             : "N/A",
           "NCBI NR description": space.hypothetical ? space.ncbi_nr : "N/A",
           Distance: space.distance,
-          "Gene family size": space.word_count,
+          "Gene count in family": space.word_count,
         });
       });
 
