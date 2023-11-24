@@ -6,8 +6,8 @@
     <v-overlay
       attach="#legend"
       v-model="isActive"
+      :contained="true"
       :persistent="true"
-      location-strategy="connected"
       width="380"
       :no-click-animation="true"
     >
@@ -20,6 +20,7 @@
             size="small"
             active-color="info"
             v-model="selectedItem"
+            style="font-size: : 0.75rem;"
           >
             <template v-slot:prepend>
               <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
