@@ -1,15 +1,9 @@
 <template>
   <div>
-    <v-btn
-      @click="isActive = !isActive"
-      color="info"
-      v-bind="props"
-      id="legend"
-    >
+    <v-btn @click="isActive = !isActive" color="info" id="legend">
       Legend <v-icon>mdi-chevron-{{ isActive ? "down" : "up" }}</v-icon>
     </v-btn>
     <v-overlay
-      activator="#legend"
       v-model="isActive"
       :contained="true"
       :persistent="true"
@@ -19,7 +13,7 @@
       width="400"
       :no-click-animation="true"
     >
-      <v-card v-bind="props">
+      <v-card>
         <v-list :lines="false" density="compact">
           <v-list-item
             v-for="item in items"
