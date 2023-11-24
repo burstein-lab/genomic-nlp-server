@@ -3,7 +3,7 @@
     Legend <v-icon>mdi-chevron-{{ isActive ? "down" : "up" }}</v-icon>
   </v-btn>
 
-  <v-tooltip attach="#legend" location="top">
+  <v-tooltip v-model="isActive" attach="#legend" location="top">
     <v-card style="opacity: 0.9">
       <v-list :lines="false" density="compact">
         <v-list-item
