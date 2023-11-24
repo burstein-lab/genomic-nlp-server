@@ -11,9 +11,11 @@
     <v-overlay
       activator="#legend"
       :contained="true"
+      :persistent="true"
       location-strategy="connected"
       location="start bottom"
       origin="top start"
+      width="300"
     >
       <v-card v-bind="props">
         <v-list :lines="false" density="compact">
