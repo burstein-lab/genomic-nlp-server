@@ -54,7 +54,7 @@ export default {
 </script>
 
 <style scoped>
-.v-tooltip {
+.v-overlay__content {
   background-color: transparent;
 }
 </style>
