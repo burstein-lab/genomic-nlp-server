@@ -17,10 +17,7 @@
             <template v-slot:prepend>
               <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
             </template>
-            <v-list-item-title
-              v-text="item.text"
-              style="font-size: 0.75rem"
-            ></v-list-item-title>
+            <v-list-item-title v-text="item.text"></v-list-item-title>
           </v-list-item>
         </v-list>
       </v-card>
