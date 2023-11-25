@@ -1,20 +1,20 @@
 <template>
-  <v-card>
-    <v-list :lines="false" density="compact" nav>
-      <v-list-item
-        v-for="item in items"
-        :key="item.color"
-        :color="selectedItem === item.color ? 'info' : undefined"
-        active-color="info"
-        v-model="selectedItem"
-      >
-        <template v-slot:prepend>
-          <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
-        </template>
-        <v-list-item-title v-text="item.text"></v-list-item-title>
-      </v-list-item>
-    </v-list>
-  </v-card>
+  <v-btn color="info" size="small">
+    Legend
+
+    <v-tooltip activator="parent" location="top">
+      <v-card style="opacity: 0.9">
+        <v-list :lines="false" density="compact">
+          <v-list-item v-for="item in items" :key="item.color">
+            <template v-slot:prepend>
+              <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
+            </template>
+            <v-list-item-title v-text="item.text"></v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-card>
+    </v-tooltip>
+  </v-btn>
 </template>
 
 <script lang="ts">
@@ -47,3 +47,9 @@ export default {
   },
 };
 </script>
+
+<style>
+.v-tooltip > .v-overlay__content {
+  background: transparent !important;
+}
+</style>
