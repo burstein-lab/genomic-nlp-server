@@ -55,6 +55,6 @@ export default {
 
 <style scoped>
 .v-overlay__content {
-  background-color: transparent !important;
+  background: transparent !important;
 }
 </style>
