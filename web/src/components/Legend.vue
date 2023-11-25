@@ -2,22 +2,23 @@
   <v-btn color="info" size="small">
     Legend
 
-    <v-tooltip activator="parent" location="top">
-      <v-card class="custom-card">
-        <v-list :lines="false" density="compact" class="custom-card">
+    <v-tooltip
+      activator="parent"
+      location="top"
+      style="background-color: transparent"
+    >
+      <v-card style="opacity: 0.9">
+        <v-list :lines="false" density="compact">
           <v-list-item
             v-for="item in items"
             :key="item.color"
             :color="selectedItem === item.color ? 'info' : undefined"
-            active-color="info"
-            v-model="selectedItem"
           >
             <template v-slot:prepend>
               <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
             </template>
             <v-list-item-title
               v-text="item.text"
-              color="info"
               style="font-size: 0.75rem"
             ></v-list-item-title>
           </v-list-item>
@@ -58,11 +59,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.custom-card {
-  background-color: transparent; /* Set background color to transparent */
-  box-shadow: none; /* Remove box shadow */
-  opacity: 0.9;
-}
-</style>
