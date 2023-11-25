@@ -1,9 +1,9 @@
 <template>
   <v-btn color="info" size="small">
-    Legend <v-icon>mdi-chevron-{{ isActive ? "down" : "up" }}</v-icon>
+    Legend
 
     <v-tooltip activator="parent" location="top">
-      <v-card style="opacity: 0.9">
+      <v-card class="custom-card">
         <v-list :lines="false" density="compact">
           <v-list-item
             v-for="item in items"
@@ -12,7 +12,7 @@
             size="small"
             active-color="info"
             v-model="selectedItem"
-            style="font-size: : 0.75rem;"
+            style="font-size: 0.75rem"
           >
             <template v-slot:prepend>
               <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
@@ -56,3 +56,11 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.custom-card {
+  background-color: transparent; /* Set background color to transparent */
+  box-shadow: none; /* Remove box shadow */
+  opacity: 0.9;
+}
+</style>
