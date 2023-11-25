@@ -2,12 +2,7 @@
   <v-btn color="info" size="small">
     Legend
 
-    <v-tooltip
-      activator="parent"
-      location="top"
-      style="background-color: transparent; color: transparent"
-      v-model="isActive"
-    >
+    <v-tooltip activator="parent" location="top" v-model="isActive">
       <v-card style="opacity: 0.9">
         <v-list :lines="false" density="compact">
           <v-list-item
@@ -57,3 +52,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.v-tooltip {
+  background-color: transparent;
+}
+</style>
