@@ -5,7 +5,7 @@
     <v-tooltip
       activator="parent"
       location="top"
-      style="background-color: transparent"
+      style="background-color: transparent; color: transparent"
     >
       <v-card style="opacity: 0.9">
         <v-list :lines="false" density="compact">
