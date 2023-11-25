@@ -6,6 +6,7 @@
       activator="parent"
       location="top"
       style="background-color: transparent; color: transparent"
+      v-model="isActive"
     >
       <v-card style="opacity: 0.9">
         <v-list :lines="false" density="compact">
@@ -30,7 +31,7 @@ export default {
   name: "Legend",
   data: () => {
     return {
-      isActive: false,
+      isActive: true,
       selectedItem: "#808080",
       items: [],
     };
