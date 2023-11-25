@@ -4,20 +4,22 @@
 
     <v-tooltip activator="parent" location="top">
       <v-card class="custom-card">
-        <v-list :lines="false" density="compact">
+        <v-list :lines="false" density="compact" class="custom-card">
           <v-list-item
             v-for="item in items"
             :key="item.color"
             :color="selectedItem === item.color ? 'info' : undefined"
-            size="small"
             active-color="info"
             v-model="selectedItem"
-            style="font-size: 0.75rem"
           >
             <template v-slot:prepend>
               <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
             </template>
-            <v-list-item-title v-text="item.text"></v-list-item-title>
+            <v-list-item-title
+              v-text="item.text"
+              color="info"
+              style="font-size: 0.75rem"
+            ></v-list-item-title>
           </v-list-item>
         </v-list>
       </v-card>
