@@ -53,8 +53,8 @@ export default {
 };
 </script>
 
-<style scoped>
-.v-overlay__content {
+<style>
+.v-tooltip > .v-overlay__content {
   background: transparent !important;
 }
 </style>
