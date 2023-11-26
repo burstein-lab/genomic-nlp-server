@@ -82,8 +82,7 @@
           />
           <v-container class="text-center pt-1 py-0">
             <v-row justify="center" no-gutters>
-              <v-col cols="1"></v-col>
-              <v-col cols="9">
+              <v-col cols="11">
                 <v-btn-toggle
                   color="info"
                   variant="outlined"
@@ -116,7 +115,7 @@
                   </v-btn>
                 </v-btn-toggle>
               </v-col>
-              <v-col cols="2">
+              <v-col cols="1">
                 <v-tooltip text="Download graph data" location="bottom">
                   <template v-slot:activator="{ props }">
                     <v-btn-group density="comfortable" v-bind="props">
