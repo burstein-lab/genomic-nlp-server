@@ -42,13 +42,15 @@ export default {
   methods: {
     options() {
       return {
-        cutoutPercentage: 50, // Adjust as needed
-        legend: {
-          position: "right",
-        },
-        title: {
-          display: true,
-          text: "Taxonomy distribution (order)",
+        plugins: {
+          title: {
+            display: true,
+            text: `Ratio of genes with known tax in database: ${this.tax_ratio}`,
+          },
+          subtitle: {
+            display: true,
+            text: "Taxonomy distribution (order)",
+          },
         },
       };
     },
