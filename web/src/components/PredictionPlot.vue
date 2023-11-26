@@ -48,23 +48,27 @@ export default {
             title: {
               display: true,
               text: "Predicted functional category",
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
             },
             ticks: {
               callback: (value: string, index: number, ticks: any[]) => {
                 return this.data.ticks[index];
               },
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
             },
           },
           y: {
             title: {
               display: true,
               text: "Score",
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
             },
             ticks: {
               callback: (value: number, index: number, ticks: any[]) => {
                 if (value === 0) return "1";
                 return "1e" + value;
               },
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
             },
           },
         },

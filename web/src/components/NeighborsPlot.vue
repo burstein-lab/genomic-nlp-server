@@ -36,7 +36,23 @@ export default {
     options() {
       return {
         title: { display: false },
-        scales: { y: { title: { display: true, text: "Similarity" } } },
+        scales: {
+          x: {
+            ticks: {
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: "Similarity",
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
+            },
+            ticks: {
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
+            },
+          },
+        },
         plugins: {
           legend: {
             display: false,
