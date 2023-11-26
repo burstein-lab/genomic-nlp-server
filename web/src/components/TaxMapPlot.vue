@@ -51,7 +51,7 @@ export default {
             display: true,
             text: "Taxonomy distribution (order)",
           },
-          legend: { align: "start" },
+          legend: { position: "right" },
         },
       };
     },
