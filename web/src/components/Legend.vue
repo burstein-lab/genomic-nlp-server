@@ -2,7 +2,7 @@
   <v-btn color="info" size="small">
     Legend
 
-    <v-tooltip activator="parent" location="top">
+    <v-tooltip activator="parent" location="top" id="legend-tooltip">
       <v-card style="opacity: 0.9">
         <v-list :lines="false" density="compact">
           <v-list-item v-for="item in items" :key="item.color">
@@ -49,7 +49,7 @@ export default {
 </script>
 
 <style>
-.v-tooltip > .v-overlay__content {
+#legend-tooltip .v-overlay__content {
   background: transparent !important;
 }
 </style>

@@ -92,7 +92,7 @@ def row_to_feature(model_data: ModelData, row, additonal_columns: list[str] = No
         "color": row.color if not pd.isnull(row.color) else None,
         "hypothetical": row.hypothetical if not pd.isnull(row.hypothetical) else None,
         "word_count": row.word_count if not pd.isnull(row.word_count) else -1,
-        "tax_distribution": row.tax_distribution if not pd.isnull(row.tax_distribution) else None,
+        "tax_distribution": row.tax_distribution if not isinstance(pd.isnull(row.tax_distribution), bool) else None,
     }
 
     if additonal_columns is not None:
