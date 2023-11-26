@@ -102,7 +102,7 @@
                     :disabled="isLoading || !clickedSpace.value.hypothetical"
                     density="comfortable"
                   >
-                    Gene Preds
+                    Func Pred
                   </v-btn>
                   <v-btn
                     value="taxMap"
