@@ -6,6 +6,8 @@
 import { BarChart } from "vue-chart-3";
 import { spaceToInfo, Space, SpacesReponse } from "@/composables/spaces";
 
+import { useTheme } from "vuetify";
+
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
@@ -20,6 +22,11 @@ export default {
       required: true,
     },
   },
+  data: () => {
+    return {
+      theme: useTheme(),
+    };
+  },
   emits: ["click"],
   methods: {
     hover(item: any) {
@@ -29,9 +36,27 @@ export default {
     options() {
       return {
         title: { display: false },
-        scales: { y: { title: { display: true, text: "Similarity" } } },
+        scales: {
+          x: {
+            ticks: {
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: "Similarity",
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
+            },
+            ticks: {
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
+            },
+          },
+        },
         plugins: {
-          legend: { display: false },
+          legend: {
+            display: false,
+          },
           tooltip: {
             callbacks: {
               title: () => null,

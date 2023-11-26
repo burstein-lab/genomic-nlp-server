@@ -3,10 +3,9 @@
 </template>
 
 <script lang="ts">
-import { ScatterChart } from "vue-chart-3";
-
 import { ScatterData } from "@/composables/spaces";
-
+import { useTheme } from "vuetify";
+import { ScatterChart } from "vue-chart-3";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
@@ -21,6 +20,11 @@ export default {
       required: true,
     },
   },
+  data: () => {
+    return {
+      theme: useTheme(),
+    };
+  },
   methods: {
     hover(item: any) {
       return `${this.data.ticks[item.dataIndex]}: 1e${
@@ -30,7 +34,9 @@ export default {
     options() {
       return {
         plugins: {
-          legend: { display: false },
+          legend: {
+            display: false,
+          },
           tooltip: {
             callbacks: {
               label: (item: any) => this.hover(item),
@@ -42,23 +48,27 @@ export default {
             title: {
               display: true,
               text: "Predicted functional category",
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
             },
             ticks: {
               callback: (value: string, index: number, ticks: any[]) => {
                 return this.data.ticks[index];
               },
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
             },
           },
           y: {
             title: {
               display: true,
               text: "Score",
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
             },
             ticks: {
               callback: (value: number, index: number, ticks: any[]) => {
                 if (value === 0) return "1";
                 return "1e" + value;
               },
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
             },
           },
         },
