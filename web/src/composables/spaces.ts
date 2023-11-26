@@ -109,6 +109,7 @@ interface SpaceValue {
   color: string;
   word_count: number;
   tax_distribution: [string, number][];
+  tax_ratio: number;
 }
 
 interface Space {
