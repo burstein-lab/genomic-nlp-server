@@ -168,10 +168,9 @@ export default {
     Legend,
   },
   data() {
-    const theme = useTheme();
     const maxZoom = Number(import.meta.env.VITE_MAX_ZOOM);
     return {
-      theme: theme,
+      theme: useTheme(),
       maxZoom: maxZoom,
       zoom: 0,
       hoveredSpace: null as Space | null,

@@ -3,10 +3,9 @@
 </template>
 
 <script lang="ts">
-import { ScatterChart } from "vue-chart-3";
-
 import { ScatterData } from "@/composables/spaces";
-
+import { useTheme } from "vuetify";
+import { ScatterChart } from "vue-chart-3";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
@@ -21,6 +20,11 @@ export default {
       required: true,
     },
   },
+  data: () => {
+    return {
+      theme: useTheme(),
+    };
+  },
   methods: {
     hover(item: any) {
       return `${this.data.ticks[item.dataIndex]}: 1e${
@@ -30,7 +34,12 @@ export default {
     options() {
       return {
         plugins: {
-          legend: { display: false },
+          legend: {
+            display: false,
+            labels: {
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
+            },
+          },
           tooltip: {
             callbacks: {
               label: (item: any) => this.hover(item),

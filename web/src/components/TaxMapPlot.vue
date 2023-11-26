@@ -5,6 +5,7 @@
 <script lang="ts">
 import { DoughnutChart } from "vue-chart-3";
 import { Chart, registerables } from "chart.js";
+import { useTheme } from "vuetify";
 Chart.register(...registerables);
 
 export default {
@@ -24,6 +25,7 @@ export default {
   },
   data: () => {
     return {
+      theme: useTheme(),
       palette: [
         "#a6cee3",
         "#33a02c",
@@ -43,13 +45,20 @@ export default {
     options() {
       return {
         plugins: {
+          legend: {
+            labels: {
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
+            },
+          },
           subtitle: {
             display: true,
             text: `Percentage of genes with known taxonomy in database: ${this.tax_ratio}%`,
+            color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
           },
           title: {
             display: true,
             text: "Taxonomy distribution (order)",
+            color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
           },
           legend: { position: "right" },
         },
