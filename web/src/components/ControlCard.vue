@@ -105,6 +105,15 @@
                   >
                     Gene Predictions
                   </v-btn>
+                  <v-btn
+                    value="taxonimic_map"
+                    :disabled="
+                      isLoading || !clickedSpace.value.tax_distribution
+                    "
+                    density="comfortable"
+                  >
+                    Tax Map
+                  </v-btn>
                 </v-btn-toggle>
               </v-col>
               <v-col cols="2">
