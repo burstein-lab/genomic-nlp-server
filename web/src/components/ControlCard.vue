@@ -105,7 +105,7 @@
                     Gene Preds
                   </v-btn>
                   <v-btn
-                    value="taxonimic_map"
+                    value="taxMap"
                     :disabled="
                       isLoading || !clickedSpace.value.tax_distribution
                     "
@@ -143,6 +143,10 @@
             v-else-if="plotToggle == 'predictions' && scatterData"
             :data="scatterData"
           />
+          <TaxMapPlot
+            v-else-if="plotToggle == 'taxMap' && taxData"
+            :data="taxData"
+          />
         </div>
         <div v-else class="pt-2">
           Search to explore the model and hover a point to view extra options
@@ -168,6 +172,7 @@ import SpaceInfo from "./SpaceInfo.vue";
 import DiamondSearch from "./DiamondSearch.vue";
 import NeighborsPlot from "./NeighborsPlot.vue";
 import PredictionPlot from "./PredictionPlot.vue";
+import TaxMapPlot from "./TaxMapPlot.vue";
 import Snackbar from "./Snackbar.vue";
 import { SpacesReponse, ScatterData } from "@/composables/spaces";
 import { downloadFile } from "@/composables/utils";
@@ -183,6 +188,7 @@ export default {
   components: {
     NeighborsPlot,
     PredictionPlot,
+    TaxMapPlot,
     Search,
     ThemeToggle,
     SpaceInfo,
@@ -214,6 +220,7 @@ export default {
       loading: false,
       currentPlot: "",
       scatterData: null as ScatterData | null,
+      taxData: null as Object | null,
       shouldHideMap: false,
       snackbar: false,
       previousPoint: null as Space | null,
