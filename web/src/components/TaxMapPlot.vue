@@ -45,7 +45,7 @@ export default {
         plugins: {
           subtitle: {
             display: true,
-            text: `Ratio of genes with known tax in database: ${this.tax_ratio}`,
+            text: `Percentage of genes with known taxonomy in database: ${this.tax_ratio}%`,
           },
           title: {
             display: true,
