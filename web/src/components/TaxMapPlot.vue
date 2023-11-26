@@ -71,7 +71,7 @@ export default {
 
       const palette = [...this.palette];
 
-      const positionOfOther = categories.indexOf("Other");
+      const positionOfOther = labels.indexOf("Other");
       if (positionOfOther !== -1) {
         palette.splice(positionOfOther, 0, "#808080");
       }
