@@ -102,7 +102,7 @@
                     :disabled="isLoading || !clickedSpace.value.hypothetical"
                     density="comfortable"
                   >
-                    Gene Predictions
+                    Gene Preds
                   </v-btn>
                   <v-btn
                     value="taxonimic_map"
