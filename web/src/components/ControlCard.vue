@@ -144,8 +144,9 @@
             :data="scatterData"
           />
           <TaxMapPlot
-            v-else-if="plotToggle == 'taxMap' && taxData"
-            :data="taxData"
+            v-else-if="plotToggle == 'taxMap'"
+            :tax_distribution="clickedSpace.value.tax_distribution"
+            :tax_ratio="clickedSpace.value.tax_ratio"
           />
         </div>
         <div v-else class="pt-2">

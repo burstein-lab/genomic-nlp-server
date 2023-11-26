@@ -4,8 +4,6 @@
 
 <script lang="ts">
 import { DoughnutChart } from "vue-chart-3";
-import { spaceToInfo, Space, SpacesReponse } from "@/composables/spaces";
-
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
@@ -15,8 +13,12 @@ export default {
     DoughnutChart,
   },
   props: {
-    data: {
+    tax_distribution: {
       type: Object as () => [string, number][],
+      required: true,
+    },
+    tax_ratio: {
+      type: Number,
       required: true,
     },
   },
@@ -51,8 +53,8 @@ export default {
       };
     },
     chartData() {
-      const [labels, values] = this.data[0].map((_, colIndex) =>
-        this.data.map((row) => row[colIndex])
+      const [labels, values] = this.tax_distribution[0].map((_, colIndex) =>
+        this.tax_distribution.map((row) => row[colIndex])
       );
       return {
         labels: labels,
