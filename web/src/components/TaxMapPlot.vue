@@ -37,7 +37,6 @@ export default {
         "#b15928",
         "#b2df8a",
         "#1f78b4",
-        "#808080",
       ],
     };
   },
@@ -65,15 +64,24 @@ export default {
       };
     },
     chartData() {
-      const [labels, values] = this.tax_distribution[0].map((_, colIndex) =>
-        this.tax_distribution.map((row) => row[colIndex])
+      pairs = this.tax_distribution.filter(([_, number]) => number !== 0);
+      const [labels, values] = pairs[0].map((_, colIndex) =>
+        pairs.map((row) => row[colIndex])
       );
+
+      const palette = [...this.palette];
+
+      const positionOfOther = categories.indexOf("Other");
+      if (positionOfOther !== -1) {
+        palette.splice(positionOfOther, 0, "#808080");
+      }
+
       return {
         labels: labels,
         datasets: [
           {
             data: values,
-            backgroundColor: this.palette,
+            backgroundColor: palette,
           },
         ],
       };
