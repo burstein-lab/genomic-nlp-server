@@ -166,7 +166,7 @@ export default {
         wordToSpace.set(space.value.word, space);
       }
       let result =
-        "query\tword\te_value\tidentical_amino_acids_percentage\tko\tlabel\tproduct\tgene_name\tsignificant\tpredicted_class\n";
+        "query\tword\te_value\tidentical_amino_acids_percentage\tkegg_orthology\tlabel\tproduct\tgene_name\tsignificant\tpredicted_class\n";
 
       for (const diamond of this.diamondResults) {
         result +=
