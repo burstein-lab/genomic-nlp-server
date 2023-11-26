@@ -43,11 +43,11 @@ export default {
     options() {
       return {
         plugins: {
-          title: {
+          subtitle: {
             display: true,
             text: `Ratio of genes with known tax in database: ${this.tax_ratio}`,
           },
-          subtitle: {
+          title: {
             display: true,
             text: "Taxonomy distribution (order)",
           },
