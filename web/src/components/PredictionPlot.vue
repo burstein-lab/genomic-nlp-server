@@ -36,9 +36,6 @@ export default {
         plugins: {
           legend: {
             display: false,
-            labels: {
-              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
-            },
           },
           tooltip: {
             callbacks: {

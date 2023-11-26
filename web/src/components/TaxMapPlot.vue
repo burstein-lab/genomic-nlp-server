@@ -45,11 +45,6 @@ export default {
     options() {
       return {
         plugins: {
-          legend: {
-            labels: {
-              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
-            },
-          },
           subtitle: {
             display: true,
             text: `Percentage of genes with known taxonomy in database: ${this.tax_ratio}%`,
@@ -60,7 +55,12 @@ export default {
             text: "Taxonomy distribution (order)",
             color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
           },
-          legend: { position: "right" },
+          legend: {
+            position: "right",
+            labels: {
+              color: this.theme.global.current.dark ? "#FFFFFF" : "#000000",
+            },
+          },
         },
       };
     },
