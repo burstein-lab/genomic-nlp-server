@@ -73,14 +73,16 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
       "Gene name": point.gene_name,
       "Functional category": point.label,
       "Gene count in family": point.word_count,
-      "KEGG information": kosWithoutLink.includes(point.ko) ? "N/A": "https://www.genome.jp/entry/" + point.ko,
+      "KEGG information": kosWithoutLink.includes(point.ko)
+        ? "N/A"
+        : "https://www.genome.jp/entry/" + point.ko,
     };
   }
 
   return new Map(Object.entries(entries));
 };
 
-const kosWithoutLink = ["CRISPR", "tRNA","rRNA", "tmRNA"]
+const kosWithoutLink = ["CRISPR", "tRNA", "rRNA", "tmRNA"];
 
 interface LatLng {
   lat: number;
@@ -106,6 +108,8 @@ interface SpaceValue {
   distance: string;
   color: string;
   word_count: number;
+  tax_distribution: [string, number][];
+  tax_ratio: number;
 }
 
 interface Space {

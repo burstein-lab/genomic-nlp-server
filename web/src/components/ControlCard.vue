@@ -82,8 +82,7 @@
           />
           <v-container class="text-center pt-1 py-0">
             <v-row justify="center" no-gutters>
-              <v-col cols="1"></v-col>
-              <v-col cols="9">
+              <v-col cols="11">
                 <v-btn-toggle
                   color="info"
                   variant="outlined"
@@ -103,11 +102,20 @@
                     :disabled="isLoading || !clickedSpace.value.hypothetical"
                     density="comfortable"
                   >
-                    Gene Predictions
+                    Gene Preds
+                  </v-btn>
+                  <v-btn
+                    value="taxMap"
+                    :disabled="
+                      isLoading || !clickedSpace.value.tax_distribution
+                    "
+                    density="comfortable"
+                  >
+                    Tax Map
                   </v-btn>
                 </v-btn-toggle>
               </v-col>
-              <v-col cols="2">
+              <v-col cols="1">
                 <v-tooltip text="Download graph data" location="bottom">
                   <template v-slot:activator="{ props }">
                     <v-btn-group density="comfortable" v-bind="props">
@@ -135,6 +143,11 @@
             v-else-if="plotToggle == 'predictions' && scatterData"
             :data="scatterData"
           />
+          <TaxMapPlot
+            v-else-if="plotToggle == 'taxMap'"
+            :tax_distribution="clickedSpace.value.tax_distribution"
+            :tax_ratio="clickedSpace.value.tax_ratio"
+          />
         </div>
         <div v-else class="pt-2">
           Search to explore the model and hover a point to view extra options
@@ -160,6 +173,7 @@ import SpaceInfo from "./SpaceInfo.vue";
 import DiamondSearch from "./DiamondSearch.vue";
 import NeighborsPlot from "./NeighborsPlot.vue";
 import PredictionPlot from "./PredictionPlot.vue";
+import TaxMapPlot from "./TaxMapPlot.vue";
 import Snackbar from "./Snackbar.vue";
 import { SpacesReponse, ScatterData } from "@/composables/spaces";
 import { downloadFile } from "@/composables/utils";
@@ -175,6 +189,7 @@ export default {
   components: {
     NeighborsPlot,
     PredictionPlot,
+    TaxMapPlot,
     Search,
     ThemeToggle,
     SpaceInfo,
@@ -206,6 +221,7 @@ export default {
       loading: false,
       currentPlot: "",
       scatterData: null as ScatterData | null,
+      taxData: null as Object | null,
       shouldHideMap: false,
       snackbar: false,
       previousPoint: null as Space | null,
