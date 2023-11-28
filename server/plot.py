@@ -9,10 +9,11 @@ from common import ModelData, TILE_SIZE, df_to_interactive_spaces
 
 GREY_HEX = "#808080"
 GREY_OPACITY = int(0.3 * 255)
+COLOR_ORDER = [GREY_HEX, "#6a3d9a", "#a6cee3", "#ff1493", "#ffd700", "#00ced1", "#ff9933", "#1f78b4", "#fb9a99", "#e6e6fa", "#b2df8a", "#ffff99", "#b15928", "#e31a1c", "#ffff00", "#33a02c"]
 
 
 def hex_to_rgb(value):
-    hex_value = value.lstrip('#')
+    hex_value = value.lstrip("#")
     return tuple(int(hex_value[i:i+2], 16) for i in (0, 2, 4))
 
 
@@ -27,7 +28,7 @@ class Plotter:
         )
         # in order to plot grey circles first.
         self.model_data.df["order"] = self.model_data.df.apply(
-            lambda row: 0 if row.color == GREY_HEX else 1, axis=1,
+            lambda row: COLOR_ORDER.index(row.color.lower()), axis=1,
         )
 
         self.model_data.df.sort_values(
@@ -106,10 +107,10 @@ class Plotter:
         radius = 1 + zoom
         uncropped_size = TILE_SIZE * (2 ** zoom)
         df = df.copy()
-        df['plot_x'] = df.apply(lambda row: round(
-            uncropped_size * self.normalize_to_standard(row['x'], self.model_data.x_min, self.model_data.x_max)), axis=1)
-        df['plot_y'] = df.apply(lambda row: round(
-            uncropped_size * self.normalize_to_standard(row['y'], self.model_data.y_min, self.model_data.y_max)), axis=1)
+        df["plot_x"] = df.apply(lambda row: round(
+            uncropped_size * self.normalize_to_standard(row["x"], self.model_data.x_min, self.model_data.x_max)), axis=1)
+        df["plot_y"] = df.apply(lambda row: round(
+            uncropped_size * self.normalize_to_standard(row["y"], self.model_data.y_min, self.model_data.y_max)), axis=1)
         for i, x_lines in enumerate(zoom_levels):
             for j, zoom_ranges in enumerate(x_lines):
                 print("img plot zoom:", zoom, "i:", i, "j:", j)
@@ -150,7 +151,7 @@ class Plotter:
 
                 fig.patches.extend(circles)
                 filename = os.path.join(
-                    outdir, f'space_by_label_{i}_{len(x_lines) - 1 - j}.png')
+                    outdir, f"space_by_label_{i}_{len(x_lines) - 1 - j}.png")
                 fig.savefig(filename, dpi=1, transparent=True)
 
     def create_circle(self, min_x, max_x, min_y, max_y, radius, row):
@@ -253,15 +254,15 @@ def plot_everything(args):
 
 if __name__ == "__main__":
     argparse = argparse.ArgumentParser()
-    argparse.add_argument('--outdir', default='../src/assets/', type=str,
-                          help='output dir for img to be saved')
-    argparse.add_argument('--min-zoom', default=0, type=int)
-    argparse.add_argument('--max-zoom', default=0, type=int)
-    argparse.add_argument('--max-png-zoom', default=0, type=int)
-    argparse.add_argument('--bins', default=1, type=int,
-                          help='number of bins to split the space')
-    argparse.add_argument('--max_bins', default=30, type=int,
-                          help='max number of bins')
-    argparse.add_argument('--min-img-points', default=2000, type=int,
-                          help='Number of points for image. If less a pickle will be created')
+    argparse.add_argument("--outdir", default="../src/assets/", type=str,
+                          help="output dir for img to be saved")
+    argparse.add_argument("--min-zoom", default=0, type=int)
+    argparse.add_argument("--max-zoom", default=0, type=int)
+    argparse.add_argument("--max-png-zoom", default=0, type=int)
+    argparse.add_argument("--bins", default=1, type=int,
+                          help="number of bins to split the space")
+    argparse.add_argument("--max_bins", default=30, type=int,
+                          help="max number of bins")
+    argparse.add_argument("--min-img-points", default=2000, type=int,
+                          help="Number of points for image. If less a pickle will be created")
     plot_everything(argparse.parse_args())
