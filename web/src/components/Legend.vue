@@ -10,19 +10,22 @@
             :key="item"
             :style="
               clickedSpace?.value?.color === item.color
-                ? 'background-color: #f9f9f9; color: #000000'
+                ? theme.global.current.dark
+                  ? 'background-color: #f9f9f9; color: #000000'
+                  : 'background-color: #000000; color: #f9f9f9'
                 : ''
             "
           >
             <template v-slot:prepend>
-              <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
+              <v-icon
+                :color="item.color"
+                style="border: 1px solid #202020"
+                class="me-2"
+              >
+                mdi-circle
+              </v-icon>
             </template>
-            <v-list-item-title
-              v-text="
-                (clickedSpace?.value?.color === item.color ? '→ ' : '') +
-                item.text
-              "
-            ></v-list-item-title>
+            <v-list-item-title v-text="item.text"></v-list-item-title>
           </v-list-item>
         </v-list>
       </v-card>
@@ -32,6 +35,7 @@
 
 <script lang="ts">
 import { Space } from "@/composables/spaces";
+import { useTheme } from "vuetify";
 
 export default {
   name: "Legend",
@@ -42,6 +46,7 @@ export default {
   },
   data: () => {
     return {
+      theme: useTheme(),
       items: [],
     };
   },
