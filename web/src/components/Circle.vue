@@ -4,9 +4,10 @@
     :style="`
         border: 2px solid ${theme.global.current.dark ? '#303030' : '#f9f9f9'};
         background-color: ${color};
-        height: 24px;
-        width: 24px;
+        height: 20px;
+        width: 20px;
         border-radius: 50%;
+        margin-right: 8px;
     `"
   ></div>
 </template>
