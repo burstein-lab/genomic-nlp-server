@@ -9,7 +9,7 @@
             v-for="item in items"
             :key="item"
             :style="
-              selectedItem === item.color
+              clickedSpace?.value?.color === item.color
                 ? `background-color: ${item.color};`
                 : ''
             "
@@ -26,11 +26,17 @@
 </template>
 
 <script lang="ts">
+import { Space } from "@/composables/spaces";
+
 export default {
   name: "Legend",
+  props: {
+    clickedSpace: {
+      type: Object as () => Space | null,
+    },
+  },
   data: () => {
     return {
-      selectedItem: 1,
       items: [],
     };
   },
