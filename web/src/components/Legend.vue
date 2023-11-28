@@ -8,7 +8,11 @@
           <v-list-item
             v-for="item in items"
             :key="item"
-            :style="`background-color: ${item.color};`"
+            :style="
+              selectedItem === item.color
+                ? `background-color: ${item.color};`
+                : ''
+            "
           >
             <template v-slot:prepend>
               <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
