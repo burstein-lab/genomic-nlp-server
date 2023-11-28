@@ -19,7 +19,7 @@
             <template v-slot:prepend>
               <v-icon
                 :color="item.color"
-                style="border: 2px solid #303030"
+                style="border: 2px solid #303030; border-radius: 50%"
                 class="me-2"
               >
                 mdi-circle
