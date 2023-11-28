@@ -10,7 +10,7 @@
             :key="item"
             :style="
               clickedSpace?.value?.color === item.color
-                ? `background-color: ${item.color};`
+                ? 'background-color: #000000; font-color: #ffffff'
                 : ''
             "
           >
