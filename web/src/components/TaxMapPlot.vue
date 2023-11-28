@@ -82,9 +82,9 @@ export default {
           {
             data: values,
             backgroundColor: palette,
+            borderColor: this.theme.global.current.dark ? "#000000" : "#FFFFFF",
           },
         ],
-        borderColor: this.theme.global.current.dark ? "#000000" : "#FFFFFF",
       };
     },
   },
