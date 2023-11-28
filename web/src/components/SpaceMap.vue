@@ -97,7 +97,7 @@
         />
       </l-control>
       <l-control ref="legendRef" position="bottomleft">
-        <Legend />
+        <Legend :clickedSpace="clickedSpace" />
       </l-control>
     </l-map>
   </div>

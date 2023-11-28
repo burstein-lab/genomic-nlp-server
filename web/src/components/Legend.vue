@@ -5,9 +5,19 @@
     <v-tooltip activator="parent" location="top" id="legend-tooltip">
       <v-card style="opacity: 0.9">
         <v-list :lines="false" density="compact">
-          <v-list-item v-for="item in items" :key="item.color">
+          <v-list-item
+            v-for="item in items"
+            :key="item"
+            :style="
+              clickedSpace?.value?.color === item.color
+                ? theme.global.current.dark
+                  ? 'background-color: #f9f9f9; color: #303030'
+                  : 'background-color: #303030; color: #f9f9f9'
+                : ''
+            "
+          >
             <template v-slot:prepend>
-              <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
+              <Circle :color="item.color" />
             </template>
             <v-list-item-title v-text="item.text"></v-list-item-title>
           </v-list-item>
@@ -18,11 +28,23 @@
 </template>
 
 <script lang="ts">
+import { Space } from "@/composables/spaces";
+import Circle from "./Circle.vue";
+import { useTheme } from "vuetify";
+
 export default {
   name: "Legend",
+  components: {
+    Circle,
+  },
+  props: {
+    clickedSpace: {
+      type: Object as () => Space | null,
+    },
+  },
   data: () => {
     return {
-      selectedItem: "#808080",
+      theme: useTheme(),
       items: [],
     };
   },
