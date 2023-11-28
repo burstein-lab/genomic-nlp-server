@@ -11,15 +11,17 @@
             :style="
               clickedSpace?.value?.color === item.color
                 ? theme.global.current.dark
-                  ? 'background-color: #f9f9f9; color: #000000'
-                  : 'background-color: #000000; color: #f9f9f9'
+                  ? 'background-color: #f9f9f9; color: #303030'
+                  : 'background-color: #303030; color: #f9f9f9'
                 : ''
             "
           >
             <template v-slot:prepend>
               <v-icon
                 :color="item.color"
-                style="border: 2px solid #303030; border-radius: 50%"
+                :style="`border: 2px solid ${
+                  theme.global.current.dark ? '#303030' : '#f9f9f9'
+                }; border-radius: 50%`"
                 class="me-2"
               >
                 mdi-circle
