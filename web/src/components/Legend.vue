@@ -10,14 +10,19 @@
             :key="item"
             :style="
               clickedSpace?.value?.color === item.color
-                ? 'background-color: #000000; font-color: #ffffff'
+                ? 'background-color: #f9f9f9; font-color: #000000'
                 : ''
             "
           >
             <template v-slot:prepend>
               <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
             </template>
-            <v-list-item-title v-text="item.text"></v-list-item-title>
+            <v-list-item-title
+              v-text="
+                (clickedSpace?.value?.color === item.color ? '→ ' : '') +
+                item.text
+              "
+            ></v-list-item-title>
           </v-list-item>
         </v-list>
       </v-card>
