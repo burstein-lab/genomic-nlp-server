@@ -5,14 +5,16 @@
     <v-tooltip activator="parent" location="top" id="legend-tooltip">
       <v-card style="opacity: 0.9">
         <v-list :lines="false" density="compact">
-          <v-list-item-group v-model="selectedItem" color="success">
-            <v-list-item v-for="(item, i) in items" :key="i">
-              <template v-slot:prepend>
-                <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
-              </template>
-              <v-list-item-title v-text="item.text"></v-list-item-title>
-            </v-list-item>
-          </v-list-item-group>
+          <v-list-item
+            v-for="item in items"
+            :key="item"
+            :style="`background-color: ${item.color};`"
+          >
+            <template v-slot:prepend>
+              <v-icon :color="item.color" class="me-2">mdi-circle</v-icon>
+            </template>
+            <v-list-item-title v-text="item.text"></v-list-item-title>
+          </v-list-item>
         </v-list>
       </v-card>
     </v-tooltip>
