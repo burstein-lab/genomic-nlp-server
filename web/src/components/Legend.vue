@@ -17,20 +17,7 @@
             "
           >
             <template v-slot:prepend>
-              <v-icon
-                :color="item.color"
-                :style="`
-                  vertical-align: middle;
-                  line-height: 1;
-                  border: 2px solid ${
-                    theme.global.current.dark ? '#303030' : '#f9f9f9'
-                  };
-                  border-radius: 50%;
-                `"
-                class="me-2"
-              >
-                mdi-circle
-              </v-icon>
+              <Circle :color="item.color" />
             </template>
             <v-list-item-title v-text="item.text"></v-list-item-title>
           </v-list-item>
@@ -42,10 +29,14 @@
 
 <script lang="ts">
 import { Space } from "@/composables/spaces";
+import Circle from "./Circle.vue";
 import { useTheme } from "vuetify";
 
 export default {
   name: "Legend",
+  components: {
+    Circle,
+  },
   props: {
     clickedSpace: {
       type: Object as () => Space | null,
