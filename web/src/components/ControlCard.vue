@@ -122,7 +122,12 @@
                       <v-btn
                         color="info"
                         icon
-                        :disabled="!plotToggle || (!barData && !scatterData)"
+                        :disabled="
+                          !(
+                            (plotToggle === 'neighbors' && barData) ||
+                            (plotToggle === 'predictions' && scatterData)
+                          )
+                        "
                         density="comfortable"
                         @click="downloadGraphData"
                       >
