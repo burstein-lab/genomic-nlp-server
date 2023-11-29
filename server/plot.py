@@ -9,7 +9,7 @@ from common import ModelData, TILE_SIZE, df_to_interactive_spaces
 
 GREY_HEX = "#808080"
 GREY_OPACITY = int(0.3 * 255)
-COLOR_ORDER = [GREY_HEX, "#6a3d9a", "#a6cee3", "#ff1493", "#ffd700", "#00ced1", "#ff9933", "#1f78b4", "#fb9a99", "#e6e6fa", "#b2df8a", "#ffff99", "#b15928", "#e31a1c", "#ffff00", "#33a02c"]
+COLOR_ORDER = [GREY_HEX, "#6a3d9a", "#ffc067", "#ff1493", "#ffd700", "#00ced1", "#ff9933", "#1f78b4", "#fb9a99", "#e6e6fa", "#b2df8a", "#ffff99", "#b15928", "#e31a1c", "#a865c9", "#33a02c"]
 
 
 def hex_to_rgb(value):
