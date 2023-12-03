@@ -64,7 +64,7 @@ export default {
       };
     },
     chartData() {
-      const pairs = this.tax_distribution.filter(([_, number]) => number !== 0);
+      const pairs = this.tax_distribution.filter(([_, number]) => number);
       const [labels, values] = pairs[0].map((_, colIndex) =>
         pairs.map((row) => row[colIndex])
       );
