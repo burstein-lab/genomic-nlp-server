@@ -59,6 +59,7 @@ export default {
     controller: new AbortController(),
   }),
   async beforeMount() {
+    console.log("Component is about to be mounted", this.label);
     if (this.multiple) {
       this.searchValue = this.$route.query.searchValue
         ? this.$route.query.searchValue.split(",")
@@ -70,6 +71,9 @@ export default {
       this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
     }
     await this.onInputChange(this.searchTerm);
+  },
+  beforeUpdate() {
+    console.log("Component is about to be updated", this.label);
   },
   methods: {
     async onInputChange(value: string) {

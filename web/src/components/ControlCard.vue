@@ -305,6 +305,7 @@ export default {
           searchValue: "",
         },
       });
+      console.log("updateSearchMode", this.searchMode);
       this.selectedSearchMode = this.searchMode;
     },
     downloadGraphData() {
