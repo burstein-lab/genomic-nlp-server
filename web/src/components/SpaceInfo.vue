@@ -6,6 +6,7 @@
       :subtitle="k"
       :title="displayedValue(k, v)"
       :href="v?.toString()?.startsWith('https') ? v : undefined"
+      :style="v?.toString()?.startsWith('https') ? 'color: #0077ee' : ''"
       :target="v?.toString()?.startsWith('https') ? '_blank' : undefined"
     >
       <template v-if="isActionItem(k)" v-slot:append>
