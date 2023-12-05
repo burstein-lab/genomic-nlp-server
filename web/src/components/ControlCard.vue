@@ -45,7 +45,7 @@
           density="comfortable"
           hide-details
         />
-        <div v-if="selectedSearchMode">
+        <div>
           <DiamondSearch
             v-if="selectedSearchMode === 'Sequence'"
             :isLoading="isDiamondLoading"
@@ -235,7 +235,7 @@ export default {
   async beforeMount() {
     this.searchMode = this.$route.query.searchMode
       ? this.$route.query.searchMode
-      : "";
+      : "KEGG ortholog";
     this.selectedSearchMode = this.searchMode;
   },
   emits: [
