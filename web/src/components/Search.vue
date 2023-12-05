@@ -72,6 +72,9 @@ export default {
     }
     await this.onInputChange(this.searchTerm);
   },
+  mounted() {
+    console.log("Component is mounted", this.label);
+  },
   beforeUpdate() {
     console.log("Component is about to be updated", this.label);
   },
