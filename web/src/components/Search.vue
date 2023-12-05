@@ -59,18 +59,18 @@ export default {
     controller: new AbortController(),
   }),
   async beforeMount() {
-    console.log("Component is about to be mounted", this.label);
-    if (this.multiple) {
-      this.searchValue = this.$route.query.searchValue
-        ? this.$route.query.searchValue.split(",")
-        : null;
-    } else {
-      this.searchValue = this.$route.query.searchValue
-        ? this.$route.query.searchValue
-        : null;
-      this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
-    }
-    await this.onInputChange(this.searchTerm);
+    console.log("Component is about to be mounted");
+    // if (this.multiple) {
+    //   this.searchValue = this.$route.query.searchValue
+    //     ? this.$route.query.searchValue.split(",")
+    //     : null;
+    // } else {
+    //   this.searchValue = this.$route.query.searchValue
+    //     ? this.$route.query.searchValue
+    //     : null;
+    //   this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
+    // }
+    // await this.onInputChange(this.searchTerm);
   },
   mounted() {
     console.log("Component is mounted");
@@ -79,7 +79,7 @@ export default {
     console.log("Component is created");
   },
   beforeUpdate() {
-    console.log("Component is about to be updated", this.label);
+    console.log("Component is about to be updated");
   },
   methods: {
     async onInputChange(value: string) {
