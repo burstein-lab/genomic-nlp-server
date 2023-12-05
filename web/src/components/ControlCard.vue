@@ -46,19 +46,19 @@
           hide-details
         />
         <div>
+          <Search
+            v-if="searchMode !== 'Sequence'"
+            :key="searchMode"
+            :label="searchModeToType[searchMode].label"
+            :type="searchModeToType[searchMode].type"
+            :multiple="searchModeToType[searchMode].multiple"
+            @search="(e: string[]) => searchSpaces(searchModeToType[searchMode].emit, e)"
+          />
           <DiamondSearch
-            v-if="selectedSearchMode === 'Sequence'"
+            v-else
             :isLoading="isDiamondLoading"
             @setMap="(e) => $emit('setMap', e)"
             @setLoading="(isLoading: boolean) => {$emit('setDiamondLoading', isLoading);}"
-          />
-          <Search
-            v-else
-            :key="selectedSearchMode"
-            :label="searchModeToType[selectedSearchMode].label"
-            :type="searchModeToType[selectedSearchMode].type"
-            :multiple="searchModeToType[selectedSearchMode].multiple"
-            @search="(e: string[]) => searchSpaces(searchModeToType[selectedSearchMode].emit, e)"
           />
         </div>
         <v-divider class="mx-4 mt-4" />
@@ -217,7 +217,6 @@ export default {
     searchModes.splice(1, 0, "Sequence");
     return {
       searchMode: "",
-      selectedSearchMode: "",
       searchModes: searchModes,
       searchModeToType,
       neighbors: null as string[] | null,
@@ -236,7 +235,6 @@ export default {
     this.searchMode = this.$route.query.searchMode
       ? this.$route.query.searchMode
       : "KEGG ortholog";
-    this.selectedSearchMode = this.searchMode;
   },
   emits: [
     "setDiamondLoading",
@@ -287,7 +285,7 @@ export default {
       this.$router.push({
         query: {
           ...this.$route.query,
-          searchMode: this.selectedSearchMode,
+          searchMode: this.searchMode,
           searchValue: e.toString(),
         },
       });
@@ -296,7 +294,6 @@ export default {
     },
     async updateSearchMode(val: string) {
       this.resetClickPoint();
-      this.searchMode = val;
       if (val === "Neighbors") this.snackbar = true;
       await this.$router.push({
         query: {
@@ -305,8 +302,8 @@ export default {
           searchValue: "",
         },
       });
+      this.searchMode = val;
       console.log("updateSearchMode", this.searchMode);
-      this.selectedSearchMode = this.searchMode;
     },
     downloadGraphData() {
       if (this.plotToggle == "neighbors") {
