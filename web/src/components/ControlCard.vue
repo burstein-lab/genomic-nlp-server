@@ -54,6 +54,7 @@
           />
           <Search
             v-else
+            :key="selectedSearchMode"
             :label="searchModeToType[selectedSearchMode].label"
             :type="searchModeToType[selectedSearchMode].type"
             :multiple="searchModeToType[selectedSearchMode].multiple"

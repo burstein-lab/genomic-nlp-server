@@ -73,7 +73,10 @@ export default {
     await this.onInputChange(this.searchTerm);
   },
   mounted() {
-    console.log("Component is mounted", this.label);
+    console.log("Component is mounted");
+  },
+  created() {
+    console.log("Component is created");
   },
   beforeUpdate() {
     console.log("Component is about to be updated", this.label);
