@@ -48,11 +48,7 @@
         <div>
           <Search
             v-if="searchMode !== 'Sequence'"
-            :key="searchMode"
-            :label="searchModeToType[searchMode].label"
-            :type="searchModeToType[searchMode].type"
-            :multiple="searchModeToType[searchMode].multiple"
-            @search="(e: string[]) => searchSpaces(searchModeToType[searchMode].emit, e)"
+            @search="(emit: string, e: string[]) => searchSpaces(emit, e)"
           />
           <DiamondSearch
             v-else

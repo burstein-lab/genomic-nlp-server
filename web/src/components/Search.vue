@@ -12,7 +12,7 @@
     :loading="isLoading"
     hide-no-data
     hide-details
-    :label="label"
+    :label="searchModeToType[searchMode].label"
     auto-select-first
     placeholder="Start typing to search"
     density="comfortable"
@@ -28,6 +28,7 @@
 
 <script lang="ts">
 import { vue3Debounce } from "vue-debounce";
+import { searchModeToType } from "@/composables/spaces";
 
 export default {
   name: "Search",
@@ -35,21 +36,8 @@ export default {
   directives: {
     debounce: vue3Debounce({ lock: true }),
   },
-  props: {
-    multiple: {
-      type: Boolean,
-      default: false,
-    },
-    label: {
-      type: String,
-      required: true,
-    },
-    type: {
-      type: String,
-      required: true,
-    },
-  },
   data: () => ({
+    searchModeToType,
     items: [],
     isLoading: false,
     searchValue: null as string | string[],
@@ -81,6 +69,16 @@ export default {
   beforeUpdate() {
     console.log("Component is about to be updated");
   },
+  computed: {
+    searchMode() {
+      return this.$route.query.searchMode
+        ? this.$route.query.searchMode
+        : "KEGG ortholog";
+    },
+    multiple(): boolean {
+      return searchModeToType[this.searchMode].multiple;
+    },
+  },
   methods: {
     async onInputChange(value: string) {
       this.controller.abort();
@@ -108,13 +106,13 @@ export default {
       this.isLoading = false;
       this.controller.abort();
       this.controller = new AbortController();
-      this.$emit("search", val);
+      this.$emit("search", searchModeToType[this.searchMode].emit, val);
     },
     async fetchItems() {
       const rawRes = await fetch(
-        `${
-          import.meta.env.VITE_SERVER_URL
-        }/${this.type.toLowerCase()}/search?filter=${this.searchTerm.toLowerCase()}&page=${
+        `${import.meta.env.VITE_SERVER_URL}/${searchModeToType[
+          this.searchMode
+        ].type.toLowerCase()}/search?filter=${this.searchTerm.toLowerCase()}&page=${
           this.page
         }`,
         { signal: this.controller.signal }
