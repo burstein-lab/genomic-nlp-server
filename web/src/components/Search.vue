@@ -74,7 +74,7 @@ export default {
           : null;
         this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
       }
-      this.onInputChange(this.searchTerm, val);
+      this.onInputChange(val, this.searchTerm);
       return val;
     },
     multiple(): boolean {
