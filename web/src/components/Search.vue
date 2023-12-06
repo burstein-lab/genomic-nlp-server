@@ -41,7 +41,7 @@ export default {
     searchModeToType,
     items: [],
     isLoading: false,
-    searchValue: null as string | string[],
+    searchValue: null as null | string | string[],
     searchTerm: "",
     page: 1,
     done: false,
@@ -75,6 +75,7 @@ export default {
           : null;
         this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
       }
+      console.log("searchValue", this.searchValue, ".term.", this.searchTerm);
       this.onInputChange(val, this.searchTerm);
       return val;
     },
