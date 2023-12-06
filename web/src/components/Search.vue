@@ -1,7 +1,7 @@
 <template>
   <v-autocomplete
     color="info"
-    v-debounce:300ms="onInputChange"
+    v-debounce:300ms="(v: string) => onInputChange(searchMode, v)"
     debounce-events="update:searchValue"
     v-model="searchValue"
     @update:modelValue="onChoose"
@@ -59,7 +59,7 @@ export default {
     console.log("Component is about to be updated");
   },
   computed: {
-    searchMode() {
+    searchMode(): string {
       const val = this.$route.query.searchMode
         ? this.$route.query.searchMode
         : "KEGG ortholog";
@@ -74,7 +74,7 @@ export default {
           : null;
         this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
       }
-      this.onInputChange(this.searchTerm);
+      this.onInputChange(this.searchTerm, val);
       return val;
     },
     multiple(): boolean {
@@ -82,14 +82,14 @@ export default {
     },
   },
   methods: {
-    async onInputChange(value: string) {
+    async onInputChange(searchMode: string, value: string) {
       this.controller.abort();
       this.controller = new AbortController();
       this.isLoading = true;
       this.page = 1;
       this.done = false;
       this.searchTerm = value;
-      const res = await this.fetchItems();
+      const res = await this.fetchItems(searchMode);
       this.done = res.done;
       this.items = res.items;
       this.isLoading = false;
@@ -99,7 +99,7 @@ export default {
 
       this.isLoading = true;
       this.page += 1;
-      const res = await this.fetchItems();
+      const res = await this.fetchItems(this.searchMode);
       this.done = res.done;
       this.items = [...this.items, ...res.items];
       this.isLoading = false;
@@ -110,10 +110,10 @@ export default {
       this.controller = new AbortController();
       this.$emit("search", searchModeToType[this.searchMode].emit, val);
     },
-    async fetchItems() {
+    async fetchItems(searchMode: string) {
       const rawRes = await fetch(
         `${import.meta.env.VITE_SERVER_URL}/${searchModeToType[
-          this.searchMode
+          searchMode
         ].type.toLowerCase()}/search?filter=${this.searchTerm.toLowerCase()}&page=${
           this.page
         }`,
