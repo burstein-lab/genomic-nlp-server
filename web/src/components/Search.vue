@@ -48,17 +48,6 @@ export default {
   }),
   async beforeMount() {
     console.log("Component is about to be mounted");
-    // if (this.multiple) {
-    //   this.searchValue = this.$route.query.searchValue
-    //     ? this.$route.query.searchValue.split(",")
-    //     : null;
-    // } else {
-    //   this.searchValue = this.$route.query.searchValue
-    //     ? this.$route.query.searchValue
-    //     : null;
-    //   this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
-    // }
-    // await this.onInputChange(this.searchTerm);
   },
   mounted() {
     console.log("Component is mounted");
@@ -71,9 +60,22 @@ export default {
   },
   computed: {
     searchMode() {
-      return this.$route.query.searchMode
+      const val = this.$route.query.searchMode
         ? this.$route.query.searchMode
         : "KEGG ortholog";
+
+      if (searchModeToType[val].multiple) {
+        this.searchValue = this.$route.query.searchValue
+          ? this.$route.query.searchValue.split(",")
+          : null;
+      } else {
+        this.searchValue = this.$route.query.searchValue
+          ? this.$route.query.searchValue
+          : null;
+        this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
+      }
+      this.onInputChange(this.searchTerm);
+      return val;
     },
     multiple(): boolean {
       return searchModeToType[this.searchMode].multiple;
