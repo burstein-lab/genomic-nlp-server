@@ -1,6 +1,7 @@
 <template>
   <v-autocomplete
     color="info"
+    :key="searchMode"
     v-debounce:300ms="(v: string) => onInputChange(searchMode, v)"
     debounce-events="update:searchValue"
     v-model="searchValue"
