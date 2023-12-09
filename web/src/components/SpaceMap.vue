@@ -17,11 +17,7 @@
         wheelPxPerZoomLevel: 120,
       }"
       @ready="onMapReady()"
-      @update:center="
-        (v) => {
-          center = v;
-        }
-      "
+      @update:center="onUpdateCenter"
     >
       <l-control-zoom position="bottomright" />
       <l-tile-layer
@@ -187,6 +183,7 @@ export default {
         lat: 0,
         lng: 0,
       },
+      onUpdateCenter: (v: { lat: number; lng: number }) => {},
       hoveredSpace: null as Space | null,
       _clickedSpace: undefined as Space | null,
       isMapVisible: true,
@@ -272,7 +269,7 @@ export default {
 
       // Setting before search spaces in case the clicked space is in the search results.
       if (this.$route.query.clickedSpace) {
-        this.onSetClickPoint(this.$route.query.clickedSpace, false);
+        await this.onSetClickPoint(this.$route.query.clickedSpace, false);
       } else {
         this.clickedSpace = null;
       }
@@ -284,6 +281,9 @@ export default {
         );
         await this.onSetSearchSpaces(res, false);
       }
+      this.onUpdateCenter = (v) => {
+        this.center = v;
+      };
     },
     coordsToTile(coords: Coords) {
       return `${coords.z}_${coords.x}_${coords.y}`;
