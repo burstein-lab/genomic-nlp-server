@@ -1,18 +1,18 @@
 <template>
   <v-autocomplete
     color="info"
+    :key="searchMode"
     v-debounce:300ms="onInputChange"
-    debounce-events="update:searchValue"
-    v-model="searchValue"
     @update:modelValue="onChoose"
+    v-model="searchValue"
     :items="items"
-    :multiple="multiple"
-    :chips="multiple"
-    :closable-chips="multiple"
+    :multiple="searchType.multiple"
+    :chips="searchType.multiple"
+    :closable-chips="searchType.multiple"
     :loading="isLoading"
     hide-no-data
     hide-details
-    :label="label"
+    :label="searchType.label"
     auto-select-first
     placeholder="Start typing to search"
     density="comfortable"
@@ -28,6 +28,7 @@
 
 <script lang="ts">
 import { vue3Debounce } from "vue-debounce";
+import { searchModeToType, SearchMode } from "@/composables/spaces";
 
 export default {
   name: "Search",
@@ -36,30 +37,25 @@ export default {
     debounce: vue3Debounce({ lock: true }),
   },
   props: {
-    multiple: {
-      type: Boolean,
-      default: false,
-    },
-    label: {
-      type: String,
-      required: true,
-    },
-    type: {
+    searchMode: {
       type: String,
       required: true,
     },
   },
-  data: () => ({
-    items: [],
-    isLoading: false,
-    searchValue: null as string | string[],
-    searchTerm: "",
-    page: 1,
-    done: false,
-    controller: new AbortController(),
-  }),
-  async beforeMount() {
-    if (this.multiple) {
+  data: () => {
+    return {
+      searchModeToType,
+      items: [] as string[],
+      isLoading: false,
+      searchValue: null as null | string | string[],
+      searchTerm: "",
+      page: 1,
+      done: false,
+      controller: new AbortController(),
+    };
+  },
+  beforeMount() {
+    if (this.searchType.multiple) {
       this.searchValue = this.$route.query.searchValue
         ? this.$route.query.searchValue.split(",")
         : null;
@@ -69,7 +65,12 @@ export default {
         : null;
       this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
     }
-    await this.onInputChange(this.searchTerm);
+    this.onInputChange(this.searchTerm);
+  },
+  computed: {
+    searchType(): SearchMode {
+      return searchModeToType[this.searchMode];
+    },
   },
   methods: {
     async onInputChange(value: string) {
@@ -98,13 +99,13 @@ export default {
       this.isLoading = false;
       this.controller.abort();
       this.controller = new AbortController();
-      this.$emit("search", val);
+      this.$emit("search", this.searchType.emit, val);
     },
-    async fetchItems() {
+    async fetchItems(): Promise<{ done: boolean; items: string[] }> {
       const rawRes = await fetch(
         `${
           import.meta.env.VITE_SERVER_URL
-        }/${this.type.toLowerCase()}/search?filter=${this.searchTerm.toLowerCase()}&page=${
+        }/${this.searchType.type.toLowerCase()}/search?filter=${this.searchTerm.toLowerCase()}&page=${
           this.page
         }`,
         { signal: this.controller.signal }

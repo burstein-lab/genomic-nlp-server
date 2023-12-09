@@ -16,7 +16,7 @@
         zoomControl: false,
         wheelPxPerZoomLevel: 120,
       }"
-      @ready="onMapReady()"
+      @update:center="onUpdateCenter"
     >
       <l-control-zoom position="bottomright" />
       <l-tile-layer
@@ -75,6 +75,11 @@
           :hoveredSpace="hoveredSpace"
           :clickedSpace="clickedSpace"
           :isDiamondLoading="isDiamondLoading"
+          :location="{
+            zoom,
+            lat: center.lat,
+            lng: center.lng,
+          }"
           @setClickPoint="onSetClickPoint"
           @setDiamondLoading="onSetDiamondLoading"
           @resetCoords="
@@ -173,6 +178,11 @@ export default {
       theme: useTheme(),
       maxZoom: maxZoom,
       zoom: 0,
+      center: {
+        lat: 0,
+        lng: 0,
+      },
+      onUpdateCenter: (v: { lat: number; lng: number }) => {},
       hoveredSpace: null as Space | null,
       _clickedSpace: undefined as Space | null,
       isMapVisible: true,
@@ -193,18 +203,14 @@ export default {
         this._clickedSpace = null;
       }
     },
-    async onSetClickPoint(word: string, setQueryParams = true) {
+    async onSetClickPoint(word: string, focusSpaceResponse = true) {
       const res = await searchSpaces(
         "word",
         word,
         new AbortController().signal
       );
-      if (setQueryParams) {
-        this.clickedSpace = res.spaces[0];
-      } else {
-        this._clickedSpace = res.spaces[0];
-      }
-      this.focusSpaceResponse(res);
+      this.clickedSpace = res.spaces[0];
+      if (focusSpaceResponse) this.focusSpaceResponse(res);
     },
     async onSetSearchSpaces(res: SpacesResponse, autoClick = true) {
       this.searchSpaces.clear();
@@ -219,10 +225,9 @@ export default {
         } else {
           this.clickedSpace = null;
         }
-      }
 
-      console.log(res.zoom, res.latlng);
-      this.focusSpaceResponse(res);
+        this.focusSpaceResponse(res);
+      }
     },
     focusSpaceResponse(res: SpacesResponse) {
       this.zoom = res.zoom;
@@ -230,16 +235,12 @@ export default {
       this.map.setZoom(res.zoom);
       this.map.setView(res.latlng, res.zoom);
     },
-    onTileLayerReady() {
+    async onTileLayerReady() {
       const tileLayer = this.$refs.tileLayerRef.leafletObject;
       tileLayer.on("tileloadstart", async ({ coords }: { coords: Coords }) => {
         await this.getInteractiveSpaces(coords);
       });
-    },
-    onResetClickPoint() {
-      this.clickedSpace = null;
-    },
-    async onMapReady() {
+
       let zoom = 0;
       let lat = -this.tileSize / 2;
       let lng = this.tileSize / 2;
@@ -258,7 +259,7 @@ export default {
 
       // Setting before search spaces in case the clicked space is in the search results.
       if (this.$route.query.clickedSpace) {
-        this.onSetClickPoint(this.$route.query.clickedSpace, false);
+        await this.onSetClickPoint(this.$route.query.clickedSpace, false);
       } else {
         this.clickedSpace = null;
       }
@@ -271,18 +272,12 @@ export default {
         await this.onSetSearchSpaces(res, false);
       }
 
-      const setQueryCenter = () => {
-        this.$router.push({
-          query: {
-            ...this.$route.query,
-            location: `${this.zoom},${this.map.getCenter().lat},${
-              this.map.getCenter().lng
-            }`,
-          },
-        });
-        setTimeout(setQueryCenter, 3000);
+      this.onUpdateCenter = (v) => {
+        this.center = v;
       };
-      setQueryCenter();
+    },
+    onResetClickPoint() {
+      this.clickedSpace = null;
     },
     coordsToTile(coords: Coords) {
       return `${coords.z}_${coords.x}_${coords.y}`;
@@ -384,12 +379,6 @@ export default {
         }
 
         this._clickedSpace = value;
-        this.$router.push({
-          query: {
-            ...this.$route.query,
-            clickedSpace: value ? value.value.word : "",
-          },
-        });
       },
     },
     diamondDialog(): boolean {
