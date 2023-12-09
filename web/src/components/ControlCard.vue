@@ -398,9 +398,6 @@ export default {
         await this.$router.push({
           query: {
             ...this.$route.query,
-            clickedSpace: this.clickedSpace?.value?.word
-              ? this.clickedSpace?.value?.word
-              : "",
             plot: val,
           },
         });
@@ -430,7 +427,7 @@ export default {
     },
   },
   watch: {
-    clickedSpace(newVal, oldVal) {
+    async clickedSpace(newVal, oldVal) {
       if (oldVal === undefined && newVal && this.$route.query.plot) {
         // Only happens on first load. After that, oldVal is either set, or null.
         this.plotToggle = this.$route.query.plot;
@@ -447,6 +444,14 @@ export default {
       this.controller = new AbortController();
       this.barData = null;
       this.scatterData = null;
+      await this.$router.push({
+        query: {
+          ...this.$route.query,
+          clickedSpace: this.clickedSpace?.value?.word
+            ? this.clickedSpace?.value?.word
+            : undefined,
+        },
+      });
       this.plotToggle = "";
     },
   },

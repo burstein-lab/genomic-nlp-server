@@ -384,12 +384,6 @@ export default {
         }
 
         this._clickedSpace = value;
-        // this.$router.push({
-        //   query: {
-        //     ...this.$route.query,
-        //     clickedSpace: value ? value.value.word : "",
-        //   },
-        // });
       },
     },
     diamondDialog(): boolean {
