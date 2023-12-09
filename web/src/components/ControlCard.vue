@@ -291,15 +291,13 @@ export default {
     async updateSearchMode(val: string) {
       this.resetClickPoint();
       if (val === "Neighbors") this.snackbar = true;
-      // await this.$router.push({
-      //   query: {
-      //     ...this.$route.query,
-      //     searchMode: val,
-      //     searchValue: "",
-      //   },
-      // });
+      await this.$router.push({
+        query: {
+          ...this.$route.query,
+          searchMode: val,
+        },
+      });
       this.searchMode = val;
-      console.log("updateSearchMode", this.searchMode);
     },
     downloadGraphData() {
       if (this.plotToggle == "neighbors") {
