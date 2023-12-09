@@ -17,6 +17,11 @@
         wheelPxPerZoomLevel: 120,
       }"
       @ready="onMapReady()"
+      @update:center="
+        (v) => {
+          center = v;
+        }
+      "
     >
       <l-control-zoom position="bottomright" />
       <l-tile-layer
@@ -75,7 +80,11 @@
           :hoveredSpace="hoveredSpace"
           :clickedSpace="clickedSpace"
           :isDiamondLoading="isDiamondLoading"
-          :location="{ zoom, lat: map?.getCenter().lat, lng: map?.getCenter().lng }"
+          :location="{
+            zoom,
+            lat: center.lat,
+            lng: center.lng,
+          }"
           @setClickPoint="onSetClickPoint"
           @setDiamondLoading="onSetDiamondLoading"
           @resetCoords="
@@ -174,6 +183,10 @@ export default {
       theme: useTheme(),
       maxZoom: maxZoom,
       zoom: 0,
+      center: {
+        lat: 0,
+        lng: 0,
+      },
       hoveredSpace: null as Space | null,
       _clickedSpace: undefined as Space | null,
       isMapVisible: true,
@@ -271,19 +284,6 @@ export default {
         );
         await this.onSetSearchSpaces(res, false);
       }
-
-      const setQueryCenter = () => {
-        // this.$router.push({
-        //   query: {
-        //     ...this.$route.query,
-        //     location: `${this.zoom},${this.map.getCenter().lat},${
-        //       this.map.getCenter().lng
-        //     }`,
-        //   },
-        // });
-        setTimeout(setQueryCenter, 3000);
-      };
-      setQueryCenter();
     },
     coordsToTile(coords: Coords) {
       return `${coords.z}_${coords.x}_${coords.y}`;
