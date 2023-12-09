@@ -2,7 +2,7 @@
   <v-autocomplete
     color="info"
     :key="searchMode"
-    v-debounce:300ms="(v: string) => onInputChange(searchMode, v)"
+    v-debounce:300ms="onInputChange"
     debounce-events="update:searchValue"
     v-model="searchValue"
     @update:modelValue="onChoose"
@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import { vue3Debounce } from "vue-debounce";
-import { searchModeToType } from "@/composables/spaces";
+import { searchModeToType, SearchMode } from "@/composables/spaces";
 
 export default {
   name: "Search",
@@ -37,61 +37,60 @@ export default {
   directives: {
     debounce: vue3Debounce({ lock: true }),
   },
-  data: () => ({
-    searchModeToType,
-    items: [],
-    isLoading: false,
-    searchValue: null as null | string | string[],
-    searchTerm: "",
-    page: 1,
-    done: false,
-    controller: new AbortController(),
-  }),
-  async beforeMount() {
-    console.log("Component is about to be mounted");
+  props: {
+    searchMode: {
+      type: String,
+      required: true,
+    },
   },
-  mounted() {
-    console.log("Component is mounted");
+  data: () => {
+    console.log("search data");
+    return {
+      searchModeToType,
+      items: [] as string[],
+      isLoading: false,
+      searchValue: null as null | string | string[],
+      searchTerm: "",
+      page: 1,
+      done: false,
+      controller: new AbortController(),
+    };
   },
-  created() {
-    console.log("Component is created");
-  },
-  beforeUpdate() {
-    console.log("Component is about to be updated");
+  beforeMount() {
+    if (this.searchType.multiple) {
+      this.searchValue = this.$route.query.searchValue
+        ? this.$route.query.searchValue.split(",")
+        : null;
+    } else {
+      this.searchValue = this.$route.query.searchValue
+        ? this.$route.query.searchValue
+        : null;
+      this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
+    }
+    this.onInputChange(this.searchTerm);
+    console.log(
+      "search beforeMount",
+      this.searchMode,
+      "searchValue",
+      this.searchValue,
+      ".term.",
+      this.searchTerm
+    );
   },
   computed: {
-    searchMode(): string {
-      const val = this.$route.query.searchMode
-        ? this.$route.query.searchMode
-        : "KEGG ortholog";
-
-      if (searchModeToType[val].multiple) {
-        this.searchValue = this.$route.query.searchValue
-          ? this.$route.query.searchValue.split(",")
-          : null;
-      } else {
-        this.searchValue = this.$route.query.searchValue
-          ? this.$route.query.searchValue
-          : null;
-        this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
-      }
-      console.log("searchValue", this.searchValue, ".term.", this.searchTerm);
-      this.onInputChange(val, this.searchTerm);
-      return val;
-    },
-    multiple(): boolean {
-      return searchModeToType[this.searchMode].multiple;
+    searchType(): SearchMode {
+      return searchModeToType[this.searchMode];
     },
   },
   methods: {
-    async onInputChange(searchMode: string, value: string) {
+    async onInputChange(value: string) {
       this.controller.abort();
       this.controller = new AbortController();
       this.isLoading = true;
       this.page = 1;
       this.done = false;
       this.searchTerm = value;
-      const res = await this.fetchItems(searchMode);
+      const res = await this.fetchItems();
       this.done = res.done;
       this.items = res.items;
       this.isLoading = false;
@@ -101,7 +100,7 @@ export default {
 
       this.isLoading = true;
       this.page += 1;
-      const res = await this.fetchItems(this.searchMode);
+      const res = await this.fetchItems();
       this.done = res.done;
       this.items = [...this.items, ...res.items];
       this.isLoading = false;
@@ -110,13 +109,13 @@ export default {
       this.isLoading = false;
       this.controller.abort();
       this.controller = new AbortController();
-      this.$emit("search", searchModeToType[this.searchMode].emit, val);
+      this.$emit("search", this.searchType.emit, val);
     },
-    async fetchItems(searchMode: string) {
+    async fetchItems(): Promise<{ done: boolean; items: string[] }> {
       const rawRes = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/${searchModeToType[
-          searchMode
-        ].type.toLowerCase()}/search?filter=${this.searchTerm.toLowerCase()}&page=${
+        `${
+          import.meta.env.VITE_SERVER_URL
+        }/${this.searchType.type.toLowerCase()}/search?filter=${this.searchTerm.toLowerCase()}&page=${
           this.page
         }`,
         { signal: this.controller.signal }

@@ -1,16 +1,16 @@
-const searchMode = (
+const searchType = (
   label: string,
   type: string,
   emit?: string,
   multiple: boolean = false
-): SearchMode => ({
+): SearchType => ({
   label,
   type: type,
   emit: emit ? emit : type,
   multiple,
 });
 
-interface SearchMode {
+interface SearchType {
   label: string;
   type: string;
   emit: string;
@@ -18,13 +18,13 @@ interface SearchMode {
 }
 
 const searchModeToType = {
-  "KEGG ortholog": searchMode("KEGG ortholog", "space"),
-  "Functional category": searchMode("Functional category", "label"),
-  "Gene description": searchMode("Gene description", "gene_product"),
-  "Gene name": searchMode("Gene name", "gene"),
-  Neighbors: searchMode("Model word", "neighbors"),
-  "Model word": searchMode("Model word", "word", "word", true),
-} as { [key: string]: SearchMode };
+  "KEGG ortholog": searchType("KEGG ortholog", "space"),
+  "Functional category": searchType("Functional category", "label"),
+  "Gene description": searchType("Gene description", "gene_product"),
+  "Gene name": searchType("Gene name", "gene"),
+  Neighbors: searchType("Model word", "neighbors"),
+  "Model word": searchType("Model word", "word", "word", true),
+} as { [key: string]: SearchType };
 
 const pointStyle = (
   space: Space,
@@ -145,7 +145,15 @@ const searchSpaces = async (
   return await rawRes.json();
 };
 
-export type { Coords, Space, LatLng, SpacesResponse, ScatterData, SpaceValue };
+export type {
+  Coords,
+  Space,
+  LatLng,
+  SpacesResponse,
+  ScatterData,
+  SpaceValue,
+  SearchType,
+};
 export {
   spaceToInfo,
   searchSpaces,

@@ -48,6 +48,8 @@
         <div>
           <Search
             v-if="searchMode !== 'Sequence'"
+            :key="searchMode"
+            :searchMode="searchMode"
             @search="(emit: string, e: string[]) => searchSpaces(emit, e)"
           />
           <DiamondSearch
@@ -231,6 +233,7 @@ export default {
     this.searchMode = this.$route.query.searchMode
       ? this.$route.query.searchMode
       : "KEGG ortholog";
+    console.log("controlcard beforeMount searchMode", this.searchMode);
   },
   emits: [
     "setDiamondLoading",
@@ -412,6 +415,7 @@ export default {
   },
   watch: {
     clickedSpace(newVal, oldVal) {
+      console.log("controlcard clickedSpace", newVal, oldVal);
       if (oldVal === undefined && newVal && this.$route.query.plot) {
         // Only happens on first load. After that, oldVal is either set, or null.
         this.plotToggle = this.$route.query.plot;
