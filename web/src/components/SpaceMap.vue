@@ -203,18 +203,14 @@ export default {
         this._clickedSpace = null;
       }
     },
-    async onSetClickPoint(word: string, setQueryParams = true) {
+    async onSetClickPoint(word: string, focusSpaceResponse = true) {
       const res = await searchSpaces(
         "word",
         word,
         new AbortController().signal
       );
-      if (setQueryParams) {
-        this.clickedSpace = res.spaces[0];
-      } else {
-        this._clickedSpace = res.spaces[0];
-      }
-      this.focusSpaceResponse(res);
+      this.clickedSpace = res.spaces[0];
+      if (focusSpaceResponse) this.focusSpaceResponse(res);
     },
     async onSetSearchSpaces(res: SpacesResponse, autoClick = true) {
       this.searchSpaces.clear();
