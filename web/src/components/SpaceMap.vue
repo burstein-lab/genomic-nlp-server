@@ -225,10 +225,9 @@ export default {
         } else {
           this.clickedSpace = null;
         }
-      }
 
-      console.log(res.zoom, res.latlng);
-      this.focusSpaceResponse(res);
+        this.focusSpaceResponse(res);
+      }
     },
     focusSpaceResponse(res: SpacesResponse) {
       this.zoom = res.zoom;
