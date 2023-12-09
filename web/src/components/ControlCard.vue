@@ -290,7 +290,7 @@ export default {
     },
     async searchSpaces(type: string, e: string | string[]) {
       this.loading = true;
-      this.searchValue = e.toString();
+      this.searchValue = e ? e.toString() : undefined;
       await this.updateQuery();
       this.$emit("setMap", await searchSpaces(type, e, this.controller.signal));
       this.loading = false;
