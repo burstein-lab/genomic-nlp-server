@@ -16,7 +16,6 @@
         zoomControl: false,
         wheelPxPerZoomLevel: 120,
       }"
-      @ready="onMapReady()"
       @update:center="onUpdateCenter"
     >
       <l-control-zoom position="bottomright" />
@@ -241,16 +240,12 @@ export default {
       this.map.setZoom(res.zoom);
       this.map.setView(res.latlng, res.zoom);
     },
-    onTileLayerReady() {
+    async onTileLayerReady() {
       const tileLayer = this.$refs.tileLayerRef.leafletObject;
       tileLayer.on("tileloadstart", async ({ coords }: { coords: Coords }) => {
         await this.getInteractiveSpaces(coords);
       });
-    },
-    onResetClickPoint() {
-      this.clickedSpace = null;
-    },
-    async onMapReady() {
+
       let zoom = 0;
       let lat = -this.tileSize / 2;
       let lng = this.tileSize / 2;
@@ -281,9 +276,13 @@ export default {
         );
         await this.onSetSearchSpaces(res, false);
       }
+
       this.onUpdateCenter = (v) => {
         this.center = v;
       };
+    },
+    onResetClickPoint() {
+      this.clickedSpace = null;
     },
     coordsToTile(coords: Coords) {
       return `${coords.z}_${coords.x}_${coords.y}`;
