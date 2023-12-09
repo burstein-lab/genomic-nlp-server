@@ -384,6 +384,7 @@ export default {
             : undefined,
           location: `${this.location.zoom},${this.location.lat},${this.location.lng}`,
           plot: this.plotToggle,
+          searchMode: this.searchMode,
           searchValue: this.searchValue,
         },
       });
