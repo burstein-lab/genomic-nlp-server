@@ -237,7 +237,6 @@ export default {
       this.searchMode,
       this.$route.query.searchValue ? this.$route.query.searchValue : undefined
     );
-    console.log("controlcard beforeMount searchMode", this.searchMode);
   },
   emits: [
     "setDiamondLoading",
@@ -303,7 +302,6 @@ export default {
         },
       });
       if (val === "Neighbors") this.snackbar = true;
-      this.resetClickPoint();
       this.searchModeDelayed = val;
     },
     downloadGraphData() {
@@ -384,15 +382,15 @@ export default {
       },
       async set(val: string) {
         this.currentPlot = val;
-        // await this.$router.push({
-        //   query: {
-        //     ...this.$route.query,
-        //     clickedSpace: this.clickedSpace?.value?.word
-        //       ? this.clickedSpace?.value?.word
-        //       : "",
-        //     plot: val,
-        //   },
-        // });
+        await this.$router.push({
+          query: {
+            ...this.$route.query,
+            clickedSpace: this.clickedSpace?.value?.word
+              ? this.clickedSpace?.value?.word
+              : "",
+            plot: val,
+          },
+        });
         if (val == "neighbors" && !this.barData) {
           this.loading = true;
           this.snackbar = true;
@@ -420,7 +418,6 @@ export default {
   },
   watch: {
     clickedSpace(newVal, oldVal) {
-      console.log("controlcard clickedSpace", newVal, oldVal);
       if (oldVal === undefined && newVal && this.$route.query.plot) {
         // Only happens on first load. After that, oldVal is either set, or null.
         this.plotToggle = this.$route.query.plot;

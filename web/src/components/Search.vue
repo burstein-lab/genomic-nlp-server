@@ -66,7 +66,6 @@ export default {
       this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
     }
     this.onInputChange(this.searchTerm);
-    console.log("search beforeMount");
   },
   computed: {
     searchType(): SearchMode {
@@ -75,7 +74,6 @@ export default {
   },
   methods: {
     async onInputChange(value: string) {
-      console.log("search onInputChange", value);
       this.controller.abort();
       this.controller = new AbortController();
       this.isLoading = true;
