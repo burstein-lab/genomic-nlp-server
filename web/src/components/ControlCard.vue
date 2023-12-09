@@ -47,17 +47,16 @@
         />
         <div>
           <Search
-            v-if="searchMode !== 'Sequence'"
             :key="searchMode"
             :searchMode="searchMode"
             @search="(emit: string, e: string[]) => searchSpaces(emit, e)"
           />
-          <DiamondSearch
+          <!-- <DiamondSearch
             v-else
             :isLoading="isDiamondLoading"
             @setMap="(e) => $emit('setMap', e)"
             @setLoading="(isLoading: boolean) => {$emit('setDiamondLoading', isLoading);}"
-          />
+          /> -->
         </div>
         <v-divider class="mx-4 mt-4" />
         <div v-if="hoveredSpace">
