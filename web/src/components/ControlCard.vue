@@ -209,6 +209,10 @@ export default {
     isDiamondLoading: {
       type: Boolean,
     },
+    location: {
+      type: Object as () => { zoom: number; lat: number; lng: number },
+      required: true,
+    },
   },
   data: () => {
     const searchModes = [...Object.keys(searchModeToType)];
@@ -218,6 +222,7 @@ export default {
       searchModeDelayed: "",
       searchModes: searchModes,
       searchModeToType,
+      searchValue: undefined as string | string[] | undefined,
       neighbors: null as string[] | null,
       barData: null as SpacesReponse | null,
       controller: new AbortController(),
@@ -285,36 +290,23 @@ export default {
     },
     async searchSpaces(type: string, e: string | string[]) {
       this.loading = true;
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          searchValue: e.toString(),
-        },
-      });
+      this.searchValue = e.toString();
+      await this.updateQuery();
       this.$emit("setMap", await searchSpaces(type, e, this.controller.signal));
       this.loading = false;
     },
     async onDiamondSearching(searchTerm?: string) {
       if (searchTerm !== undefined) {
-        await this.$router.push({
-          query: {
-            ...this.$route.query,
-            searchValue: searchTerm,
-          },
-        });
+        this.searchValue = searchTerm;
+        this.updateQuery();
       }
 
       this.$emit("setDiamondLoading", searchTerm !== undefined);
     },
     async updateSearchMode(val: string, searchValue?: string) {
-      await this.$router.push({
-        query: {
-          ...this.$route.query,
-          searchMode: val,
-          searchValue: searchValue,
-        },
-      });
       if (val === "Neighbors") this.snackbar = true;
+      this.searchValue = searchValue;
+      await this.updateQuery();
       this.searchModeDelayed = val;
     },
     downloadGraphData() {
@@ -384,6 +376,18 @@ export default {
         result.map((row) => Object.values(row).join("\t")).join("\n")
       );
     },
+    async updateQuery() {
+      await this.$router.push({
+        query: {
+          clickedSpace: this.clickedSpace?.value?.word
+            ? this.clickedSpace?.value?.word
+            : undefined,
+          location: `${this.location.zoom},${this.location.lat},${this.location.lng}`,
+          plot: this.plotToggle,
+          searchValue: this.searchValue,
+        },
+      });
+    },
   },
   computed: {
     isLoading(): boolean {
@@ -395,12 +399,7 @@ export default {
       },
       async set(val: string) {
         this.currentPlot = val;
-        await this.$router.push({
-          query: {
-            ...this.$route.query,
-            plot: val,
-          },
-        });
+        await this.updateQuery();
         if (val == "neighbors" && !this.barData) {
           this.loading = true;
           this.snackbar = true;
@@ -430,7 +429,7 @@ export default {
     async clickedSpace(newVal, oldVal) {
       if (oldVal === undefined && newVal && this.$route.query.plot) {
         // Only happens on first load. After that, oldVal is either set, or null.
-        this.plotToggle = this.$route.query.plot;
+        this.plotToggle = this.$route.query.plot; // Triggers this.updateQuery()
         return;
       }
 
@@ -444,15 +443,11 @@ export default {
       this.controller = new AbortController();
       this.barData = null;
       this.scatterData = null;
-      await this.$router.push({
-        query: {
-          ...this.$route.query,
-          clickedSpace: this.clickedSpace?.value?.word
-            ? this.clickedSpace?.value?.word
-            : undefined,
-        },
-      });
-      this.plotToggle = "";
+      this.currentPlot = "";
+      this.updateQuery();
+    },
+    async location() {
+      this.updateQuery();
     },
   },
 };

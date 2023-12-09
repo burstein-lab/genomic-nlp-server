@@ -75,6 +75,7 @@
           :hoveredSpace="hoveredSpace"
           :clickedSpace="clickedSpace"
           :isDiamondLoading="isDiamondLoading"
+          :location="{ zoom, lat: map?.getCenter().lat, lng: map?.getCenter().lng }"
           @setClickPoint="onSetClickPoint"
           @setDiamondLoading="onSetDiamondLoading"
           @resetCoords="
