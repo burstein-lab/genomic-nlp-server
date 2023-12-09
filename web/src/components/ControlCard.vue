@@ -47,8 +47,8 @@
         />
         <div>
           <Search
-            :key="searchMode"
-            :searchMode="searchMode"
+            :key="searchModeDelayed"
+            :searchMode="searchModeDelayed"
             @search="(emit: string, e: string[]) => searchSpaces(emit, e)"
           />
           <!-- <DiamondSearch
@@ -214,6 +214,7 @@ export default {
     searchModes.splice(1, 0, "Sequence");
     return {
       searchMode: "",
+      searchModeDelayed: "",
       searchModes: searchModes,
       searchModeToType,
       neighbors: null as string[] | null,
@@ -229,9 +230,11 @@ export default {
     };
   },
   async beforeMount() {
-    this.searchMode = this.$route.query.searchMode
-      ? this.$route.query.searchMode
-      : "KEGG ortholog";
+    this.updateSearchMode(
+      this.$route.query.searchMode
+        ? this.$route.query.searchMode
+        : "KEGG ortholog"
+    );
     console.log("controlcard beforeMount searchMode", this.searchMode);
   },
   emits: [
@@ -290,8 +293,6 @@ export default {
       this.loading = false;
     },
     async updateSearchMode(val: string) {
-      this.resetClickPoint();
-      if (val === "Neighbors") this.snackbar = true;
       await this.$router.push({
         query: {
           ...this.$route.query,
@@ -299,7 +300,9 @@ export default {
           searchValue: undefined,
         },
       });
-      this.searchMode = val;
+      if (val === "Neighbors") this.snackbar = true;
+      this.resetClickPoint();
+      this.searchModeDelayed = val;
     },
     downloadGraphData() {
       if (this.plotToggle == "neighbors") {
