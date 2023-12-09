@@ -296,6 +296,7 @@ export default {
         query: {
           ...this.$route.query,
           searchMode: val,
+          searchValue: undefined,
         },
       });
       this.searchMode = val;
