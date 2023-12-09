@@ -278,13 +278,12 @@ export default {
     },
     async searchSpaces(type: string, e: string | string[]) {
       this.loading = true;
-      // this.$router.push({
-      //   query: {
-      //     ...this.$route.query,
-      //     searchMode: this.searchMode,
-      //     searchValue: e.toString(),
-      //   },
-      // });
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          searchValue: e.toString(),
+        },
+      });
       this.$emit("setMap", await searchSpaces(type, e, this.controller.signal));
       this.loading = false;
     },
