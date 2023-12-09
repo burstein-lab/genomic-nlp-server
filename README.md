@@ -48,11 +48,13 @@ For in-depth analysis, click on the dot to open a panel with the following infor
 - Prediction confidence
 - Neighbors
 - Gene prediction
+- NCBI NR description
+- Gene count in family
 
-#### Gene prediction
+#### Gene function prediction
 
 The predicted class is _Prokaryotic Defense System_ and the prediction is _reliable_ (trusted prediction is True).<br>
-By clicking on `GENE PREDICTIONS` a panel will open showing all scores received by the model for the different classes. Here, the
+By clicking on `FUNC PRED` a panel will open showing all scores received by the model for the different classes. Here, the
 _Prokaryotic Defense System_ prediction was unequivocal, with a score close to 1 (possible scores are between 0 to 1).<br>
 
 #### Analyzing neighbors
@@ -67,3 +69,8 @@ The neighbors are:
 This strengthens the confidence that this protein is related to Defense mechanisms, and more specifically to Subtype I in which Csc proteins are apparent.<br>
 
 _*Note*_: distances were calculated on a high dimensional space, thus elements might not seem to be close in the 2D space map.<br>
+
+#### Taxonomic mapping of genes in a family
+
+Selecting the `TAX MAP` tab will display a bar plot showcasing the top 10 taxonomic orders associated with the gene family `hypo.clst.15503442`.<br>
+The plot also indicates the percentage of genes from this family that have a known taxonomy in the database—specifically, in this case, 79.17% of genes were mapped.
