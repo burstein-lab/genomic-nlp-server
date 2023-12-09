@@ -272,14 +272,14 @@ export default {
       }
 
       const setQueryCenter = () => {
-        this.$router.push({
-          query: {
-            ...this.$route.query,
-            location: `${this.zoom},${this.map.getCenter().lat},${
-              this.map.getCenter().lng
-            }`,
-          },
-        });
+        // this.$router.push({
+        //   query: {
+        //     ...this.$route.query,
+        //     location: `${this.zoom},${this.map.getCenter().lat},${
+        //       this.map.getCenter().lng
+        //     }`,
+        //   },
+        // });
         setTimeout(setQueryCenter, 3000);
       };
       setQueryCenter();
@@ -384,12 +384,12 @@ export default {
         }
 
         this._clickedSpace = value;
-        this.$router.push({
-          query: {
-            ...this.$route.query,
-            clickedSpace: value ? value.value.word : "",
-          },
-        });
+        // this.$router.push({
+        //   query: {
+        //     ...this.$route.query,
+        //     clickedSpace: value ? value.value.word : "",
+        //   },
+        // });
       },
     },
     diamondDialog(): boolean {

@@ -278,26 +278,26 @@ export default {
     },
     async searchSpaces(type: string, e: string | string[]) {
       this.loading = true;
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          searchMode: this.searchMode,
-          searchValue: e.toString(),
-        },
-      });
+      // this.$router.push({
+      //   query: {
+      //     ...this.$route.query,
+      //     searchMode: this.searchMode,
+      //     searchValue: e.toString(),
+      //   },
+      // });
       this.$emit("setMap", await searchSpaces(type, e, this.controller.signal));
       this.loading = false;
     },
     async updateSearchMode(val: string) {
       this.resetClickPoint();
       if (val === "Neighbors") this.snackbar = true;
-      await this.$router.push({
-        query: {
-          ...this.$route.query,
-          searchMode: val,
-          searchValue: "",
-        },
-      });
+      // await this.$router.push({
+      //   query: {
+      //     ...this.$route.query,
+      //     searchMode: val,
+      //     searchValue: "",
+      //   },
+      // });
       this.searchMode = val;
       console.log("updateSearchMode", this.searchMode);
     },
@@ -379,15 +379,15 @@ export default {
       },
       async set(val: string) {
         this.currentPlot = val;
-        await this.$router.push({
-          query: {
-            ...this.$route.query,
-            clickedSpace: this.clickedSpace?.value?.word
-              ? this.clickedSpace?.value?.word
-              : "",
-            plot: val,
-          },
-        });
+        // await this.$router.push({
+        //   query: {
+        //     ...this.$route.query,
+        //     clickedSpace: this.clickedSpace?.value?.word
+        //       ? this.clickedSpace?.value?.word
+        //       : "",
+        //     plot: val,
+        //   },
+        // });
         if (val == "neighbors" && !this.barData) {
           this.loading = true;
           this.snackbar = true;

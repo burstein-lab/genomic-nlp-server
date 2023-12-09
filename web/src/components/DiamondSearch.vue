@@ -122,12 +122,12 @@ export default {
       this.downloadableDiamondResult = "";
       this.alertText = "";
       this.$emit("setLoading", true);
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          searchValue: sequence,
-        },
-      });
+      // this.$router.push({
+      //   query: {
+      //     ...this.$route.query,
+      //     searchValue: sequence,
+      //   },
+      // });
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
