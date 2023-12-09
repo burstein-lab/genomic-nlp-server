@@ -45,9 +45,9 @@
           density="comfortable"
           hide-details
         />
-        <div>
+        <div v-if="searchModeDelayed">
           <DiamondSearch
-            v-if="searchMode === 'Sequence'"
+            v-if="searchModeDelayed === 'Sequence'"
             :isLoading="isDiamondLoading"
             @setMap="(e) => $emit('setMap', e)"
             @searching="onDiamondSearching"
