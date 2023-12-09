@@ -43,7 +43,6 @@ export default {
     },
   },
   data: () => {
-    console.log("search data");
     return {
       searchModeToType,
       items: [] as string[],
@@ -56,24 +55,18 @@ export default {
     };
   },
   beforeMount() {
-    //   if (this.searchType.multiple) {
-    //     this.searchValue = this.$route.query.searchValue
-    //       ? this.$route.query.searchValue.split(",")
-    //       : null;
-    //   } else {
-    //     this.searchValue = this.$route.query.searchValue
-    //       ? this.$route.query.searchValue
-    //       : null;
-    //     this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
-    //   }
-    //   this.onInputChange(this.searchTerm);
+    if (this.searchType.multiple) {
+      this.searchValue = this.$route.query.searchValue
+        ? this.$route.query.searchValue.split(",")
+        : null;
+    } else {
+      this.searchValue = this.$route.query.searchValue
+        ? this.$route.query.searchValue
+        : null;
+      this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
+    }
+    this.onInputChange(this.searchTerm);
     console.log("search beforeMount");
-    //     this.searchMode,
-    //     "searchValue",
-    //     this.searchValue,
-    //     ".term.",
-    //     this.searchTerm
-    //   );
   },
   computed: {
     searchType(): SearchMode {
