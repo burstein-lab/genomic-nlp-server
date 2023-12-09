@@ -3,17 +3,16 @@
     color="info"
     :key="searchMode"
     v-debounce:300ms="onInputChange"
-    debounce-events="update:searchValue"
-    v-model="searchValue"
     @update:modelValue="onChoose"
+    v-model="searchValue"
     :items="items"
-    :multiple="multiple"
-    :chips="multiple"
-    :closable-chips="multiple"
+    :multiple="searchType.multiple"
+    :chips="searchType.multiple"
+    :closable-chips="searchType.multiple"
     :loading="isLoading"
     hide-no-data
     hide-details
-    :label="searchModeToType[searchMode].label"
+    :label="searchType.label"
     auto-select-first
     placeholder="Start typing to search"
     density="comfortable"
@@ -57,25 +56,24 @@ export default {
     };
   },
   beforeMount() {
-    if (this.searchType.multiple) {
-      this.searchValue = this.$route.query.searchValue
-        ? this.$route.query.searchValue.split(",")
-        : null;
-    } else {
-      this.searchValue = this.$route.query.searchValue
-        ? this.$route.query.searchValue
-        : null;
-      this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
-    }
-    this.onInputChange(this.searchTerm);
-    console.log(
-      "search beforeMount",
-      this.searchMode,
-      "searchValue",
-      this.searchValue,
-      ".term.",
-      this.searchTerm
-    );
+    //   if (this.searchType.multiple) {
+    //     this.searchValue = this.$route.query.searchValue
+    //       ? this.$route.query.searchValue.split(",")
+    //       : null;
+    //   } else {
+    //     this.searchValue = this.$route.query.searchValue
+    //       ? this.$route.query.searchValue
+    //       : null;
+    //     this.searchTerm = this.searchValue ? (this.searchValue as string) : "";
+    //   }
+    //   this.onInputChange(this.searchTerm);
+    console.log("search beforeMount");
+    //     this.searchMode,
+    //     "searchValue",
+    //     this.searchValue,
+    //     ".term.",
+    //     this.searchTerm
+    //   );
   },
   computed: {
     searchType(): SearchMode {
@@ -84,6 +82,7 @@ export default {
   },
   methods: {
     async onInputChange(value: string) {
+      console.log("search onInputChange", value);
       this.controller.abort();
       this.controller = new AbortController();
       this.isLoading = true;
