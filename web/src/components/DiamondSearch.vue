@@ -97,12 +97,12 @@ export default {
       this.onSequenceSearch(this.sequence);
     }
   },
-  emits: ["setMap", "setLoading"],
+  emits: ["setMap", "searching"],
   methods: {
     onCancelSearch() {
       this.controller.abort();
       this.controller = new AbortController();
-      this.$emit("setLoading", false);
+      this.$emit("searching");
     },
     downloadDiamondResult() {
       downloadFile("sequence.tsv", this.downloadableDiamondResult);
@@ -121,13 +121,7 @@ export default {
 
       this.downloadableDiamondResult = "";
       this.alertText = "";
-      this.$emit("setLoading", true);
-      // this.$router.push({
-      //   query: {
-      //     ...this.$route.query,
-      //     searchValue: sequence,
-      //   },
-      // });
+      this.$emit("searching", sequence);
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -140,7 +134,7 @@ export default {
       if (!res["out"]) {
         // No significant hit was found in the DB.
         this.alertText = "No significant hit was found in the database.";
-        this.$emit("setLoading", false);
+        this.$emit("searching");
         return;
       }
       // for each line in the output, split on tab and take the second element.
@@ -159,7 +153,7 @@ export default {
 
       const ids = out.map((line: string) => line.split("\t")[1]);
       const searchResult = await searchSpaces("word", ids);
-      this.$emit("setLoading", false);
+      this.$emit("searching");
       this.$emit("setMap", searchResult);
       const wordToSpace = new Map<string, Space>();
       for (const space of searchResult.spaces) {

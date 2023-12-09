@@ -46,17 +46,18 @@
           hide-details
         />
         <div>
+          <DiamondSearch
+            v-if="searchMode === 'Sequence'"
+            :isLoading="isDiamondLoading"
+            @setMap="(e) => $emit('setMap', e)"
+            @searching="onDiamondSearching"
+          />
           <Search
+            v-else
             :key="searchModeDelayed"
             :searchMode="searchModeDelayed"
             @search="(emit: string, e: string[]) => searchSpaces(emit, e)"
           />
-          <!-- <DiamondSearch
-            v-else
-            :isLoading="isDiamondLoading"
-            @setMap="(e) => $emit('setMap', e)"
-            @setLoading="(isLoading: boolean) => {$emit('setDiamondLoading', isLoading);}"
-          /> -->
         </div>
         <v-divider class="mx-4 mt-4" />
         <div v-if="hoveredSpace">
@@ -292,6 +293,18 @@ export default {
       });
       this.$emit("setMap", await searchSpaces(type, e, this.controller.signal));
       this.loading = false;
+    },
+    async onDiamondSearching(searchTerm?: string) {
+      if (searchTerm !== undefined) {
+        await this.$router.push({
+          query: {
+            ...this.$route.query,
+            searchValue: searchTerm,
+          },
+        });
+      }
+
+      this.$emit("setDiamondLoading", searchTerm !== undefined);
     },
     async updateSearchMode(val: string, searchValue?: string) {
       await this.$router.push({
