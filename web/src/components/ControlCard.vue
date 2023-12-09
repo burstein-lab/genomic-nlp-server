@@ -230,10 +230,12 @@ export default {
     };
   },
   async beforeMount() {
+    this.searchMode = this.$route.query.searchMode
+      ? this.$route.query.searchMode
+      : "KEGG ortholog";
     this.updateSearchMode(
-      this.$route.query.searchMode
-        ? this.$route.query.searchMode
-        : "KEGG ortholog"
+      this.searchMode,
+      this.$route.query.searchValue ? this.$route.query.searchValue : undefined
     );
     console.log("controlcard beforeMount searchMode", this.searchMode);
   },
@@ -292,12 +294,12 @@ export default {
       this.$emit("setMap", await searchSpaces(type, e, this.controller.signal));
       this.loading = false;
     },
-    async updateSearchMode(val: string) {
+    async updateSearchMode(val: string, searchValue?: string) {
       await this.$router.push({
         query: {
           ...this.$route.query,
           searchMode: val,
-          searchValue: undefined,
+          searchValue: searchValue,
         },
       });
       if (val === "Neighbors") this.snackbar = true;
