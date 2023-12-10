@@ -50,7 +50,7 @@
           density="comfortable"
           hide-details
         />
-        <div v-if="searchModeDelayed">
+        <div v-if="searchMode">
           <DiamondSearch
             v-if="searchModeDelayed === 'Sequence'"
             :isLoading="isDiamondLoading"
