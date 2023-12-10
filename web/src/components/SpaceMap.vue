@@ -160,8 +160,6 @@ import {
   pushQueryParams,
 } from "@/composables/query";
 
-setQueryParams();
-
 export default {
   name: "SpaceMap",
   components: {
@@ -175,6 +173,7 @@ export default {
     Legend,
   },
   data() {
+    setQueryParams();
     const maxZoom = Number(import.meta.env.VITE_MAX_ZOOM);
     return {
       theme: useTheme(),
