@@ -75,11 +75,6 @@
           :hoveredSpace="hoveredSpace"
           :clickedSpace="clickedSpace"
           :isDiamondLoading="isDiamondLoading"
-          :location="{
-            zoom,
-            lat: center.lat,
-            lng: center.lng,
-          }"
           @setClickPoint="onSetClickPoint"
           @setDiamondLoading="onSetDiamondLoading"
           @resetCoords="
@@ -159,6 +154,7 @@ import {
   pointStyle,
   highlightedPointStyle,
 } from "@/composables/spaces";
+import { queryParams, pushQueryParams } from "@/composables/utils";
 
 export default {
   name: "SpaceMap",
@@ -203,14 +199,20 @@ export default {
         this._clickedSpace = null;
       }
     },
-    async onSetClickPoint(word: string, focusSpaceResponse = true) {
+    async onSetClickPoint(word: string, onSetup = false) {
       const res = await searchSpaces(
         "word",
         word,
         new AbortController().signal
       );
-      this.clickedSpace = res.spaces[0];
-      if (focusSpaceResponse) this.focusSpaceResponse(res);
+
+      if (!onSetup) {
+        this.focusSpaceResponse(res);
+        queryParams.searchMode = undefined;
+        queryParams.searchValue = undefined;
+      }
+
+      this.clickedSpace = res.spaces[0]; // Triggers pushQueryParams.
     },
     async onSetSearchSpaces(res: SpacesResponse, autoClick = true) {
       this.searchSpaces.clear();
@@ -245,8 +247,8 @@ export default {
       let lat = -this.tileSize / 2;
       let lng = this.tileSize / 2;
       this.map = this.$refs.mapRef.leafletObject;
-      if (this.$route.query.location) {
-        [zoom, lat, lng] = this.$route.query.location.split(",");
+      if (queryParams.location) {
+        [zoom, lat, lng] = queryParams.location.split(",");
       }
 
       this.map.setView(
@@ -258,22 +260,23 @@ export default {
       );
 
       // Setting before search spaces in case the clicked space is in the search results.
-      if (this.$route.query.clickedSpace) {
-        await this.onSetClickPoint(this.$route.query.clickedSpace, false);
+      if (queryParams.clickedSpace) {
+        await this.onSetClickPoint(queryParams.clickedSpace, true);
       } else {
         this.clickedSpace = null;
       }
 
-      if (this.$route.query.searchValue) {
+      if (queryParams.searchValue) {
         const res = await searchSpaces(
-          searchModeToType[this.$route.query.searchMode].type,
-          this.$route.query.searchValue
+          searchModeToType[queryParams.searchMode].type,
+          queryParams.searchValue
         );
         await this.onSetSearchSpaces(res, false);
       }
 
       this.onUpdateCenter = (v) => {
-        this.center = v;
+        queryParams.location = `${this.zoom},${v.lat},${v.lng}`;
+        pushQueryParams();
       };
     },
     onResetClickPoint() {
@@ -379,6 +382,8 @@ export default {
         }
 
         this._clickedSpace = value;
+        queryParams.clickedSpace = value?.value?.word;
+        pushQueryParams();
       },
     },
     diamondDialog(): boolean {
