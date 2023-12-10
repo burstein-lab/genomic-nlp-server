@@ -77,14 +77,8 @@ def filter_by_word(label):
 
 @app.route("/plot/scatter/<path:word>")
 def plot_scatter(word):
-    word_data = PREDICTION_SUMMARY.df[PREDICTION_SUMMARY.df["word"] == word]
-    pred_df = pd.DataFrame(
-        word_data["prediction_summary"].values[0].items(),
-        columns=["class", "score"],
-    ).sort_values(
-        by="score",
-        ascending=False,
-    ).reset_index(drop=True)
+    word_data = MODEL_DATA.df[MODEL_DATA.df["word"] == word]
+    pred_df = PREDICTION_SUMMARY.to_pred_df(word)
 
     my_range = range(1, len(pred_df.index)+1)
     data = []

@@ -39,6 +39,7 @@ class ModelData:
 
 
 class PredictionSummary:
+    """Manages the prediction summary data."""
     def __init__(self):
         self._df = None
 
@@ -50,6 +51,17 @@ class PredictionSummary:
             )
 
         return self._df
+
+    def to_pred_df(self, word):
+        word_data = self.df[self.df["word"] == word]
+        pred_df = pd.DataFrame(
+            word_data["prediction_summary"].values[0].items(),
+            columns=["class", "score"],
+        ).sort_values(
+            by="score",
+            ascending=False,
+        ).reset_index(drop=True)
+        return pred_df
 
 
 class Point:
