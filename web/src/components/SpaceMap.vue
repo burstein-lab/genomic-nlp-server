@@ -253,7 +253,9 @@ export default {
       let lng = this.tileSize / 2;
       this.map = this.$refs.mapRef.leafletObject;
       if (queryParams.location) {
-        [zoom, lat, lng] = queryParams.location.split(",");
+        zoom = queryParams.location.zoom;
+        lat = queryParams.location.lat;
+        lng = queryParams.location.lng;
       }
 
       this.map.setView(
@@ -280,7 +282,11 @@ export default {
       }
 
       this.onUpdateCenter = (v) => {
-        queryParams.location = `${this.zoom},${v.lat},${v.lng}`;
+        queryParams.location = {
+          zoom: this.zoom,
+          lat: v.lat,
+          lng: v.lng,
+        };
         pushQueryParams();
       };
     },
