@@ -154,7 +154,13 @@ import {
   pointStyle,
   highlightedPointStyle,
 } from "@/composables/spaces";
-import { queryParams, pushQueryParams } from "@/composables/query";
+import {
+  queryParams,
+  setQueryParams,
+  pushQueryParams,
+} from "@/composables/query";
+
+setQueryParams();
 
 export default {
   name: "SpaceMap",
