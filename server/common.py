@@ -38,6 +38,32 @@ class ModelData:
         return self._y_min
 
 
+class PredictionSummary:
+    """Manages the prediction summary data."""
+    def __init__(self):
+        self._df = None
+
+    @property
+    def df(self):
+        if self._df is None:
+            self._df = pd.read_pickle(
+                "prediction_summary.pkl",
+            )
+
+        return self._df
+
+    def to_pred_df(self, word):
+        word_data = self.df[self.df["word"] == word]
+        pred_df = pd.DataFrame(
+            word_data["prediction_summary"].values[0].items(),
+            columns=["class", "score"],
+        ).sort_values(
+            by="score",
+            ascending=False,
+        ).reset_index(drop=True)
+        return pred_df
+
+
 class Point:
     """Defines a point coordinations and its value in space
     """
@@ -82,7 +108,6 @@ def row_to_feature(model_data: ModelData, row, additonal_columns: list[str] = No
         "name": f"{x_coord},{y_coord}",
         "word": row.word,
         "ko": row.KO if not pd.isnull(row.KO) else None,
-        "label": row.label if not pd.isnull(row.label) else None,
         "product": row["product"] if not pd.isnull(row["product"]) else None,
         "gene_name": row.gene_name if not pd.isnull(row.gene_name) else None,
         "significant": row.significant if not pd.isnull(row.significant) else None,

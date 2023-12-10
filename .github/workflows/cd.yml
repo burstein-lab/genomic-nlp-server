@@ -51,6 +51,7 @@ jobs:
       - run: gsutil cp gs://gnlp.bursteinlab.org/data/model_data.pkl server/
       - run: gsutil cp gs://gnlp.bursteinlab.org/data/gene_names_to_ko.pkl server/
       - run: gsutil cp gs://gnlp.bursteinlab.org/data/label_to_word.pkl server/
+      - run: gsutil cp gs://gnlp.bursteinlab.org/data/prediction_summary.pkl server/
       - run: docker build server -t us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server
       - run: docker push us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest
       - run: gcloud run deploy gnlp-server --image=us-central1-docker.pkg.dev/genomic-nlp/cloudrun/gnlp-server:latest --region us-central1

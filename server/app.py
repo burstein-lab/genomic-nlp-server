@@ -6,7 +6,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
 
-from common import ModelData, jsonify_spaces
+from common import ModelData, PredictionSummary, jsonify_spaces
 
 
 PAGE_SIZE = 20
@@ -16,6 +16,7 @@ LABEL_TO_WORD = pd.DataFrame.from_dict(
     pd.read_pickle("label_to_word.pkl").keys(),
 )
 LABEL_TO_WORD.columns = ["label"]
+PREDICTION_SUMMARY = PredictionSummary()
 
 with open("gene_names_to_ko.pkl", "rb") as o:
     G2KO = pd.DataFrame(pickle.load(o).items(), columns=["name", "ko"])
@@ -51,7 +52,7 @@ def space_get(name):
 
 @app.route("/label/get/<path:label>")
 def filter_by_label(label):
-    return jsonify_spaces(MODEL_DATA.df[MODEL_DATA.df["label"] == label], MODEL_DATA)
+    return jsonify_spaces(MODEL_DATA.df[MODEL_DATA.df["predicted_class"] == label & ~MODEL_DATA.df["hypothetical"]], MODEL_DATA)
 
 
 @app.route("/gene_product/get/<path:name>")
@@ -76,14 +77,8 @@ def filter_by_word(label):
 
 @app.route("/plot/scatter/<path:word>")
 def plot_scatter(word):
-    word_data = MODEL_DATA.df[MODEL_DATA.df['word'] == word]
-    pred_df = pd.DataFrame(
-        word_data['prediction_summary'].values[0].items(),
-        columns=['class', 'score'],
-    ).sort_values(
-        by='score',
-        ascending=False,
-    ).reset_index(drop=True)
+    word_data = MODEL_DATA.df[MODEL_DATA.df["word"] == word]
+    pred_df = PREDICTION_SUMMARY.to_pred_df(word)
 
     my_range = range(1, len(pred_df.index)+1)
     data = []
