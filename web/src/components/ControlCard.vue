@@ -39,7 +39,7 @@
         <v-select
           color="info"
           v-model="queryParams.searchMode"
-          :menu-props="{ maxHeight: '75vh' }"
+          :menu-props="{ maxHeight: '50vh' }"
           @update:modelValue="
             (v: string) => {
               queryParams.searchValue = '';
