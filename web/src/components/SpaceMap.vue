@@ -235,8 +235,13 @@ export default {
     async focusSpaceResponse(res: SpacesResponse) {
       this.zoom = res.zoom;
       // When both zoom and latlng change, using setView alone results in zoom change without latlng.
-      await this.map.setZoom(res.zoom);
+      // await this.map.setZoom(res.zoom);
       await this.map.setView(res.latlng, res.zoom);
+      console.log("setView1", res.latlng, res.zoom);
+      setTimeout(() => {
+        this.map.setView(res.latlng, res.zoom);
+        console.log("setView2", res.latlng, res.zoom);
+      }, 5000);
     },
     async onTileLayerReady() {
       const tileLayer = this.$refs.tileLayerRef.leafletObject;
