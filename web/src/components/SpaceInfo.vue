@@ -15,8 +15,8 @@
         <v-list-item-subtitle
           :style="
             theme.global.current.dark
-              ? 'rgba(255, 255, 255, 0.7)'
-              : 'rgba(0, 0, 0, 0.87)'
+              ? 'color: rgba(255, 255, 255, 0.7)'
+              : 'color: rgba(0, 0, 0, 0.87)'
           "
         >
           {{ k }}
