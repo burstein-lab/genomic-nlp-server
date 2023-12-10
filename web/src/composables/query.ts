@@ -1,7 +1,4 @@
 import { reactive } from "vue";
-import { useRoute, useRouter } from "vue-router";
-
-const route = useRoute();
 
 const queryParams = reactive({
   clickedSpace: undefined as string | undefined,
@@ -15,8 +12,7 @@ const queryParams = reactive({
   },
 });
 
-const setQueryParams = () => {
-  const route = useRoute();
+const setQueryParams = (route) => {
   queryParams.clickedSpace = route.query.clickedSpace as string | undefined;
   queryParams.plot = route.query.plot as string | undefined;
   queryParams.searchMode = route.query.searchMode as string | undefined;
@@ -32,8 +28,7 @@ const setQueryParams = () => {
   }
 };
 
-const pushQueryParams = async () => {
-  const router = useRouter();
+const pushQueryParams = async (router) => {
   await router.push({
     query: {
       clickedSpace: queryParams.clickedSpace,

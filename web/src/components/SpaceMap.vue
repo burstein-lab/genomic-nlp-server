@@ -173,7 +173,7 @@ export default {
     Legend,
   },
   data() {
-    setQueryParams();
+    setQueryParams(this.$route);
     const maxZoom = Number(import.meta.env.VITE_MAX_ZOOM);
     return {
       theme: useTheme(),
@@ -287,7 +287,7 @@ export default {
           lat: v.lat,
           lng: v.lng,
         };
-        pushQueryParams();
+        pushQueryParams(this.$router);
       };
     },
     onResetClickPoint() {
@@ -394,7 +394,7 @@ export default {
 
         this._clickedSpace = value;
         queryParams.clickedSpace = value?.value?.word;
-        pushQueryParams();
+        pushQueryParams(this.$router);
       },
     },
     diamondDialog(): boolean {

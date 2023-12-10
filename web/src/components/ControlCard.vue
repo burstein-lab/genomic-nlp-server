@@ -290,14 +290,14 @@ export default {
     async searchSpaces(type: string, e: string | string[]) {
       this.loading = true;
       queryParams.searchValue = e ? e.toString() : undefined;
-      await pushQueryParams();
+      await pushQueryParams(this.$router);
       this.$emit("setMap", await searchSpaces(type, e, this.controller.signal));
       this.loading = false;
     },
     async onDiamondSearching(searchTerm?: string) {
       if (searchTerm !== undefined) {
         this.searchValue = searchTerm;
-        await pushQueryParams();
+        await pushQueryParams(this.$router);
       }
 
       this.$emit("setDiamondLoading", searchTerm !== undefined);
@@ -305,7 +305,7 @@ export default {
     async updateSearchMode(val: string) {
       if (val === "Neighbors") this.snackbar = true;
       queryParams.searchMode = val;
-      await pushQueryParams();
+      await pushQueryParams(this.$router);
       this.searchModeDelayed = val;
     },
     downloadGraphData() {
@@ -386,7 +386,7 @@ export default {
       },
       async set(val: string) {
         queryParams.plot = val;
-        await pushQueryParams();
+        await pushQueryParams(this.$router);
         if (val == "neighbors" && !this.barData) {
           this.loading = true;
           this.snackbar = true;
@@ -431,7 +431,7 @@ export default {
       this.barData = null;
       this.scatterData = null;
       queryParams.plot = "";
-      pushQueryParams();
+      pushQueryParams(this.$router);
     },
   },
 };
