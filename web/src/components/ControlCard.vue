@@ -191,7 +191,7 @@ import {
   Space,
   SpaceValue,
 } from "@/composables/spaces";
-import { queryParams, pushQueryParams } from "@/composables/router";
+import { queryParams, pushQueryParams } from "@/composables/query";
 
 export default {
   name: "ControlCard",
