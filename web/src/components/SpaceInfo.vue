@@ -7,9 +7,17 @@
       :target="v?.toString()?.startsWith('https') ? '_blank' : undefined"
     >
       <v-list-item-content>
-        <v-list-item-title>{{ displayedValue(k, v) }}</v-list-item-title>
-        <v-list-item-subtitle
+        <v-list-item-title
           :style="v?.toString()?.startsWith('https') ? 'color: #0077ee' : ''"
+        >
+          {{ displayedValue(k, v) }}
+        </v-list-item-title>
+        <v-list-item-subtitle
+          :style="
+            theme.global.current.dark
+              ? 'rgba(255, 255, 255, 0.7)'
+              : 'rgba(0, 0, 0, 0.87)'
+          "
         >
           {{ k }}
         </v-list-item-subtitle>
@@ -93,6 +101,7 @@
 </template>
 
 <script lang="ts">
+import { useTheme } from "vuetify";
 import { truncate } from "@/composables/utils";
 import { spaceToInfo, Space } from "@/composables/spaces";
 
@@ -105,6 +114,11 @@ export default {
     },
     actionable: Boolean,
     backable: Boolean,
+  },
+  data: () => {
+    return {
+      theme: useTheme(),
+    };
   },
   emits: ["centerPoint", "resetClickPoint", "downloadSequence", "back"],
   methods: {
