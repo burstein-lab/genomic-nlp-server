@@ -38,14 +38,19 @@
         <v-divider class="mx-4 my-4" />
         <v-select
           color="info"
-          v-model="searchMode"
-          @update:modelValue="updateSearchMode"
+          v-model="queryParams.searchMode"
+          @update:modelValue="
+            (v: string) => {
+              queryParams.searchValue = '';
+              updateSearchMode(v);
+            }
+          "
           :items="searchModes"
           label="Search mode"
           density="comfortable"
           hide-details
         />
-        <div v-if="searchModeDelayed">
+        <div v-if="queryParams.searchMode">
           <DiamondSearch
             v-if="searchModeDelayed === 'Sequence'"
             :isLoading="isDiamondLoading"
@@ -186,6 +191,7 @@ import {
   Space,
   SpaceValue,
 } from "@/composables/spaces";
+import { queryParams, pushQueryParams } from "@/composables/query";
 
 export default {
   name: "ControlCard",
@@ -218,7 +224,6 @@ export default {
     const searchModes = [...Object.keys(searchModeToType)];
     searchModes.splice(1, 0, "Sequence");
     return {
-      searchMode: "",
       searchModeDelayed: "",
       searchModes: searchModes,
       searchModeToType,
@@ -226,8 +231,8 @@ export default {
       neighbors: null as string[] | null,
       barData: null as SpacesReponse | null,
       controller: new AbortController(),
+      queryParams: queryParams,
       loading: false,
-      currentPlot: "",
       scatterData: null as ScatterData | null,
       taxData: null as Object | null,
       shouldHideMap: false,
@@ -236,13 +241,7 @@ export default {
     };
   },
   async beforeMount() {
-    this.searchMode = this.$route.query.searchMode
-      ? this.$route.query.searchMode
-      : "KEGG ortholog";
-    this.updateSearchMode(
-      this.searchMode,
-      this.$route.query.searchValue ? this.$route.query.searchValue : undefined
-    );
+    this.updateSearchMode(queryParams.searchMode);
   },
   emits: [
     "setDiamondLoading",
@@ -290,29 +289,29 @@ export default {
     },
     async searchSpaces(type: string, e: string | string[]) {
       this.loading = true;
-      this.searchValue = e ? e.toString() : undefined;
-      await this.updateQuery();
+      queryParams.searchValue = e ? e.toString() : undefined;
+      await pushQueryParams(this.$router);
       this.$emit("setMap", await searchSpaces(type, e, this.controller.signal));
       this.loading = false;
     },
     async onDiamondSearching(searchTerm?: string) {
       if (searchTerm !== undefined) {
         this.searchValue = searchTerm;
-        this.updateQuery();
+        await pushQueryParams(this.$router);
       }
 
       this.$emit("setDiamondLoading", searchTerm !== undefined);
     },
-    async updateSearchMode(val: string, searchValue?: string) {
+    async updateSearchMode(val: string) {
       if (val === "Neighbors") this.snackbar = true;
-      this.searchValue = searchValue;
-      await this.updateQuery();
+      queryParams.searchMode = val;
+      await pushQueryParams(this.$router);
       this.searchModeDelayed = val;
     },
     downloadGraphData() {
       if (this.plotToggle == "neighbors") {
         downloadFile(
-          this.$route.query.clickedSpace + ".neighbors.tsv",
+          queryParams.clickedSpace + ".neighbors.tsv",
           this.neighborsToTSV(
             this.barData.spaces.map((space: Space) => space.value)
           )
@@ -322,7 +321,7 @@ export default {
       }
 
       downloadFile(
-        this.$route.query.clickedSpace + ".prediction.tsv",
+        queryParams.clickedSpace + ".prediction.tsv",
         this.predictionToTSV(
           this.scatterData.ticks,
           this.scatterData.data.map((v: { x: Number; y: Number }) => v.y)
@@ -376,19 +375,6 @@ export default {
         result.map((row) => Object.values(row).join("\t")).join("\n")
       );
     },
-    async updateQuery() {
-      await this.$router.push({
-        query: {
-          clickedSpace: this.clickedSpace?.value?.word
-            ? this.clickedSpace?.value?.word
-            : undefined,
-          location: `${this.location.zoom},${this.location.lat},${this.location.lng}`,
-          plot: this.plotToggle,
-          searchMode: this.searchMode,
-          searchValue: this.searchValue,
-        },
-      });
-    },
   },
   computed: {
     isLoading(): boolean {
@@ -396,11 +382,11 @@ export default {
     },
     plotToggle: {
       get() {
-        return this.currentPlot;
+        return queryParams.plot;
       },
       async set(val: string) {
-        this.currentPlot = val;
-        await this.updateQuery();
+        queryParams.plot = val;
+        await pushQueryParams(this.$router);
         if (val == "neighbors" && !this.barData) {
           this.loading = true;
           this.snackbar = true;
@@ -428,9 +414,9 @@ export default {
   },
   watch: {
     async clickedSpace(newVal, oldVal) {
-      if (oldVal === undefined && newVal && this.$route.query.plot) {
+      if (oldVal === undefined && newVal && queryParams.plot) {
         // Only happens on first load. After that, oldVal is either set, or null.
-        this.plotToggle = this.$route.query.plot; // Triggers this.updateQuery()
+        this.plotToggle = queryParams.plot; // Triggers this.updateQuery()
         return;
       }
 
@@ -444,11 +430,8 @@ export default {
       this.controller = new AbortController();
       this.barData = null;
       this.scatterData = null;
-      this.currentPlot = "";
-      this.updateQuery();
-    },
-    async location() {
-      this.updateQuery();
+      queryParams.plot = "";
+      pushQueryParams(this.$router);
     },
   },
 };

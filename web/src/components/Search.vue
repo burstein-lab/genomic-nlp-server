@@ -6,9 +6,9 @@
     @update:modelValue="onChoose"
     v-model="searchValue"
     :items="items"
-    :multiple="searchType.multiple"
-    :chips="searchType.multiple"
-    :closable-chips="searchType.multiple"
+    :multiple="searchType?.multiple"
+    :chips="searchType?.multiple"
+    :closable-chips="searchType?.multiple"
     :loading="isLoading"
     hide-no-data
     hide-details
@@ -55,7 +55,7 @@ export default {
     };
   },
   beforeMount() {
-    if (this.searchType.multiple) {
+    if (this.searchType?.multiple) {
       this.searchValue = this.$route.query.searchValue
         ? this.$route.query.searchValue.split(",")
         : null;
