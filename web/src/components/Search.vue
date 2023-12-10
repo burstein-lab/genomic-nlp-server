@@ -55,6 +55,8 @@ export default {
     };
   },
   beforeMount() {
+    if (!this.searchType) return;
+
     if (this.searchType?.multiple) {
       this.searchValue = this.$route.query.searchValue
         ? this.$route.query.searchValue.split(",")
