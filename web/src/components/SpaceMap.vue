@@ -215,9 +215,10 @@ export default {
         this.focusSpaceResponse(res);
         queryParams.searchMode = undefined;
         queryParams.searchValue = undefined;
+        pushQueryParams(this.$router);
       }
 
-      this.clickedSpace = res.spaces[0]; // Triggers pushQueryParams.
+      this.clickedSpace = res.spaces[0];
     },
     async onSetSearchSpaces(res: SpacesResponse, autoClick = true) {
       this.searchSpaces.clear();
