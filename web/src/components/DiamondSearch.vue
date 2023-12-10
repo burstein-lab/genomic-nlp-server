@@ -160,7 +160,7 @@ export default {
         wordToSpace.set(space.value.word, space);
       }
       let result =
-        "query\tword\te_value\tidentical_amino_acids_percentage\tkegg_orthology\tlabel\tproduct\tgene_name\tsignificant\tpredicted_class\n";
+        "query\tword\te_value\tidentical_amino_acids_percentage\tkegg_orthology\tpredicted_class\tproduct\tgene_name\tsignificant\tcategory_source\n";
 
       for (const diamond of this.diamondResults) {
         result +=
@@ -177,7 +177,7 @@ export default {
           "\t" +
           (space.value.ko +
             "\t" +
-            space.value.label +
+            space.value.predicted_class +
             "\t" +
             space.value.product +
             "\t" +
@@ -185,7 +185,7 @@ export default {
             "\t" +
             space.value.significant +
             "\t" +
-            space.value.predicted_class) +
+            (space.value.hyopthetical ? "Predicted" : "KEGG")) +
           "\n";
       }
 

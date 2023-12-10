@@ -82,7 +82,6 @@ def row_to_feature(model_data: ModelData, row, additonal_columns: list[str] = No
         "name": f"{x_coord},{y_coord}",
         "word": row.word,
         "ko": row.KO if not pd.isnull(row.KO) else None,
-        "label": row.label if not pd.isnull(row.label) else None,
         "product": row["product"] if not pd.isnull(row["product"]) else None,
         "gene_name": row.gene_name if not pd.isnull(row.gene_name) else None,
         "significant": row.significant if not pd.isnull(row.significant) else None,
