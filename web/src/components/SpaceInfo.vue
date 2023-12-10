@@ -3,12 +3,18 @@
     <v-list-item
       v-for="[k, v] in spaceToInfo(space.value)"
       :key="k"
-      :subtitle="k"
-      :title="displayedValue(k, v)"
       :href="v?.toString()?.startsWith('https') ? v : undefined"
-      :style="v?.toString()?.startsWith('https') ? 'color: #0077ee' : ''"
       :target="v?.toString()?.startsWith('https') ? '_blank' : undefined"
     >
+      <v-list-item-content>
+        <v-list-item-title>{{ displayedValue(k, v) }}</v-list-item-title>
+        <v-list-item-subtitle
+          :style="v?.toString()?.startsWith('https') ? 'color: #0077ee' : ''"
+        >
+          {{ k }}
+        </v-list-item-subtitle>
+      </v-list-item-content>
+
       <template v-if="isActionItem(k)" v-slot:append>
         <v-container class="text-center pa-0">
           <v-row justify="center" no-gutters>
