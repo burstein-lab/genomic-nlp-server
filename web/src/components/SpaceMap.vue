@@ -358,7 +358,7 @@ export default {
       this.hoveredSpace = null;
       this.onCenterPoint();
     },
-    backgroundInteractiveSpaces(zoom: number) {
+    backgroundInteractiveSpaces(zoom: number): Space[] {
       if (!this.isMapVisible) return [];
 
       const res: Space[] = [];
@@ -398,6 +398,14 @@ export default {
   watch: {
     zoom(value: number) {
       console.log(value);
+      if (
+        this.hoveredSpace &&
+        this.backgroundInteractiveSpaces(value).some(
+          (space) => space.value.word === this.hoveredSpace.value.word
+        )
+      ) {
+        this.hoveredSpace = null;
+      }
     },
   },
 };
