@@ -38,6 +38,20 @@ class ModelData:
         return self._y_min
 
 
+class PredictionSummary:
+    def __init__(self):
+        self._df = None
+
+    @property
+    def df(self):
+        if self._df is None:
+            self._df = pd.read_pickle(
+                "prediction_summary.pkl",
+            )
+
+        return self._df
+
+
 class Point:
     """Defines a point coordinations and its value in space
     """
