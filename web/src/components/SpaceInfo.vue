@@ -3,12 +3,26 @@
     <v-list-item
       v-for="[k, v] in spaceToInfo(space.value)"
       :key="k"
-      :subtitle="k"
-      :title="displayedValue(k, v)"
       :href="v?.toString()?.startsWith('https') ? v : undefined"
-      :style="v?.toString()?.startsWith('https') ? 'color: #0077ee' : ''"
       :target="v?.toString()?.startsWith('https') ? '_blank' : undefined"
     >
+      <v-list-item-content>
+        <v-list-item-title
+          :style="v?.toString()?.startsWith('https') ? 'color: #0077ee' : ''"
+        >
+          {{ displayedValue(k, v) }}
+        </v-list-item-title>
+        <v-list-item-subtitle
+          :style="
+            theme.global.current.dark
+              ? 'color: rgba(255, 255, 255, 0.7)'
+              : 'color: rgba(0, 0, 0, 0.87)'
+          "
+        >
+          {{ k }}
+        </v-list-item-subtitle>
+      </v-list-item-content>
+
       <template v-if="isActionItem(k)" v-slot:append>
         <v-container class="text-center pa-0">
           <v-row justify="center" no-gutters>
@@ -87,6 +101,7 @@
 </template>
 
 <script lang="ts">
+import { useTheme } from "vuetify";
 import { truncate } from "@/composables/utils";
 import { spaceToInfo, Space } from "@/composables/spaces";
 
@@ -99,6 +114,11 @@ export default {
     },
     actionable: Boolean,
     backable: Boolean,
+  },
+  data: () => {
+    return {
+      theme: useTheme(),
+    };
   },
   emits: ["centerPoint", "resetClickPoint", "downloadSequence", "back"],
   methods: {
