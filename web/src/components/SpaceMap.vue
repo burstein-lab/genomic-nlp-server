@@ -241,23 +241,21 @@ export default {
       tileLayer.on("tileloadstart", async ({ coords }: { coords: Coords }) => {
         await this.getInteractiveSpaces(coords);
       });
-
-      let zoom = 0;
       let lat = -this.tileSize / 2;
       let lng = this.tileSize / 2;
       this.map = this.$refs.mapRef.leafletObject;
       if (queryParams.location) {
-        zoom = queryParams.location.zoom;
+        this.zoom = queryParams.location.zoom;
         lat = queryParams.location.lat;
         lng = queryParams.location.lng;
       }
 
-      this.map.setView(
+      await this.map.setView(
         {
           lat: lat,
           lng: lng,
         },
-        zoom
+        this.zoom
       );
 
       // Setting before search spaces in case the clicked space is in the search results.
