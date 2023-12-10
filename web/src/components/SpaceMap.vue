@@ -213,7 +213,7 @@ export default {
 
       this.clickedSpace = res.spaces[0];
 
-      if (!onSetup) this.focusSpaceResponse(res);
+      if (!onSetup) await this.focusSpaceResponse(res);
     },
     async onSetSearchSpaces(res: SpacesResponse, autoClick = true) {
       this.searchSpaces.clear();
@@ -229,14 +229,14 @@ export default {
           this.clickedSpace = null;
         }
 
-        this.focusSpaceResponse(res);
+        await this.focusSpaceResponse(res);
       }
     },
-    focusSpaceResponse(res: SpacesResponse) {
+    async focusSpaceResponse(res: SpacesResponse) {
       this.zoom = res.zoom;
       // When both zoom and latlng change, using setView alone results in zoom change without latlng.
-      this.map.setZoom(res.zoom);
-      this.map.setView(res.latlng, res.zoom);
+      await this.map.setZoom(res.zoom);
+      await this.map.setView(res.latlng, res.zoom);
     },
     async onTileLayerReady() {
       const tileLayer = this.$refs.tileLayerRef.leafletObject;
