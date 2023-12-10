@@ -211,14 +211,11 @@ export default {
         new AbortController().signal
       );
 
+      this.clickedSpace = res.spaces[0];
+
       if (!onSetup) {
         this.focusSpaceResponse(res);
-        queryParams.searchMode = undefined;
-        queryParams.searchValue = undefined;
-        pushQueryParams(this.$router);
       }
-
-      this.clickedSpace = res.spaces[0];
     },
     async onSetSearchSpaces(res: SpacesResponse, autoClick = true) {
       this.searchSpaces.clear();
@@ -361,6 +358,8 @@ export default {
         this.$refs.clickedSpaceLayerRef?.leafletObject.bringToFront();
     },
     onClick(e, space: Space) {
+      queryParams.searchMode = undefined;
+      queryParams.searchValue = undefined;
       this.clickedSpace = space;
       this.hoveredSpace = null;
       this.onCenterPoint();
