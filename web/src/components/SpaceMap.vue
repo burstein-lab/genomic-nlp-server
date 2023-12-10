@@ -213,9 +213,7 @@ export default {
 
       this.clickedSpace = res.spaces[0];
 
-      if (!onSetup) {
-        this.focusSpaceResponse(res);
-      }
+      if (!onSetup) this.focusSpaceResponse(res);
     },
     async onSetSearchSpaces(res: SpacesResponse, autoClick = true) {
       this.searchSpaces.clear();
