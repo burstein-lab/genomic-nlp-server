@@ -52,7 +52,7 @@ def space_get(name):
 
 @app.route("/label/get/<path:label>")
 def filter_by_label(label):
-    return jsonify_spaces(MODEL_DATA.df[MODEL_DATA.df["predicted_class"] == label & ~MODEL_DATA.df["hypothetical"]], MODEL_DATA)
+    return jsonify_spaces(MODEL_DATA.df[(MODEL_DATA.df["predicted_class"] == label) & (MODEL_DATA.df["hypothetical"] == False)], MODEL_DATA)
 
 
 @app.route("/gene_product/get/<path:name>")
