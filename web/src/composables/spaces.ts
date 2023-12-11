@@ -71,7 +71,7 @@ const spaceToInfo = (point: SpaceValue): Map<string, string> => {
       "KEGG Orthology": point.ko,
       Product: point.product,
       "Gene name": point.gene_name,
-      "Functional category": point.label,
+      "Functional category": point.predicted_class,
       "Gene count in family": point.word_count,
       "KEGG information": kosWithoutLink.includes(point.ko)
         ? "N/A"
@@ -98,7 +98,6 @@ interface SpacesResponse {
 interface SpaceValue {
   word: string;
   ko: string;
-  label: string;
   product: string;
   gene_name: string;
   significant: boolean;
