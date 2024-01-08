@@ -6,7 +6,7 @@
 
 The quick user guide is available at our [GitHub wiki](https://github.com/burstein-lab/genomic-nlp-server/wiki)
 
-![](https://github.com/burstein-lab/genomic-nlp-server/blob/main/img/gifx2-720.gif)
+![](https://github.com/burstein-lab/genomic-nlp-server/blob/main/img/gif-120speed.gif)
 
 This repository contains the implementation of _GeNLP_, a user-friendly web server to explore gene relationships!<br>
 The server is based on a pre-trained published language model:<br>
